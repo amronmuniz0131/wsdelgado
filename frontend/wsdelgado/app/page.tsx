@@ -16,14 +16,14 @@ export default function Home() {
     <div className="min-h-screen font-sans text-gray-900 bg-white">
       <main>
         {/* Hero Section */}
-        <section className="relative pb-20 lg:pb-28 ">
+        <section className="relative pb-0 lg:pb-28 ">
           <div className="max-w-[100%] mx-auto">
             <div className="aspect-[21/9] w-full relative mb-12">
               {/* Wireframe Hero Placeholder */}
               {/* <Placeholder className="w-full h-full rounded-sm" /> */}
               <img src="https://constructestimates.com/wp-content/uploads/2023/08/construction-company.png" alt="" className="w-full h-full object-cover" />
 
-              <div className="absolute top-1/2 left-12 -translate-y-1/2 max-w-lg bg-white/75 p-8 backdrop-blur-sm shadow-sm rounded-xl z-20">
+              <div className="hidden lg:block md:absolute top-1/2 left-12 -translate-y-1/2 max-w-lg bg-white/75 p-8 backdrop-blur-sm shadow-sm rounded-xl z-20">
                 <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
                   WSDelgado Builders
                 </h1>
@@ -67,7 +67,7 @@ export default function Home() {
         </section>
 
         {/* Highlights Section */}
-        <section className="py-16 w-full">
+        {/* <section className="py-16 w-full">
           <div className="h-64 md:h-96 w-full relative">
             <div className="absolute inset-0 flex items-center justify-center bg-gray-50 border-y border-gray-200">
               <div className="w-full h-full absolute">
@@ -77,7 +77,7 @@ export default function Home() {
               <h2 className="text-4xl font-bold z-10 bg-white px-8 py-4 shadow-sm border border-gray-100">Highlights</h2>
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* Location & About Section */}
         <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

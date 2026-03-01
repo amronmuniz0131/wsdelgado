@@ -33,7 +33,7 @@ export default function Header() {
 
                 <div className="hidden md:flex items-center gap-3">
                     {isAuthenticated ? (
-                        <button className="px-4 py-2 text-sm font-medium border border-gray-300 hover:border-gray-900 hover:cursor-pointer rounded-lg hover:bg-gray-50 transition-colors"
+                        <button className="px-4 py-2 text-gray-900 text-sm font-medium border border-gray-300 hover:border-gray-900 hover:cursor-pointer rounded-lg hover:bg-gray-50 transition-colors"
                             onClick={() => {
                                 window.location.href = '/';
                                 localStorage.removeItem('isAuthenticated');
@@ -66,8 +66,7 @@ export default function Header() {
                     <Link href="/about" className="block py-2 text-gray-600" onClick={() => setIsMenuOpen(false)}>About</Link>
                     <Link href="#" className="block py-2 text-gray-600" onClick={() => setIsMenuOpen(false)}>Contact</Link>
                     <div className="flex flex-col gap-2 pt-2 border-t border-gray-100">
-                        <button className="w-full px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg">Log in</button>
-                        <button className="w-full px-4 py-2 text-sm font-medium bg-gray-900 text-white rounded-lg">Sign up</button>
+                        <button className="w-full px-4 py-2 text-sm font-medium border text-gray-900 border-gray-300 rounded-lg">Log in</button>
                     </div>
                 </div>
             )}

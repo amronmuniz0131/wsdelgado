@@ -1,0 +1,101 @@
+# =========================================
+# MDC RULES: Next.js + React + Tailwind v4 + MUI v7
+# =========================================
+
+## GENERAL PRINCIPLES
+- Prefer correctness, clarity, and maintainability over cleverness.
+- Follow idiomatic React and Next.js patterns.
+- Do not introduce unnecessary abstractions.
+- Keep components small, composable, and reusable.
+- Avoid premature optimization.
+
+---
+
+## NEXT.JS RULES (APP ROUTER)
+- Use the App Router (`/app`) exclusively.
+- Prefer Server Components by default.
+- Only use `"use client"` when:
+  - Using React hooks (`useState`, `useEffect`, etc.)
+  - Handling browser-only APIs
+  - Using MUI components that require client-side rendering
+
+### Routing & Layout
+- Use `layout.tsx` for shared UI (navbars, footers, providers).
+- Keep `page.tsx` minimal and delegate logic to components.
+- Use `loading.tsx` and `error.tsx` where appropriate.
+- Prefer `not-found.tsx` over manual 404 handling.
+
+### Data Fetching
+- Use `fetch()` with Next.js caching semantics.
+- Prefer server-side data fetching in Server Components.
+- Use `revalidate` and `cache` options explicitly.
+- Do not use `axios` unless strictly required.
+
+---
+
+## REACT RULES
+- Use functional components only.
+- Prefer named exports for components.
+- Use hooks following the Rules of Hooks.
+- Avoid deeply nested JSX; extract subcomponents.
+- Avoid inline anonymous functions in JSX when possible.
+
+### State Management
+- Prefer local state (`useState`, `useReducer`) first.
+- Lift state only when necessary.
+- Avoid global state unless justified.
+
+---
+
+## TYPESCRIPT RULES
+- TypeScript is mandatory.
+- Do not use `any`.
+- Prefer `unknown` over `any`.
+- Prefer explicit return types for exported functions.
+- Use `interface` for public APIs, `type` for unions.
+
+---
+
+## TAILWIND CSS v4 RULES
+- Tailwind is the **primary styling system**.
+- Use utility classes directly in JSX.
+- Do NOT create custom CSS files unless unavoidable.
+- Avoid `@apply` except for design-system-level abstractions.
+- Prefer Tailwind spacing, colors, and typography tokens.
+
+### Class Management
+- Use `clsx` or `cn` utilities for conditional classes.
+- Keep class lists readable; break lines if needed.
+- Avoid arbitrary values unless absolutely necessary.
+
+---
+
+## MATERIAL UI v7 RULES
+- Use MUI components **selectively**, not for everything.
+- Prefer Tailwind for layout and spacing.
+- Use MUI for:
+  - Complex components (DataGrid, Dialog, Menu, Select)
+  - Accessibility-critical UI
+  - Theming consistency
+
+### MUI Styling
+- Prefer the `sx` prop for component-level styling.
+- Avoid `styled()` unless creating reusable primitives.
+- Do NOT override MUI styles with global CSS.
+- Do NOT mix `sx` and Tailwind for the same concern.
+
+### Theming
+- Use a single centralized MUI theme.
+- Extend the theme instead of inline overrides.
+- Keep colors aligned with Tailwind config.
+
+---
+
+## COMPONENT STRUCTURE
+- One component per file.
+- File naming:
+  - `PascalCase.tsx` for components
+  - `kebab-case` for routes and folders
+- Co-locate component-specific logic and types.
+
+Example:
