@@ -14,7 +14,6 @@ export default function LoginPage() {
         setIsLoading(true);
         // Simulate API call
         setTimeout(() => {
-            console.log("Login submitted");
             setIsLoading(false);
             localStorage.setItem("isAuthenticated", "true");
             window.location.href = "/dashboard"
