@@ -2,12 +2,6 @@
 
 import React, { useState } from "react";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   Button,
   Dialog,
@@ -17,7 +11,9 @@ import {
   TextField,
   Typography,
   Box,
+  CircularProgress,
 } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
 import { Plus } from "lucide-react";
 
 const initialProjects = [
@@ -29,6 +25,7 @@ const initialProjects = [
     location: "Sector 4",
     client: "Acme Corp",
     address: "123 Main St, Cityville",
+    progress: 50,
   },
   {
     id: "2",
@@ -38,10 +35,94 @@ const initialProjects = [
     location: "Sector 7",
     client: "Riverside Devs",
     address: "456 River Rd, Townsville",
+    progress: Math.floor(Math.random() * 100),
+  },
+  {
+    id: "3",
+    name: "Riverside Residential",
+    foreman: "Mike Davis",
+    engineer: "Bob Wilson",
+    location: "Sector 7",
+    client: "Riverside Devs",
+    address: "456 River Rd, Townsville",
+    progress: Math.floor(Math.random() * 100),
+  },
+  {
+    id: "4",
+    name: "Riverside Residential",
+    foreman: "Mike Davis",
+    engineer: "Bob Wilson",
+    location: "Sector 7",
+    client: "Riverside Devs",
+    address: "456 River Rd, Townsville",
+    progress: Math.floor(Math.random() * 100),
+  },
+  {
+    id: "5",
+    name: "Riverside Residential",
+    foreman: "Mike Davis",
+    engineer: "Bob Wilson",
+    location: "Sector 7",
+    client: "Riverside Devs",
+    address: "456 River Rd, Townsville",
+    progress: Math.floor(Math.random() * 100),
+  },
+  {
+    id: "6",
+    name: "Riverside Residential",
+    foreman: "Mike Davis",
+    engineer: "Bob Wilson",
+    location: "Sector 7",
+    client: "Riverside Devs",
+    address: "456 River Rd, Townsville",
+    progress: Math.floor(Math.random() * 100),
   },
 ];
 
-export function ProjectsTable() {
+const columns = [
+  { field: "name", headerName: "Name", flex: 1, minWidth: 180 },
+  { field: "foreman", headerName: "Foreman", flex: 1, minWidth: 130 },
+  { field: "engineer", headerName: "Engineer", flex: 1, minWidth: 130 },
+  { field: "location", headerName: "Location", flex: 1, minWidth: 120 },
+  { field: "client", headerName: "Client", flex: 1, minWidth: 150 },
+  { field: "address", headerName: "Address", flex: 1.5, minWidth: 200 },
+  {
+    field: "progress",
+    headerName: "Progress",
+    flex: 1.5,
+    minWidth: 100,
+    renderCell: (params) => (
+      <Box sx={{ position: "relative", display: "inline-flex" }}>
+        <CircularProgress
+          variant="determinate"
+          value={params.value}
+        />
+        <Box
+          sx={{
+            top: 0,
+            left: 0,
+            bottom: 0,
+            right: 0,
+            position: "absolute",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Typography
+            variant="caption"
+            component="div"
+            sx={{ color: "text.secondary", fontSize: "0.65rem" }}
+          >
+            {`${params.value}%`}
+          </Typography>
+        </Box>
+      </Box>
+    ),
+  },
+];
+
+export function ProjectsTable(props) {
   const [projects, setProjects] = useState(initialProjects);
   const [open, setOpen] = useState(false);
   const [newProject, setNewProject] = useState({
@@ -90,75 +171,37 @@ export function ProjectsTable() {
         >
           Ongoing Projects
         </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<Plus size={18} />}
-          onClick={handleOpen}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          Add Project
-        </Button>
+        {props.user === "admin" && (
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Plus size={18} />}
+            onClick={handleOpen}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Add Project
+          </Button>
+        )}
       </Box>
 
-      <TableContainer
-        component={Paper}
-        className="shadow-sm border border-gray-200"
-      >
-        <Table sx={{ minWidth: 650 }} aria-label="projects table">
-          <TableHead className="bg-gray-50">
-            <TableRow>
-              <TableCell className="font-semibold text-gray-600">
-                Name
-              </TableCell>
-              <TableCell className="font-semibold text-gray-600">
-                Foreman
-              </TableCell>
-              <TableCell className="font-semibold text-gray-600">
-                Engineer
-              </TableCell>
-              <TableCell className="font-semibold text-gray-600">
-                Location
-              </TableCell>
-              <TableCell className="font-semibold text-gray-600">
-                Client
-              </TableCell>
-              <TableCell className="font-semibold text-gray-600">
-                Address
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {projects.map((row) => (
-              <TableRow
-                key={row.id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                className="hover:bg-gray-50 transition-colors"
-              >
-                <TableCell component="th" scope="row" className="font-medium">
-                  {row.name}
-                </TableCell>
-                <TableCell>{row.foreman}</TableCell>
-                <TableCell>{row.engineer}</TableCell>
-                <TableCell>{row.location}</TableCell>
-                <TableCell>{row.client}</TableCell>
-                <TableCell>{row.address}</TableCell>
-              </TableRow>
-            ))}
-            {projects.length === 0 && (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  align="center"
-                  className="py-8 text-gray-500"
-                >
-                  No projects found. Click "Add Project" to create one.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <Paper className="shadow-sm border border-gray-200 w-full" sx={{ width: '100%' }}>
+        <DataGrid
+          rows={projects}
+          columns={columns}
+          initialState={{
+            pagination: { paginationModel: { page: 0, pageSize: 5 } },
+          }}
+          pageSizeOptions={[5, 10, 20]}
+          disableRowSelectionOnClick
+          isRowSelectable={() => false}
+          sx={{ 
+            border: 0, 
+            height: '50vh',
+            '& .MuiDataGrid-cell:focus': { outline: 'none' },
+            '& .MuiDataGrid-cell:focus-within': { outline: 'none' }
+          }}
+        />
+      </Paper>
 
       {/* Add Project Modal */}
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>

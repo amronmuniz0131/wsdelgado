@@ -2,12 +2,6 @@
 
 import React, { useState } from "react";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   Button,
   Dialog,
@@ -19,6 +13,7 @@ import {
   Box,
   Chip,
 } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
 import { Plus } from "lucide-react";
 
 const initialMaterials = [
@@ -61,7 +56,7 @@ const getStatusColor = (status) => {
   }
 };
 
-export function MaterialsTable() {
+export function MaterialsTable(props) {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
@@ -99,77 +94,86 @@ export function MaterialsTable() {
     address: "",
   });
 
+  const columns = [
+    { field: "name", headerName: "Item Name", flex: 1, minWidth: 150 },
+    { field: "quantity", headerName: "Quantity", flex: 1, minWidth: 100 },
+    { field: "unit", headerName: "Unit", flex: 1, minWidth: 100 },
+    {
+      field: "status",
+      headerName: "Status",
+      flex: 1,
+      minWidth: 120,
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          color={getStatusColor(params.value)}
+          size="small"
+          className="font-medium"
+        />
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      minWidth: 120,
+      sortable: false,
+      renderCell: () => (
+        <Button
+          variant="contained"
+          onClick={handleOpen}
+          className="bg-blue-600 !text-2xs hover:bg-blue-700"
+          size="small"
+        >
+          View More
+        </Button>
+      ),
+    },
+  ];
+
   return (
     <Box className="w-full">
-      <Box className="mb-4">
-        <Typography
-          variant="h6"
-          component="h2"
-          className="text-gray-800 font-semibold"
-        >
-          Construction Materials Inventory
-        </Typography>
-      </Box>
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<Plus size={18} />}
-        onClick={handleOpen}
-        className="bg-blue-600 hover:bg-blue-700"
-      >
-        Add Project
-      </Button>
+      <div className="flex items-center justify-between mb-4">
+        <Box className="flex items-center">
+          <Typography
+            variant="h6"
+            component="h2"
+            className="text-gray-800 font-semibold"
+          >
+            Construction Materials Inventory
+          </Typography>
+        </Box>
+        {props.user === "admin" && (
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Plus size={18} />}
+            onClick={handleOpen}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Add Materials
+          </Button>
+        )}
+      </div>
 
-      <TableContainer
-        component={Paper}
-        className="shadow-sm border border-gray-200"
-      >
-        <Table sx={{ minWidth: 650 }} aria-label="materials table">
-          <TableHead className="bg-gray-50">
-            <TableRow>
-              <TableCell className="font-semibold text-gray-600">
-                Item Name
-              </TableCell>
-              <TableCell className="font-semibold text-gray-600">
-                Quantity
-              </TableCell>
-              <TableCell className="font-semibold text-gray-600">
-                Unit
-              </TableCell>
-              <TableCell className="font-semibold text-gray-600">
-                Status
-              </TableCell>
-              <TableCell className="font-semibold text-gray-600">
-                Last Restocked
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {materials.map((row) => (
-              <TableRow
-                key={row.id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                className="hover:bg-gray-50 transition-colors"
-              >
-                <TableCell component="th" scope="row" className="font-medium">
-                  {row.name}
-                </TableCell>
-                <TableCell>{row.quantity}</TableCell>
-                <TableCell>{row.unit}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={row.status}
-                    color={getStatusColor(row.status)}
-                    size="small"
-                    className="font-medium"
-                  />
-                </TableCell>
-                <TableCell>{row.lastRestocked}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <Paper className="shadow-sm border border-gray-200 w-full" sx={{ width: '100%' }}>
+        <DataGrid
+          rows={materials}
+          columns={columns}
+          initialState={{
+            pagination: { paginationModel: { page: 0, pageSize: 5 } },
+          }}
+          pageSizeOptions={[5, 10, 20]}
+          disableRowSelectionOnClick
+          isRowSelectable={() => false}
+          sx={{ 
+            border: 0, 
+            height: '50vh',
+            '& .MuiDataGrid-cell:focus': { outline: 'none' },
+            '& .MuiDataGrid-cell:focus-within': { outline: 'none' }
+          }}
+        />
+      </Paper>
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 mb-4">
           Create New Project
