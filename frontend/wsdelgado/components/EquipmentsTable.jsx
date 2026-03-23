@@ -167,9 +167,9 @@ export function EquipmentsTable(props) {
           pageSizeOptions={[5, 10, 20]}
           disableRowSelectionOnClick
           isRowSelectable={() => false}
-          sx={{ 
-            border: 0, 
-            height: '50vh',
+          sx={{
+            border: 0,
+            maxHeight: '50vh',
             '& .MuiDataGrid-cell:focus': { outline: 'none' },
             '& .MuiDataGrid-cell:focus-within': { outline: 'none' }
           }}
