@@ -39,7 +39,7 @@ const initialProjects = [
   },
   {
     id: "3",
-    name: "Riverside Residential",
+    name: "Dionela",
     foreman: "Mike Davis",
     engineer: "Bob Wilson",
     location: "Sector 7",
@@ -49,7 +49,7 @@ const initialProjects = [
   },
   {
     id: "4",
-    name: "Riverside Residential",
+    name: "Atillano",
     foreman: "Mike Davis",
     engineer: "Bob Wilson",
     location: "Sector 7",
@@ -59,7 +59,7 @@ const initialProjects = [
   },
   {
     id: "5",
-    name: "Riverside Residential",
+    name: "Baldicano Residential",
     foreman: "Mike Davis",
     engineer: "Bob Wilson",
     location: "Sector 7",

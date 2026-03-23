@@ -170,6 +170,7 @@ export function EquipmentsTable(props) {
           sx={{
             border: 0,
             maxHeight: '50vh',
+            height: '40vh',
             '& .MuiDataGrid-cell:focus': { outline: 'none' },
             '& .MuiDataGrid-cell:focus-within': { outline: 'none' }
           }}
