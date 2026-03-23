@@ -34,7 +34,7 @@ export default function Home() {
                   Lorem ipsum sit o dolor amet consectetur adipiscing elit.
                   Building your dreams with precision and excellence.
                 </p>
-                <button className="px-6 py-3 bg-white border border-gray-900 text-gray-900 font-medium hover:bg-gray-50 transition-colors min-w-[140px]">
+                <button onClick={() => window.location.href = "/about"} className="px-6 py-3 bg-white border border-gray-900 text-gray-900 font-medium hover:bg-gray-50 transition-colors min-w-[140px]">
                   Learn More
                 </button>
               </div>
