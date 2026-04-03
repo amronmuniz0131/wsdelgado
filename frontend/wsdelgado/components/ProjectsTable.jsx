@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Paper,
   Button,
@@ -79,50 +80,8 @@ const initialProjects = [
   },
 ];
 
-const columns = [
-  { field: "name", headerName: "Name", flex: 1, minWidth: 180 },
-  { field: "foreman", headerName: "Foreman", flex: 1, minWidth: 130 },
-  { field: "engineer", headerName: "Engineer", flex: 1, minWidth: 130 },
-  { field: "location", headerName: "Location", flex: 1, minWidth: 120 },
-  { field: "client", headerName: "Client", flex: 1, minWidth: 150 },
-  { field: "address", headerName: "Address", flex: 1.5, minWidth: 200 },
-  {
-    field: "progress",
-    headerName: "Progress",
-    flex: 1.5,
-    minWidth: 100,
-    renderCell: (params) => (
-      <Box sx={{ position: "relative", display: "inline-flex" }}>
-        <CircularProgress
-          variant="determinate"
-          value={params.value}
-        />
-        <Box
-          sx={{
-            top: 0,
-            left: 0,
-            bottom: 0,
-            right: 0,
-            position: "absolute",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Typography
-            variant="caption"
-            component="div"
-            sx={{ color: "text.secondary", fontSize: "0.65rem" }}
-          >
-            {`${params.value}%`}
-          </Typography>
-        </Box>
-      </Box>
-    ),
-  },
-];
-
 export function ProjectsTable(props) {
+  const router = useRouter();
   const [projects, setProjects] = useState(initialProjects);
   const [open, setOpen] = useState(false);
   const [newProject, setNewProject] = useState({
@@ -133,6 +92,67 @@ export function ProjectsTable(props) {
     client: "",
     address: "",
   });
+
+  const columns = [
+    { field: "name", headerName: "Name", flex: 1, minWidth: 180 },
+    { field: "foreman", headerName: "Foreman", flex: 1, minWidth: 130 },
+    { field: "engineer", headerName: "Engineer", flex: 1, minWidth: 130 },
+    { field: "location", headerName: "Location", flex: 1, minWidth: 120 },
+    { field: "client", headerName: "Client", flex: 1, minWidth: 150 },
+    { field: "address", headerName: "Address", flex: 1.5, minWidth: 200 },
+    {
+      field: "progress",
+      headerName: "Progress",
+      minWidth: 20,
+      renderCell: (params) => (
+        <Box sx={{ position: "relative", display: "inline-flex" }}>
+          <CircularProgress
+            variant="determinate"
+            value={params.value}
+          />
+          <Box
+            sx={{
+              top: 0,
+              left: 0,
+              bottom: 0,
+              right: 0,
+              position: "absolute",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Typography
+              variant="caption"
+              component="div"
+              sx={{ color: "text.secondary", fontSize: "0.65rem" }}
+            >
+              {`${params.value}%`}
+            </Typography>
+          </Box>
+        </Box>
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      minWidth: 120,
+      renderCell: (params) => (
+        <Box className="flex items-center h-full">
+          <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            onClick={() => router.push(`/dashboard/projects/${params.row.id}`)}
+            className="bg-blue-600 hover:bg-blue-700 capitalize"
+          >
+            Details
+          </Button>
+        </Box>
+      ),
+    }
+  ];
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
