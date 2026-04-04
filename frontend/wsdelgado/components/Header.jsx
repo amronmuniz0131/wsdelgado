@@ -46,6 +46,12 @@ export default function Header() {
           >
             Contact
           </Link>
+          <Link
+            href="/reports"
+            className="text-sm font-medium text-gray-600 hover:text-gray-900"
+          >
+            Reports
+          </Link>
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
@@ -100,11 +106,18 @@ export default function Header() {
             About
           </Link>
           <Link
-            href="#"
+            href="/contact"
             className="block py-2 text-gray-600"
             onClick={() => setIsMenuOpen(false)}
           >
             Contact
+          </Link>
+          <Link
+            href="/reports"
+            className="block py-2 text-gray-600"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Reports
           </Link>
           <div className="flex flex-col gap-2 pt-2 border-t border-gray-100">
             <button className="w-full px-4 py-2 text-sm font-medium border text-gray-900 border-gray-300 rounded-lg">
