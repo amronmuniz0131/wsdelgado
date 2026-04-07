@@ -34,24 +34,38 @@ export default function Header() {
           >
             Home
           </Link>
-          <Link
-            href="/about"
-            className="text-sm font-medium text-gray-600 hover:text-gray-900"
-          >
-            About
-          </Link>
-          <Link
-            href={`/contact`}
-            className="text-sm font-medium text-gray-600 hover:text-gray-900"
-          >
-            Contact
-          </Link>
-          <Link
-            href="/reports"
-            className="text-sm font-medium text-gray-600 hover:text-gray-900"
-          >
-            Reports
-          </Link>
+          {!isAuthenticated && (
+            <Link
+              href="/about"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+            >
+              About
+            </Link>
+          )}
+          {!isAuthenticated && (
+            <Link
+              href={`/contact`}
+              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+            >
+              Contact
+            </Link>
+          )}
+          {isAuthenticated && (
+            <Link
+              href="/reports"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+            >
+              Reports
+            </Link>
+          )}
+          {isAuthenticated && (
+            <Link
+              href="/employees"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+            >
+              Employees
+            </Link>
+          )}
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
@@ -98,27 +112,42 @@ export default function Header() {
           >
             Home
           </Link>
-          <Link
-            href="/about"
-            className="block py-2 text-gray-600"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            About
-          </Link>
-          <Link
-            href="/contact"
-            className="block py-2 text-gray-600"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Contact
-          </Link>
-          <Link
-            href="/reports"
-            className="block py-2 text-gray-600"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Reports
-          </Link>
+          {!isAuthenticated && (
+            <Link
+              href="/about"
+              className="block py-2 text-gray-600"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              About
+            </Link>
+          )}
+          {!isAuthenticated && (
+            <Link
+              href={`/contact`}
+              className="block py-2 text-gray-600"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Contact
+            </Link>
+          )}
+          {isAuthenticated && (
+            <Link
+              href="/reports"
+              className="block py-2 text-gray-600"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Reports
+            </Link>
+          )}
+          {isAuthenticated && (
+            <Link
+              href="/employees"
+              className="block py-2 text-gray-600"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Employees
+            </Link>
+          )}
           <div className="flex flex-col gap-2 pt-2 border-t border-gray-100">
             <button className="w-full px-4 py-2 text-sm font-medium border text-gray-900 border-gray-300 rounded-lg">
               Log in

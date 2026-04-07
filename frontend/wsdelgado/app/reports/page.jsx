@@ -273,7 +273,7 @@ export default function ReportsPage() {
     <Box className="min-h-screen bg-[#F8FAFC] pb-12">
       {/* Header Section */}
       <Box className="bg-white border-b border-gray-200 px-6 py-10 mb-8 shadow-sm">
-        <Box className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <Box className="w-full mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <Box>
             <Typography variant="h4" className="font-bold text-gray-900 flex items-center gap-3">
               <FileText className="text-blue-600" size={32} />
@@ -298,9 +298,9 @@ export default function ReportsPage() {
         </Box>
       </Box>
 
-      <Box className="max-w-7xl mx-auto px-6">
+      <Box className="mx-auto px-6">
         {/* Stats Grid */}
-        <Grid container spacing={3} className="mb-8">
+        <Grid container spacing={3} className="mb-8 w-full">
           {[
             { label: "Active Projects", value: projectsData.length, icon: TrendingUp, color: "bg-blue-50 text-blue-600 border-blue-100" },
             { label: "Machinery in Use", value: equipmentData.filter(e => e.status === "In Use").length, icon: HardHat, color: "bg-emerald-50 text-emerald-600 border-emerald-100" },
@@ -353,9 +353,9 @@ export default function ReportsPage() {
         </Grid>
 
         {/* Charts Section */}
-        <Grid container spacing={3} className="mb-8">
+        <Grid container spacing={3} className="mb-8 w-full">
           {/* Project Progress Chart (Custom SVG/CSS) */}
-          <Grid item xs={12} lg={7}>
+          <Grid item xs={12} lg={4}>
             <Paper className="p-6 rounded-2xl shadow-sm border border-gray-100 h-full">
               <Box className="flex items-center justify-between mb-8">
                 <Typography variant="h6" className="font-bold text-gray-800 flex items-center gap-2">
@@ -382,9 +382,8 @@ export default function ReportsPage() {
               </Box>
             </Paper>
           </Grid>
-
           {/* Employee Efficiency Chart (Custom SVG/CSS) */}
-          <Grid item xs={12} lg={5}>
+          <Grid item xs={12} lg={4}>
             <Paper className="p-6 rounded-2xl shadow-sm border border-gray-100 h-full">
               <Box className="flex items-center justify-between mb-6">
                 <Typography variant="h6" className="font-bold text-gray-800 flex items-center gap-2">
@@ -436,13 +435,8 @@ export default function ReportsPage() {
               </Box>
             </Paper>
           </Grid>
-        </Grid>
-
-        {/* Data Tables */}
-        <Grid container spacing={3}>
-          {/* Projects Table */}
-          <Grid item xs={12}>
-            <Card className="rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <Grid item xs={12} lg={7}>
+            <Card className="rounded-2xl w-full shadow-sm border border-gray-100 overflow-hidden">
               <Box className="p-6 border-b border-gray-100 flex items-center justify-between bg-white">
                 <Typography variant="h6" className="font-bold text-gray-800">Projects Detailed Report</Typography>
                 <Button
@@ -484,6 +478,10 @@ export default function ReportsPage() {
               </TableContainer>
             </Card>
           </Grid>
+        </Grid>
+
+        {/* Data Tables */}
+        <Grid container spacing={3}>
 
           {/* Equipment Table */}
           <Grid item xs={12} md={6}>

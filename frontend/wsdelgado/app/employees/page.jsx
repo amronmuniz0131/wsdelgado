@@ -2,8 +2,7 @@ import { EmployeesTable } from "@/components/EmployeesTable";
 
 export default function EmployeesPage() {
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Employees Management</h1>
+    <div className="p-4 md:p-12 min-h-screen bg-white">
       <EmployeesTable />
     </div>
   );

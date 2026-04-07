@@ -17,9 +17,13 @@ import {
   TextField,
   Typography,
   Box,
+  Avatar,
+  Chip,
+  IconButton,
+  Tooltip,
+  Divider,
 } from "@mui/material";
-import { Plus } from "lucide-react";
-import CircularProgress from "@mui/material/CircularProgress";
+import { Plus, Eye, Pencil, Briefcase, Calendar, MapPin, Phone, Mail, UserRound, ArrowRight } from "lucide-react";
 
 const initialEmployees = [
   {
@@ -27,30 +31,98 @@ const initialEmployees = [
     employeeId: "EMP-001",
     name: "John Smith",
     position: "Foreman",
-    progress: 75,
+    assignedProject: "Sunrise Heights",
+    dateOfEmployment: "2023-01-15",
+    status: "ongoing",
+    email: "john.smith@construction.com",
+    phone: "+1 234 567 8901",
+    address: "123 Orchard Lane, New York, NY",
+    notes: "Specializes in foundation work and concrete structure management.",
   },
   {
     id: "2",
     employeeId: "EMP-002",
     name: "Alice Johnson",
     position: "Civil Engineer",
-    progress: 40,
+    assignedProject: "Skyline Bridge",
+    dateOfEmployment: "2023-03-22",
+    status: "on leave",
+    email: "alice.j@construction.com",
+    phone: "+1 234 567 8902",
+    address: "456 River View, Jersey City, NJ",
+    notes: "Lead structural design engineer for bridge projects.",
+  },
+  {
+    id: "3",
+    employeeId: "EMP-003",
+    name: "Robert Davis",
+    position: "Site SuperVisor",
+    assignedProject: "Riverside Mall",
+    dateOfEmployment: "2022-11-10",
+    status: "available",
+    email: "robert.d@construction.com",
+    phone: "+1 234 567 8903",
+    address: "789 Pine Street, Brooklyn, NY",
+    notes: "Experienced in managing multi-story commercial buildings.",
   },
 ];
 
 export function EmployeesTable() {
   const [employees, setEmployees] = useState(initialEmployees);
-  const [open, setOpen] = useState(false);
+  const [openAddModal, setOpenAddModal] = useState(false);
+  const [openViewModal, setOpenViewModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [editingEmployee, setEditingEmployee] = useState(null);
+  
   const [newEmployee, setNewEmployee] = useState({
     employeeId: "",
     name: "",
     position: "",
+    assignedProject: "",
+    dateOfEmployment: "",
+    status: "available",
+    email: "",
+    phone: "",
+    address: "",
+    notes: "",
   });
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => {
-    setOpen(false);
-    setNewEmployee({ employeeId: "", name: "", position: "" });
+  const handleOpenAdd = () => setOpenAddModal(true);
+  const handleCloseAdd = () => {
+    setOpenAddModal(false);
+    setNewEmployee({
+      employeeId: "",
+      name: "",
+      position: "",
+      assignedProject: "",
+      dateOfEmployment: "",
+      status: "available",
+      email: "",
+      phone: "",
+      address: "",
+      notes: "",
+    });
+  };
+
+  const handleOpenView = (employee) => {
+    setSelectedEmployee(employee);
+    setOpenViewModal(true);
+  };
+
+  const handleCloseView = () => {
+    setOpenViewModal(false);
+    setSelectedEmployee(null);
+  };
+
+  const handleOpenEdit = (employee) => {
+    setEditingEmployee(employee);
+    setOpenEditModal(true);
+  };
+
+  const handleCloseEdit = () => {
+    setOpenEditModal(false);
+    setEditingEmployee(null);
   };
 
   const handleInputChange = (e) => {
@@ -58,96 +130,161 @@ export function EmployeesTable() {
     setNewEmployee((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditingEmployee((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleAddEmployee = () => {
     const employee = {
       id: Math.random().toString(36).substr(2, 9),
-      progress: 0,
       ...newEmployee,
     };
     setEmployees([...employees, employee]);
-    handleClose();
+    handleCloseAdd();
+  };
+
+  const handleUpdateEmployee = () => {
+    setEmployees(prev => prev.map(emp => emp.id === editingEmployee.id ? editingEmployee : emp));
+    handleCloseEdit();
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "available":
+        return "success";
+      case "ongoing":
+        return "primary";
+      case "on leave":
+        return "warning";
+      default:
+        return "default";
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case "available":
+        return "Available";
+      case "ongoing":
+        return "Ongoing";
+      case "on leave":
+        return "On Leave";
+      default:
+        return status;
+    }
   };
 
   return (
     <Box className="w-full">
-      <Box className="flex justify-between items-center mb-4">
-        <Typography
-          variant="h6"
-          component="h2"
-          className="text-gray-800 font-semibold"
-        >
-          Employees List
-        </Typography>
+      {/* Header section with gradient background */}
+      <Box className="flex justify-between items-center mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-sm border border-blue-100">
+        <Box>
+          <Typography
+            variant="h4"
+            className="text-gray-800 font-bold tracking-tight mb-1"
+          >
+            Workforce Portal
+          </Typography>
+          <Typography variant="body2" className="text-gray-500 font-medium">
+            Manage and monitor your project teams and employee availability
+          </Typography>
+        </Box>
         <Button
           variant="contained"
-          color="primary"
           startIcon={<Plus size={18} />}
-          onClick={handleOpen}
-          className="bg-blue-600 hover:bg-blue-700"
+          onClick={handleOpenAdd}
+          className="bg-blue-600 hover:bg-blue-700 normal-case px-6 py-2.5 rounded-xl shadow-lg transition-all transform hover:scale-105"
         >
-          Add Employee
+          Add New Employee
         </Button>
       </Box>
 
+      {/* Main Table Section */}
       <TableContainer
         component={Paper}
-        className="shadow-sm border border-gray-200"
+        className="rounded-2xl overflow-hidden shadow-xl border border-gray-100"
       >
         <Table sx={{ minWidth: 650 }} aria-label="employees table">
           <TableHead className="bg-gray-50">
             <TableRow>
-              <TableCell className="font-semibold text-gray-600">
-                Employee ID
-              </TableCell>
-              <TableCell className="font-semibold text-gray-600">
-                Name
-              </TableCell>
-              <TableCell className="font-semibold text-gray-600">
-                Position
-              </TableCell>
-              <TableCell className="font-semibold text-gray-600">
-                Progress
-              </TableCell>
+              <TableCell className="font-bold text-gray-700 py-4">EMPLOYEE</TableCell>
+              <TableCell className="font-bold text-gray-700 py-4">POSITION</TableCell>
+              <TableCell className="font-bold text-gray-700 py-4">ASSIGNED PROJECT</TableCell>
+              <TableCell className="font-bold text-gray-700 py-4">EMPLOYMENT DATE</TableCell>
+              <TableCell className="font-bold text-gray-700 py-4">STATUS</TableCell>
+              <TableCell className="font-bold text-gray-700 py-4 text-center">ACTION</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {employees.map((row) => (
               <TableRow
                 key={row.id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                className="hover:bg-gray-50 transition-colors"
+                className="hover:bg-blue-50/30 transition-all cursor-pointer group"
+                onClick={() => handleOpenView(row)}
               >
-                <TableCell component="th" scope="row" className="font-medium">
-                  {row.employeeId}
-                </TableCell>
-                <TableCell>{row.name}</TableCell>
-                <TableCell>{row.position}</TableCell>
-                <TableCell>
-                  <Box sx={{ position: "relative", display: "inline-flex" }}>
-                    <CircularProgress
-                      variant="determinate"
-                      value={row.progress}
-                    />
-                    <Box
-                      sx={{
-                        top: 0,
-                        left: 0,
-                        bottom: 0,
-                        right: 0,
-                        position: "absolute",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Typography
-                        variant="caption"
-                        component="div"
-                        sx={{ color: "text.secondary", fontSize: "0.65rem" }}
-                      >
-                        {`${row.progress}%`}
+                <TableCell className="py-4">
+                  <Box className="flex items-center gap-3">
+                    <Avatar className="bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md">
+                      {row.name.charAt(0)}
+                    </Avatar>
+                    <Box>
+                      <Typography className="font-bold text-gray-800 group-hover:text-blue-700 transition-colors">
+                        {row.name}
+                      </Typography>
+                      <Typography variant="caption" className="text-gray-400">
+                        {row.employeeId}
                       </Typography>
                     </Box>
+                  </Box>
+                </TableCell>
+                <TableCell className="py-4">
+                  <Typography variant="body2" className="text-gray-600 font-medium">
+                    {row.position}
+                  </Typography>
+                </TableCell>
+                <TableCell className="py-4">
+                  <Typography variant="body2" className="text-gray-600 font-medium">
+                    {row.assignedProject}
+                  </Typography>
+                </TableCell>
+                <TableCell className="py-4 font-medium text-gray-600">
+                  {row.dateOfEmployment}
+                </TableCell>
+                <TableCell className="py-4">
+                  <Chip
+                    label={getStatusLabel(row.status)}
+                    color={getStatusColor(row.status)}
+                    size="small"
+                    className="font-bold text-[11px] uppercase tracking-wider"
+                  />
+                </TableCell>
+                <TableCell className="py-4 text-center">
+                  <Box className="flex justify-center gap-1">
+                    <Tooltip title="View Profile">
+                      <IconButton 
+                        size="small" 
+                        className="text-blue-500 hover:bg-blue-100 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenView(row);
+                        }}
+                      >
+                        <Eye size={18} />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Edit Information">
+                      <IconButton 
+                        size="small" 
+                        className="text-amber-500 hover:bg-amber-100 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenEdit(row);
+                        }}
+                      >
+                        <Pencil size={18} />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                 </TableCell>
               </TableRow>
@@ -155,11 +292,15 @@ export function EmployeesTable() {
             {employees.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={4}
+                  colSpan={6}
                   align="center"
-                  className="py-8 text-gray-500"
+                  className="py-16 text-gray-500"
                 >
-                  No employees found. Click "Add Employee" to create one.
+                  <Box className="flex flex-col items-center gap-2 opacity-60">
+                    <UserRound size={48} className="text-gray-300" />
+                    <Typography variant="h6">No Employees Records</Typography>
+                    <Typography variant="body2">Get started by adding your first employee to the database.</Typography>
+                  </Box>
                 </TableCell>
               </TableRow>
             )}
@@ -167,69 +308,357 @@ export function EmployeesTable() {
         </Table>
       </TableContainer>
 
+      {/* View Employee Details Modal */}
+      <Dialog 
+        open={openViewModal} 
+        onClose={handleCloseView} 
+        maxWidth="md" 
+        fullWidth
+        PaperProps={{
+          className: "rounded-3xl overflow-hidden",
+          sx: { boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)" }
+        }}
+      >
+        {selectedEmployee && (
+          <Box className="flex flex-col md:flex-row h-full">
+            {/* Left Column / Header Background */}
+            <Box className="bg-gradient-to-br from-blue-600 to-indigo-800 text-white p-10 md:w-1/3 flex flex-col items-center justify-center relative overflow-hidden">
+              <Box className="absolute top-[-20%] left-[-20%] w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+              <Box className="absolute bottom-[-20%] right-[-20%] w-64 h-64 bg-indigo-400/20 rounded-full blur-3xl" />
+              
+              <Avatar sx={{ width: 120, height: 120, mb: 3 }} className="bg-white text-blue-700 text-4xl font-bold shadow-2xl border-4 border-white/20">
+                {selectedEmployee.name.charAt(0)}
+              </Avatar>
+              <Typography variant="h5" className="font-extrabold text-center">
+                {selectedEmployee.name}
+              </Typography>
+              <Typography variant="body2" className="opacity-80 font-medium tracking-widest uppercase mb-6">
+                {selectedEmployee.employeeId}
+              </Typography>
+              
+              <Chip 
+                label={getStatusLabel(selectedEmployee.status)} 
+                className="bg-white/20 text-white border border-white/30 backdrop-blur-md px-4 py-1.5 font-bold uppercase text-[10px]"
+              />
+            </Box>
+
+            {/* Right Column / Content */}
+            <Box className="flex-1 p-8 bg-white overflow-y-auto">
+              <Box className="flex justify-between items-start mb-6">
+                <Typography variant="h6" className="text-gray-800 font-bold flex items-center gap-2">
+                  <Briefcase size={20} className="text-blue-600" /> Professional Details
+                </Typography>
+                <IconButton onClick={handleCloseView} className="hover:rotate-90 transition-transform">
+                  <ArrowRight size={24} className="text-gray-400 rotate-180 md:rotate-0" />
+                </IconButton>
+              </Box>
+
+              <Box className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-8">
+                <Box>
+                  <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Current Position</Typography>
+                  <Typography className="text-gray-800 font-bold">{selectedEmployee.position}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Assigned Project</Typography>
+                  <Typography className="text-gray-800 font-bold text-blue-600 italic underline decoration-blue-200 decoration-4 underline-offset-4">{selectedEmployee.assignedProject}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Employment Date</Typography>
+                  <Box className="flex items-center gap-2">
+                    <Calendar size={14} className="text-gray-400" />
+                    <Typography className="text-gray-800 font-bold">{selectedEmployee.dateOfEmployment}</Typography>
+                  </Box>
+                </Box>
+                <Box>
+                  <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Experience Level</Typography>
+                  <Typography className="text-gray-800 font-bold">Senior Associate</Typography>
+                </Box>
+              </Box>
+
+              <Divider className="mb-8" />
+
+              <Typography variant="h6" className="text-gray-800 font-bold mb-6 flex items-center gap-2">
+                 <MapPin size={20} className="text-blue-600" /> Contact Information
+              </Typography>
+
+              <Box className="grid grid-cols-1 md:grid-cols-2 gap-y-6 mb-8 bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                <Box className="flex items-start gap-3">
+                  <Box className="bg-blue-100 p-2 rounded-lg"><Mail size={16} className="text-blue-600" /></Box>
+                  <Box>
+                    <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Email Address</Typography>
+                    <Typography className="text-gray-800 font-bold truncate max-w-[200px]">{selectedEmployee.email}</Typography>
+                  </Box>
+                </Box>
+                <Box className="flex items-start gap-3">
+                  <Box className="bg-blue-100 p-2 rounded-lg"><Phone size={16} className="text-blue-600" /></Box>
+                  <Box>
+                    <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Contact Number</Typography>
+                    <Typography className="text-gray-800 font-bold">{selectedEmployee.phone}</Typography>
+                  </Box>
+                </Box>
+                <Box className="flex items-start gap-3 col-span-1 md:col-span-2">
+                  <Box className="bg-blue-100 p-2 rounded-lg"><MapPin size={16} className="text-blue-600" /></Box>
+                  <Box>
+                    <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Home Address</Typography>
+                    <Typography className="text-gray-800 font-bold">{selectedEmployee.address}</Typography>
+                  </Box>
+                </Box>
+              </Box>
+
+              <Box>
+                <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px] flex items-center gap-2 mb-2">
+                  Internal Notes
+                </Typography>
+                <Typography variant="body2" className="text-gray-600 italic bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg leading-relaxed">
+                  "{selectedEmployee.notes}"
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        )}
+      </Dialog>
+
       {/* Add Employee Modal */}
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 mb-4">
-          Add New Employee
+      <Dialog open={openAddModal} onClose={handleCloseAdd} maxWidth="sm" fullWidth PaperProps={{ className: "rounded-3xl" }}>
+        <DialogTitle className="font-extrabold text-2xl text-gray-800 px-8 pt-8">
+          Register New Employee
+          <Typography className="text-gray-500 font-normal mt-1 border-b pb-4">Fill in the professional profile details</Typography>
         </DialogTitle>
-        <DialogContent>
-          <Box className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+        <DialogContent className="px-8 pb-4">
+          <Box className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
             <TextField
               autoFocus
               margin="dense"
               name="employeeId"
               label="Employee ID"
-              type="text"
               fullWidth
               variant="outlined"
               value={newEmployee.employeeId}
               onChange={handleInputChange}
             />
-
             <TextField
               margin="dense"
               name="name"
-              label="Name"
-              type="text"
+              label="Full Name"
               fullWidth
               variant="outlined"
               value={newEmployee.name}
               onChange={handleInputChange}
             />
-
             <TextField
               margin="dense"
               name="position"
               label="Position"
-              type="text"
               fullWidth
               variant="outlined"
               value={newEmployee.position}
+              onChange={handleInputChange}
+            />
+            <TextField
+              margin="dense"
+              name="assignedProject"
+              label="Assigned Project"
+              fullWidth
+              variant="outlined"
+              value={newEmployee.assignedProject}
+              onChange={handleInputChange}
+            />
+            <TextField
+              margin="dense"
+              name="dateOfEmployment"
+              label="Employment Date"
+              type="date"
+              fullWidth
+              variant="outlined"
+              InputLabelProps={{ shrink: true }}
+              value={newEmployee.dateOfEmployment}
+              onChange={handleInputChange}
+            />
+            <TextField
+              select
+              margin="dense"
+              name="status"
+              label="Status"
+              fullWidth
+              variant="outlined"
+              value={newEmployee.status}
+              onChange={handleInputChange}
+              SelectProps={{ native: true }}
+            >
+              <option value="available">Available</option>
+              <option value="ongoing">Ongoing</option>
+              <option value="on leave">On Leave</option>
+            </TextField>
+            <TextField
+              margin="dense"
+              name="email"
+              label="Email"
+              fullWidth
+              variant="outlined"
+              value={newEmployee.email}
+              onChange={handleInputChange}
+            />
+            <TextField
+              margin="dense"
+              name="phone"
+              label="Phone"
+              fullWidth
+              variant="outlined"
+              value={newEmployee.phone}
+              onChange={handleInputChange}
+            />
+            <TextField
+              margin="dense"
+              name="address"
+              label="Address"
+              multiline
+              rows={2}
+              fullWidth
+              variant="outlined"
+              value={newEmployee.address}
               onChange={handleInputChange}
               className="col-span-1 md:col-span-2"
             />
           </Box>
         </DialogContent>
-        <DialogActions className="p-4 border-t border-gray-100">
-          <Button
-            onClick={handleClose}
-            color="inherit"
-            className="text-gray-600 hover:bg-gray-100"
-          >
-            Cancel
-          </Button>
+        <DialogActions className="p-8 pt-2">
+          <Button onClick={handleCloseAdd} className="text-gray-500 font-bold">Cancel</Button>
           <Button
             onClick={handleAddEmployee}
             variant="contained"
-            color="primary"
-            className="bg-blue-600 hover:bg-blue-700"
-            disabled={
-              !newEmployee.employeeId ||
-              !newEmployee.name ||
-              !newEmployee.position
-            }
+            className="bg-blue-600 hover:bg-blue-700 font-bold px-8 py-2.5 rounded-xl"
+            disabled={!newEmployee.name || !newEmployee.employeeId}
           >
-            Add Employee
+            Create Profile
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Employee Modal */}
+      <Dialog open={openEditModal} onClose={handleCloseEdit} maxWidth="sm" fullWidth PaperProps={{ className: "rounded-3xl" }}>
+        <DialogTitle className="font-extrabold text-2xl text-gray-800 px-8 pt-8">
+          Edit Employee Information
+          <Typography className="text-gray-500 font-normal mt-1 border-b pb-4">Update professional profile details</Typography>
+        </DialogTitle>
+        <DialogContent className="px-8 pb-4">
+          {editingEmployee && (
+            <Box className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+              <TextField
+                margin="dense"
+                name="employeeId"
+                label="Employee ID"
+                fullWidth
+                variant="outlined"
+                value={editingEmployee.employeeId}
+                onChange={handleEditInputChange}
+              />
+              <TextField
+                margin="dense"
+                name="name"
+                label="Full Name"
+                fullWidth
+                variant="outlined"
+                value={editingEmployee.name}
+                onChange={handleEditInputChange}
+              />
+              <TextField
+                margin="dense"
+                name="position"
+                label="Position"
+                fullWidth
+                variant="outlined"
+                value={editingEmployee.position}
+                onChange={handleEditInputChange}
+              />
+              <TextField
+                margin="dense"
+                name="assignedProject"
+                label="Assigned Project"
+                fullWidth
+                variant="outlined"
+                value={editingEmployee.assignedProject}
+                onChange={handleEditInputChange}
+              />
+              <TextField
+                margin="dense"
+                name="dateOfEmployment"
+                label="Employment Date"
+                type="date"
+                fullWidth
+                variant="outlined"
+                InputLabelProps={{ shrink: true }}
+                value={editingEmployee.dateOfEmployment}
+                onChange={handleEditInputChange}
+              />
+              <TextField
+                select
+                margin="dense"
+                name="status"
+                label="Status"
+                fullWidth
+                variant="outlined"
+                value={editingEmployee.status}
+                onChange={handleEditInputChange}
+                SelectProps={{ native: true }}
+              >
+                <option value="available">Available</option>
+                <option value="ongoing">Ongoing</option>
+                <option value="on leave">On Leave</option>
+              </TextField>
+              <TextField
+                margin="dense"
+                name="email"
+                label="Email"
+                fullWidth
+                variant="outlined"
+                value={editingEmployee.email}
+                onChange={handleEditInputChange}
+              />
+              <TextField
+                margin="dense"
+                name="phone"
+                label="Phone"
+                fullWidth
+                variant="outlined"
+                value={editingEmployee.phone}
+                onChange={handleEditInputChange}
+              />
+              <TextField
+                margin="dense"
+                name="address"
+                label="Address"
+                multiline
+                rows={2}
+                fullWidth
+                variant="outlined"
+                value={editingEmployee.address}
+                onChange={handleEditInputChange}
+                className="col-span-1 md:col-span-2"
+              />
+              <TextField
+                margin="dense"
+                name="notes"
+                label="Internal Notes"
+                multiline
+                rows={2}
+                fullWidth
+                variant="outlined"
+                value={editingEmployee.notes}
+                onChange={handleEditInputChange}
+                className="col-span-1 md:col-span-2"
+              />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions className="p-8 pt-2">
+          <Button onClick={handleCloseEdit} className="text-gray-500 font-bold">Cancel</Button>
+          <Button
+            onClick={handleUpdateEmployee}
+            variant="contained"
+            className="bg-amber-500 hover:bg-amber-600 font-bold px-8 py-2.5 rounded-xl text-white"
+            disabled={!editingEmployee?.name || !editingEmployee?.employeeId}
+          >
+            Update Profile
           </Button>
         </DialogActions>
       </Dialog>
