@@ -13,7 +13,7 @@ import {
   Box,
   Chip,
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, getGridStringOperators } from "@mui/x-data-grid";
 import { Plus } from "lucide-react";
 
 const initialMaterials = [
@@ -24,6 +24,9 @@ const initialMaterials = [
     unit: "bags",
     status: "In Stock",
     lastRestocked: "2023-10-15",
+    requestingEngineer: "Engr. Juan Dela Cruz",
+    siteLocation: "Project Sunrise Heights",
+    price: 35000,
   },
   {
     id: "2",
@@ -32,6 +35,9 @@ const initialMaterials = [
     unit: "tons",
     status: "Low Stock",
     lastRestocked: "2023-10-01",
+    requestingEngineer: "Engr. Maria Santos",
+    siteLocation: "Skyline Bridge Sector 4",
+    price: 125000,
   },
   {
     id: "3",
@@ -40,6 +46,9 @@ const initialMaterials = [
     unit: "pallets",
     status: "Out of Stock",
     lastRestocked: "2023-09-20",
+    requestingEngineer: "Engr. Roberto Garcia",
+    siteLocation: "Downtown Commercial Mall",
+    price: 45000,
   },
 ];
 
@@ -58,51 +67,85 @@ const getStatusColor = (status) => {
 
 export function MaterialsTable(props) {
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
+  const handleOpen = (material) => {
+    if (material) {
+      setMaterialRequest({
+        name: material.name || "",
+        quantity: material.quantity || "",
+        requestingEngineer: material.requestingEngineer || "",
+        siteLocation: material.siteLocation || "",
+        price: material.price || "",
+      });
+    }
+    setOpen(true);
+  };
   const handleClose = () => {
     setOpen(false);
-    setNewProject({
+    setMaterialRequest({
       name: "",
-      foreman: "",
-      engineer: "",
-      location: "",
-      client: "",
-      address: "",
+      quantity: "",
+      requestingEngineer: "",
+      siteLocation: "",
+      price: "",
     });
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewProject((prev) => ({ ...prev, [name]: value }));
+    setMaterialRequest((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAddProject = () => {
-    const project = {
-      id: Math.random().toString(36).substr(2, 9),
-      ...newProject,
-    };
-    setProjects([...projects, project]);
+  const handleApprove = () => {
+    console.log("Approved material request:", materialRequest);
     handleClose();
   };
+
+  const handleDecline = () => {
+    console.log("Declined material request:", materialRequest);
+    handleClose();
+  };
+
   const [materials] = useState(initialMaterials);
-  const [newProject, setNewProject] = useState({
+  const [materialRequest, setMaterialRequest] = useState({
     name: "",
-    foreman: "",
-    engineer: "",
-    location: "",
-    client: "",
-    address: "",
+    quantity: "",
+    requestingEngineer: "",
+    siteLocation: "",
+    price: "",
   });
 
+  const filteredOperators = getGridStringOperators().filter((operator) =>
+    ["contains", "startsWith", "equals"].includes(operator.value)
+  );
+
   const columns = [
-    { field: "name", headerName: "Item Name", flex: 1, minWidth: 150 },
-    { field: "quantity", headerName: "Quantity", flex: 1, minWidth: 100 },
-    { field: "unit", headerName: "Unit", flex: 1, minWidth: 100 },
+    {
+      field: "name",
+      headerName: "Item Name",
+      flex: 1,
+      minWidth: 150,
+      filterOperators: filteredOperators
+    },
+    {
+      field: "quantity",
+      headerName: "Quantity",
+      flex: 1,
+      minWidth: 100,
+      type: 'number'
+    },
+    {
+      field: "unit",
+      headerName: "Unit",
+      flex: 1,
+      minWidth: 100,
+      filterOperators: filteredOperators
+    },
     {
       field: "status",
       headerName: "Status",
       flex: 1,
       minWidth: 120,
+      filterOperators: filteredOperators,
       renderCell: (params) => (
         <Chip
           label={params.value}
@@ -118,10 +161,11 @@ export function MaterialsTable(props) {
       flex: 1,
       minWidth: 120,
       sortable: false,
-      renderCell: () => (
+      filterable: false,
+      renderCell: (params) => (
         <Button
           variant="contained"
-          onClick={handleOpen}
+          onClick={() => handleOpen(params.row)}
           className="bg-blue-600 !text-2xs hover:bg-blue-700"
           size="small"
         >
@@ -176,7 +220,7 @@ export function MaterialsTable(props) {
       </Paper>
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 mb-4">
-          Create New Project
+          Material Request Details
         </DialogTitle>
         <DialogContent>
           <Box className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
@@ -184,75 +228,57 @@ export function MaterialsTable(props) {
               autoFocus
               margin="dense"
               name="name"
-              label="Project Name"
+              label="Material Name"
               type="text"
               fullWidth
               variant="outlined"
-              value={newProject.name}
+              value={materialRequest.name}
               onChange={handleInputChange}
               className="col-span-1 md:col-span-2"
             />
-
             <TextField
               margin="dense"
-              name="client"
-              label="Client"
+              name="quantity"
+              label="Quantity"
               type="text"
               fullWidth
               variant="outlined"
-              value={newProject.client}
+              value={materialRequest.quantity}
               onChange={handleInputChange}
             />
-
             <TextField
               margin="dense"
-              name="location"
-              label="Location"
-              type="text"
+              name="price"
+              label="Price"
+              type="number"
               fullWidth
               variant="outlined"
-              value={newProject.location}
+              value={materialRequest.price}
               onChange={handleInputChange}
             />
-
             <TextField
               margin="dense"
-              name="foreman"
-              label="Foreman"
+              name="requestingEngineer"
+              label="Requesting Engineer"
               type="text"
               fullWidth
               variant="outlined"
-              value={newProject.foreman}
+              value={materialRequest.requestingEngineer}
               onChange={handleInputChange}
             />
-
             <TextField
               margin="dense"
-              name="engineer"
-              label="Engineer"
+              name="siteLocation"
+              label="Site Location"
               type="text"
               fullWidth
               variant="outlined"
-              value={newProject.engineer}
+              value={materialRequest.siteLocation}
               onChange={handleInputChange}
-            />
-
-            <TextField
-              margin="dense"
-              name="address"
-              label="Full Address"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={newProject.address}
-              onChange={handleInputChange}
-              className="col-span-1 md:col-span-2"
-              multiline
-              rows={2}
             />
           </Box>
         </DialogContent>
-        <DialogActions className="p-4 border-t border-gray-100">
+        <DialogActions className="p-4 border-t border-gray-100 flex justify-between">
           <Button
             onClick={handleClose}
             color="inherit"
@@ -260,15 +286,24 @@ export function MaterialsTable(props) {
           >
             Cancel
           </Button>
-          <Button
-            onClick={handleAddProject}
-            variant="contained"
-            color="primary"
-            className="bg-blue-600 hover:bg-blue-700"
-            disabled={!newProject.name || !newProject.client}
-          >
-            Create Project
-          </Button>
+          <Box className="flex gap-2">
+            <Button
+              onClick={handleDecline}
+              variant="outlined"
+              color="error"
+              className="border-red-600 text-red-600 hover:bg-red-50"
+            >
+              Decline
+            </Button>
+            <Button
+              onClick={handleApprove}
+              variant="contained"
+              color="success"
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Approve
+            </Button>
+          </Box>
         </DialogActions>
       </Dialog>
     </Box>

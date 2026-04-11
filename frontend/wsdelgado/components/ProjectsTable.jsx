@@ -14,7 +14,7 @@ import {
   Box,
   CircularProgress,
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, getGridStringOperators } from "@mui/x-data-grid";
 import { Plus } from "lucide-react";
 
 const initialProjects = [
@@ -93,17 +93,58 @@ export function ProjectsTable(props) {
     address: "",
   });
 
+  const filteredOperators = getGridStringOperators().filter((operator) =>
+    ["contains", "startsWith", "equals"].includes(operator.value)
+  );
+
   const columns = [
-    { field: "name", headerName: "Name", flex: 1, minWidth: 180 },
-    { field: "foreman", headerName: "Foreman", flex: 1, minWidth: 130 },
-    { field: "engineer", headerName: "Engineer", flex: 1, minWidth: 130 },
-    { field: "location", headerName: "Location", flex: 1, minWidth: 120 },
-    { field: "client", headerName: "Client", flex: 1, minWidth: 150 },
-    { field: "address", headerName: "Address", flex: 1.5, minWidth: 200 },
+    { 
+      field: "name", 
+      headerName: "Name", 
+      flex: 1, 
+      minWidth: 180,
+      filterOperators: filteredOperators
+    },
+    { 
+      field: "foreman", 
+      headerName: "Foreman", 
+      flex: 1, 
+      minWidth: 130,
+      filterOperators: filteredOperators
+    },
+    { 
+      field: "engineer", 
+      headerName: "Engineer", 
+      flex: 1, 
+      minWidth: 130,
+      filterOperators: filteredOperators
+    },
+    { 
+      field: "location", 
+      headerName: "Location", 
+      flex: 1, 
+      minWidth: 120,
+      filterOperators: filteredOperators
+    },
+    { 
+      field: "client", 
+      headerName: "Client", 
+      flex: 1, 
+      minWidth: 150,
+      filterOperators: filteredOperators
+    },
+    { 
+      field: "address", 
+      headerName: "Address", 
+      flex: 1.5, 
+      minWidth: 200,
+      filterOperators: filteredOperators
+    },
     {
       field: "progress",
       headerName: "Progress",
       minWidth: 20,
+      type: 'number',
       renderCell: (params) => (
         <Box sx={{ position: "relative", display: "inline-flex" }}>
           <CircularProgress
@@ -138,6 +179,7 @@ export function ProjectsTable(props) {
       headerName: "Actions",
       flex: 1,
       minWidth: 120,
+      filterable: false,
       renderCell: (params) => (
         <Box className="flex items-center h-full">
           <Button

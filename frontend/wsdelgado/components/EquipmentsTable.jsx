@@ -13,7 +13,7 @@ import {
   Box,
   Chip,
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, getGridStringOperators } from "@mui/x-data-grid";
 import { Plus } from "lucide-react";
 
 
@@ -23,8 +23,10 @@ const initialEquipments = [
     name: "Excavator CAT 320",
     type: "Heavy Machinery",
     status: "In Use",
-    currentLocation: "Sector 4",
+    currentLocation: "Sector 4 - Sunrise Heights",
     operator: "Tom Harris",
+    requestedBy: "Engr. Juan Dela Cruz",
+    estimatedHours: 40,
   },
   {
     id: "2",
@@ -33,14 +35,18 @@ const initialEquipments = [
     status: "Available",
     currentLocation: "Equipment Yard A",
     operator: "Unassigned",
+    requestedBy: "Engr. Maria Santos",
+    estimatedHours: 25,
   },
   {
     id: "3",
     name: "Crane Tower TG-20",
     type: "Lifting Equipment",
     status: "Maintenance",
-    currentLocation: "Repair Shop",
+    currentLocation: "Repair Shop - Main Base",
     operator: "N/A",
+    requestedBy: "Engr. Roberto Garcia",
+    estimatedHours: 120,
   },
 ];
 
@@ -60,48 +66,77 @@ const getStatusColor = (status) => {
 export function EquipmentsTable(props) {
   const [equipments] = useState(initialEquipments);
   const [open, setOpen] = useState(false);
-  const [newProject, setNewProject] = useState({
+  const [equipmentRequest, setEquipmentRequest] = useState({
     name: "",
-    foreman: "",
-    engineer: "",
-    location: "",
-    client: "",
-    address: "",
+    type: "",
+    status: "",
+    currentLocation: "",
+    operator: "",
+    requestedBy: "",
+    estimatedHours: "",
   });
-  const handleOpen = () => setOpen(true);
+
+  const handleOpen = (equipment) => {
+    if (equipment) {
+      setEquipmentRequest({
+        name: equipment.name || "",
+        type: equipment.type || "",
+        status: equipment.status || "",
+        currentLocation: equipment.currentLocation || "",
+        operator: equipment.operator || "",
+        requestedBy: equipment.requestedBy || "",
+        estimatedHours: equipment.estimatedHours || "",
+      });
+    }
+    setOpen(true);
+  };
+
   const handleClose = () => {
     setOpen(false);
-    setNewProject({
+    setEquipmentRequest({
       name: "",
-      foreman: "",
-      engineer: "",
-      location: "",
-      client: "",
-      address: "",
+      type: "",
+      status: "",
+      currentLocation: "",
+      operator: "",
+      requestedBy: "",
+      estimatedHours: "",
     });
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewProject((prev) => ({ ...prev, [name]: value }));
+    setEquipmentRequest((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAddProject = () => {
-    const project = {
-      id: Math.random().toString(36).substr(2, 9),
-      ...newProject,
-    };
-    setProjects([...projects, project]);
+  const handleApprove = () => {
+    console.log("Approved equipment request:", equipmentRequest);
     handleClose();
   };
 
+  const handleDecline = () => {
+    console.log("Declined equipment request:", equipmentRequest);
+    handleClose();
+  };
+
+  const filteredOperators = getGridStringOperators().filter((operator) =>
+    ["contains", "startsWith", "equals"].includes(operator.value)
+  );
+
   const columns = [
-    { field: "name", headerName: "Equipment Name", flex: 1, minWidth: 180 },
+    { 
+      field: "name", 
+      headerName: "Equipment Name", 
+      flex: 1, 
+      minWidth: 180,
+      filterOperators: filteredOperators
+    },
     {
       field: "status",
       headerName: "Status",
       flex: 1,
       minWidth: 120,
+      filterOperators: filteredOperators,
       renderCell: (params) => (
         <Chip
           label={params.value}
@@ -111,18 +146,31 @@ export function EquipmentsTable(props) {
         />
       ),
     },
-    { field: "currentLocation", headerName: "Current Location", flex: 1, minWidth: 150 },
-    { field: "operator", headerName: "Operator", flex: 1, minWidth: 150 },
+    { 
+      field: "currentLocation", 
+      headerName: "Current Location", 
+      flex: 1, 
+      minWidth: 150,
+      filterOperators: filteredOperators
+    },
+    { 
+      field: "operator", 
+      headerName: "Operator", 
+      flex: 1, 
+      minWidth: 150,
+      filterOperators: filteredOperators
+    },
     {
       field: "actions",
       headerName: "Actions",
       flex: 1,
       minWidth: 120,
       sortable: false,
-      renderCell: () => (
+      filterable: false,
+      renderCell: (params) => (
         <Button
           variant="contained"
-          onClick={handleOpen}
+          onClick={() => handleOpen(params.row)}
           className="bg-blue-600 !text-2xs hover:bg-blue-700"
           size="small"
         >
@@ -178,7 +226,7 @@ export function EquipmentsTable(props) {
       </Paper>
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 mb-4">
-          Create New Project
+          Equipment Request Details
         </DialogTitle>
         <DialogContent>
           <Box className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
@@ -186,75 +234,68 @@ export function EquipmentsTable(props) {
               autoFocus
               margin="dense"
               name="name"
-              label="Project Name"
+              label="Equipment Name"
               type="text"
               fullWidth
               variant="outlined"
-              value={newProject.name}
+              value={equipmentRequest.name}
               onChange={handleInputChange}
               className="col-span-1 md:col-span-2"
             />
-
             <TextField
               margin="dense"
-              name="client"
-              label="Client"
+              name="type"
+              label="Equipment Type"
               type="text"
               fullWidth
               variant="outlined"
-              value={newProject.client}
+              value={equipmentRequest.type}
               onChange={handleInputChange}
             />
-
             <TextField
               margin="dense"
-              name="location"
-              label="Location"
-              type="text"
+              name="estimatedHours"
+              label="Estimated Hours"
+              type="number"
               fullWidth
               variant="outlined"
-              value={newProject.location}
+              value={equipmentRequest.estimatedHours}
               onChange={handleInputChange}
             />
-
             <TextField
               margin="dense"
-              name="foreman"
-              label="Foreman"
+              name="operator"
+              label="Assigned Operator"
               type="text"
               fullWidth
               variant="outlined"
-              value={newProject.foreman}
+              value={equipmentRequest.operator}
               onChange={handleInputChange}
             />
-
             <TextField
               margin="dense"
-              name="engineer"
-              label="Engineer"
+              name="requestedBy"
+              label="Requested By"
               type="text"
               fullWidth
               variant="outlined"
-              value={newProject.engineer}
+              value={equipmentRequest.requestedBy}
               onChange={handleInputChange}
             />
-
             <TextField
               margin="dense"
-              name="address"
-              label="Full Address"
+              name="currentLocation"
+              label="Site Location"
               type="text"
               fullWidth
               variant="outlined"
-              value={newProject.address}
+              value={equipmentRequest.currentLocation}
               onChange={handleInputChange}
               className="col-span-1 md:col-span-2"
-              multiline
-              rows={2}
             />
           </Box>
         </DialogContent>
-        <DialogActions className="p-4 border-t border-gray-100">
+        <DialogActions className="p-4 border-t border-gray-100 flex justify-between">
           <Button
             onClick={handleClose}
             color="inherit"
@@ -262,15 +303,24 @@ export function EquipmentsTable(props) {
           >
             Cancel
           </Button>
-          <Button
-            onClick={handleAddProject}
-            variant="contained"
-            color="primary"
-            className="bg-blue-600 hover:bg-blue-700"
-            disabled={!newProject.name || !newProject.client}
-          >
-            Create Project
-          </Button>
+          <Box className="flex gap-2">
+            <Button
+              onClick={handleDecline}
+              variant="outlined"
+              color="error"
+              className="border-red-600 text-red-600 hover:bg-red-50"
+            >
+              Decline
+            </Button>
+            <Button
+              onClick={handleApprove}
+              variant="contained"
+              color="success"
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Approve
+            </Button>
+          </Box>
         </DialogActions>
       </Dialog>
     </Box>

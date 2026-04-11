@@ -10,13 +10,13 @@ export default function Footer() {
         </p>
         <div className="flex gap-6">
           <Link
-            href="#"
+            href="https://facebook.com"
             className="text-gray-400 hover:text-gray-900 transition-colors"
           >
-            Twitter
+            Facebook
           </Link>
           <Link
-            href="#"
+            href="https://instagram.com"
             className="text-gray-400 hover:text-gray-900 transition-colors"
           >
             Instagram
