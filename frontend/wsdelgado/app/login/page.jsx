@@ -16,20 +16,31 @@ export default function LoginPage() {
     const formData = new FormData(e.currentTarget);
     const data = Object.fromEntries(formData);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      console.log("Form Data:", data);
-      if (data.password === 'admin') {
-        localStorage.setItem('user', 'admin')
-      } else if (data.password === 'engineer') {
-        localStorage.setItem('user', 'engineer')
+    try {
+      const response = await fetch("http://localhost/api/login.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("user", result.role || "user");
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("userData", JSON.stringify(result));
+        window.location.href = "/dashboard";
       } else {
-        localStorage.setItem('user', 'user')
+        alert(result.message || "Login failed");
       }
-      localStorage.setItem("isAuthenticated", "true");
-      window.location.href = "/dashboard";
-    }, 1500);
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("An error occurred during login. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

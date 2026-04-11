@@ -22,85 +22,11 @@ import {
 } from "@mui/material";
 import { ArrowLeft, User, MapPin, Briefcase, CheckCircle2, Image as ImageIcon, Upload, Plus, X } from "lucide-react";
 
-const initialProjects = [
-  {
-    id: "1",
-    name: "Downtown Commercial Base",
-    foreman: "John Smith",
-    engineer: "Alice Johnson",
-    location: "Bacoor",
-    client: "Acme Corp",
-    address: "123 Main St, Cityville",
-    progress: 50,
-    startDate: "2023-01-15",
-    projectedCompletionDate: "2024-06-30",
-  },
-  {
-    id: "2",
-    name: "Riverside Residential",
-    foreman: "Mike Davis",
-    engineer: "Test Watson",
-    location: "Sector 7",
-    client: "Riverside Devs",
-    address: "456 River Rd, Townsville",
-    progress: 35,
-    startDate: "2023-03-22",
-    projectedCompletionDate: "2024-08-15",
-  },
-  {
-    id: "3",
-    name: "Dionela",
-    foreman: "Test Foreman",
-    engineer: "Test Engineer",
-    location: "Imus",
-    client: "Riverside Devs",
-    address: "456 River Rd, Townsville",
-    progress: 15,
-    startDate: "2025-04-01",
-    projectedCompletionDate: "2026-04-10",
-  },
-  {
-    id: "4",
-    name: "Atillano",
-    foreman: "Mike Jords",
-    engineer: "Bob the builder",
-    location: "Dasmarinas",
-    client: "Riverside Devs",
-    address: "456 River Rd, Townsville",
-    progress: 80,
-    startDate: "2022-11-10",
-    projectedCompletionDate: "2027-02-28",
-  },
-  {
-    id: "5",
-    name: "Baldicano Residential",
-    foreman: "Trial Foreman",
-    engineer: "Train Wreck",
-    location: "Sector 27",
-    client: "Riverside Devs",
-    address: "456 River Rd, Townsville",
-    progress: 25,
-    startDate: "2023-05-12",
-    projectedCompletionDate: "2024-11-15",
-  },
-  {
-    id: "6",
-    name: "Riverside Residential",
-    foreman: "Mike Davis",
-    engineer: "Bob Wilson",
-    location: "Sector 457",
-    client: "Riverside Devs",
-    address: "456 River Rd, Townsville",
-    progress: 65,
-    startDate: "2023-02-01",
-    projectedCompletionDate: "2024-04-10",
-  },
-];
-
 export default function ProjectDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
   const [project, setProject] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [images, setImages] = useState([
     {
@@ -129,9 +55,27 @@ export default function ProjectDetailsPage() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [newImage, setNewImage] = useState({ title: "", description: "", url: "" });
 
+  const fetchProjectDetails = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`http://localhost/api/projects/single_read.php?id=${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setProject(data);
+      } else {
+        console.error("Failed to fetch project details");
+      }
+    } catch (error) {
+      console.error("Error fetching project details:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const foundProject = initialProjects.find((p) => p.id === id);
-    setProject(foundProject);
+    if (id) {
+      fetchProjectDetails();
+    }
   }, [id]);
 
   const handleOpenUpload = () => setIsUploadModalOpen(true);
@@ -152,10 +96,19 @@ export default function ProjectDetailsPage() {
     }
   };
 
-  if (!project) {
+  if (isLoading) {
     return (
       <Box className="flex items-center justify-center min-h-screen">
         <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!project) {
+    return (
+      <Box className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <Typography variant="h5" color="error">Project not found</Typography>
+        <Button onClick={() => router.back()} variant="outlined">Go Back</Button>
       </Box>
     );
   }
@@ -264,7 +217,7 @@ export default function ProjectDetailsPage() {
                       <Box className="flex items-center gap-2 mt-1">
                         <User size={18} className="text-blue-400" />
                         <Typography variant="body1" className="font-semibold text-gray-700">
-                          {project.foreman}
+                          {project.foreman_name || project.foreman || "Unassigned"}
                         </Typography>
                       </Box>
                     </Box>
@@ -276,7 +229,7 @@ export default function ProjectDetailsPage() {
                       <Box className="flex items-center gap-2 mt-1">
                         <User size={18} className="text-green-400" />
                         <Typography variant="body1" className="font-semibold text-gray-700">
-                          {project.engineer}
+                          {project.engineer_name || project.engineer || "Unassigned"}
                         </Typography>
                       </Box>
                     </Box>
@@ -291,7 +244,7 @@ export default function ProjectDetailsPage() {
                       Date Started
                     </Typography>
                     <Typography variant="body1" className="font-semibold text-gray-700">
-                      {project.startDate}
+                      {project.startDate || (project.created_at ? new Date(project.created_at).toLocaleDateString() : "N/A")}
                     </Typography>
                   </Box>
                   <Box>
@@ -299,7 +252,7 @@ export default function ProjectDetailsPage() {
                       Projected Completion Date
                     </Typography>
                     <Typography variant="body1" className="font-semibold text-blue-600">
-                      {project.projectedCompletionDate}
+                      {project.projectedCompletionDate || "TBA"}
                     </Typography>
                   </Box>
                 </Box>

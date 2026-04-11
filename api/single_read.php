@@ -1,9 +1,5 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: access");
-header("Access-Control-Allow-Methods: GET");
-header("Access-Control-Allow-Credentials: true");
-header('Content-Type: application/json');
+include_once 'headers.php';
 
 include_once '../config/Database.php';
 include_once '../models/User.php';

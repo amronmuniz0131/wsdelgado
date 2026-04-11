@@ -22,6 +22,8 @@ try {
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(256) NOT NULL,
         email VARCHAR(50),
+        password VARCHAR(256),
+        role VARCHAR(50),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )";
     

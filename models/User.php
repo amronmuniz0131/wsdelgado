@@ -100,5 +100,23 @@ class User {
         }
         return false;
     }
+
+    // LOGIN
+    public function login($email, $password) {
+        $query = "SELECT id, name, email, password, role FROM " . $this->table_name . " WHERE email = ? LIMIT 0,1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $email);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if($row && password_verify($password, $row['password'])) {
+            $this->id = $row['id'];
+            $this->name = $row['name'];
+            $this->email = $row['email'];
+            $this->role = $row['role'];
+            return true;
+        }
+        return false;
+    }
 }
 ?>

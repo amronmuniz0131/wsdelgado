@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -13,6 +14,7 @@ export default function Header() {
   useEffect(() => {
     setIsAuthenticated(!!localStorage.getItem("isAuthenticated"));
   }, []);
+
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -20,14 +22,21 @@ export default function Header() {
           <Link
             href="/"
             className="text-2xl font-bold tracking-tight flex items-center gap-2"
+            aria-label="WSDelgado Builders Home"
           >
-            <img src="/images/logo.png" alt="Logo" className="h-16 w-auto" />
+            <Image 
+              src="/images/logo.png" 
+              alt="WSDelgado Builders Logo" 
+              width={64}
+              height={64}
+              className="h-16 w-auto" 
+            />
             <span className="text-xl font-bold text-black">WSDelgado</span>
           </Link>
         </div>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-8" aria-label="Main Navigation">
           <Link
             href={isAuthenticated ? "/dashboard" : "/"}
             className="text-sm font-medium text-gray-600 hover:text-gray-900"
@@ -76,6 +85,7 @@ export default function Header() {
                 window.location.href = "/";
                 localStorage.removeItem("isAuthenticated");
               }}
+              aria-label="Log out of your account"
             >
               Log out
             </button>
@@ -85,6 +95,7 @@ export default function Header() {
               onClick={() => {
                 router.push("/login");
               }}
+              aria-label="Log into your account"
             >
               Log in
             </button>
@@ -92,14 +103,14 @@ export default function Header() {
         </div>
 
         {/* Mobile Menu Button */}
-        {
-          <button
-            className="md:hidden p-2 text-gray-600"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        }
+        <button
+          className="md:hidden p-2 text-gray-600"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-expanded={isMenuOpen}
+          aria-label="Toggle navigation menu"
+        >
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
 
       {/* Mobile Mobile Menu */}

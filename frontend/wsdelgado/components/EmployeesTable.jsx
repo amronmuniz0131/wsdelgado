@@ -25,55 +25,14 @@ import {
 } from "@mui/material";
 import { Plus, Eye, Pencil, Briefcase, Calendar, MapPin, Phone, Mail, UserRound, ArrowRight } from "lucide-react";
 
-const initialEmployees = [
-  {
-    id: "1",
-    employeeId: "EMP-001",
-    name: "John Smith",
-    position: "Foreman",
-    assignedProject: "Sunrise Heights",
-    dateOfEmployment: "2023-01-15",
-    status: "ongoing",
-    email: "john.smith@construction.com",
-    phone: "+1 234 567 8901",
-    address: "123 Orchard Lane, New York, NY",
-    notes: "Specializes in foundation work and concrete structure management.",
-  },
-  {
-    id: "2",
-    employeeId: "EMP-002",
-    name: "Alice Johnson",
-    position: "Civil Engineer",
-    assignedProject: "Skyline Bridge",
-    dateOfEmployment: "2023-03-22",
-    status: "on leave",
-    email: "alice.j@construction.com",
-    phone: "+1 234 567 8902",
-    address: "456 River View, Jersey City, NJ",
-    notes: "Lead structural design engineer for bridge projects.",
-  },
-  {
-    id: "3",
-    employeeId: "EMP-003",
-    name: "Robert Davis",
-    position: "Site SuperVisor",
-    assignedProject: "Riverside Mall",
-    dateOfEmployment: "2022-11-10",
-    status: "available",
-    email: "robert.d@construction.com",
-    phone: "+1 234 567 8903",
-    address: "789 Pine Street, Brooklyn, NY",
-    notes: "Experienced in managing multi-story commercial buildings.",
-  },
-];
-
 export function EmployeesTable() {
-  const [employees, setEmployees] = useState(initialEmployees);
+  const [employees, setEmployees] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openViewModal, setOpenViewModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [editingEmployee, setEditingEmployee] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   const [newEmployee, setNewEmployee] = useState({
     employeeId: "",
@@ -87,6 +46,23 @@ export function EmployeesTable() {
     address: "",
     notes: "",
   });
+
+  const fetchEmployees = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost/api/employees/read.php");
+      const data = await response.json();
+      setEmployees(data.records || []);
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchEmployees();
+  }, []);
 
   const handleOpenAdd = () => setOpenAddModal(true);
   const handleCloseAdd = () => {
@@ -135,18 +111,42 @@ export function EmployeesTable() {
     setEditingEmployee((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAddEmployee = () => {
-    const employee = {
-      id: Math.random().toString(36).substr(2, 9),
-      ...newEmployee,
-    };
-    setEmployees([...employees, employee]);
-    handleCloseAdd();
+  const handleAddEmployee = async () => {
+    try {
+      const response = await fetch("http://localhost/api/employees/create.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newEmployee),
+      });
+      if (response.ok) {
+        fetchEmployees();
+        handleCloseAdd();
+      } else {
+        const error = await response.json();
+        alert(error.message || "Failed to add employee");
+      }
+    } catch (error) {
+      console.error("Error adding employee:", error);
+    }
   };
 
-  const handleUpdateEmployee = () => {
-    setEmployees(prev => prev.map(emp => emp.id === editingEmployee.id ? editingEmployee : emp));
-    handleCloseEdit();
+  const handleUpdateEmployee = async () => {
+    try {
+      const response = await fetch("http://localhost/api/employees/update.php", {
+        method: "POST", // Using POST for convenience as per PHP implementation
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editingEmployee),
+      });
+      if (response.ok) {
+        fetchEmployees();
+        handleCloseEdit();
+      } else {
+        const error = await response.json();
+        alert(error.message || "Failed to update employee");
+      }
+    } catch (error) {
+      console.error("Error updating employee:", error);
+    }
   };
 
   const getStatusColor = (status) => {

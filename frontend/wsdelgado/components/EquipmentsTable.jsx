@@ -17,39 +17,6 @@ import { DataGrid, getGridStringOperators } from "@mui/x-data-grid";
 import { Plus } from "lucide-react";
 
 
-const initialEquipments = [
-  {
-    id: "1",
-    name: "Excavator CAT 320",
-    type: "Heavy Machinery",
-    status: "In Use",
-    currentLocation: "Sector 4 - Sunrise Heights",
-    operator: "Tom Harris",
-    requestedBy: "Engr. Juan Dela Cruz",
-    estimatedHours: 40,
-  },
-  {
-    id: "2",
-    name: "Bulldozer D8T",
-    type: "Heavy Machinery",
-    status: "Available",
-    currentLocation: "Equipment Yard A",
-    operator: "Unassigned",
-    requestedBy: "Engr. Maria Santos",
-    estimatedHours: 25,
-  },
-  {
-    id: "3",
-    name: "Crane Tower TG-20",
-    type: "Lifting Equipment",
-    status: "Maintenance",
-    currentLocation: "Repair Shop - Main Base",
-    operator: "N/A",
-    requestedBy: "Engr. Roberto Garcia",
-    estimatedHours: 120,
-  },
-];
-
 const getStatusColor = (status) => {
   switch (status) {
     case "Available":
@@ -64,8 +31,9 @@ const getStatusColor = (status) => {
 };
 
 export function EquipmentsTable(props) {
-  const [equipments] = useState(initialEquipments);
+  const [equipments, setEquipments] = useState([]);
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [equipmentRequest, setEquipmentRequest] = useState({
     name: "",
     type: "",
@@ -76,8 +44,25 @@ export function EquipmentsTable(props) {
     estimatedHours: "",
   });
 
+  const fetchEquipments = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost/api/equipments/read.php");
+      const data = await response.json();
+      setEquipments(data.records || []);
+    } catch (error) {
+      console.error("Error fetching equipments:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchEquipments();
+  }, []);
+
   const handleOpen = (equipment) => {
-    if (equipment) {
+    if (equipment && equipment.id) {
       setEquipmentRequest({
         name: equipment.name || "",
         type: equipment.type || "",
@@ -118,6 +103,7 @@ export function EquipmentsTable(props) {
     console.log("Declined equipment request:", equipmentRequest);
     handleClose();
   };
+
 
   const filteredOperators = getGridStringOperators().filter((operator) =>
     ["contains", "startsWith", "equals"].includes(operator.value)

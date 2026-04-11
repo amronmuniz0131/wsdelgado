@@ -1,5 +1,29 @@
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'constructestimates.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.capitalrecycling.com.au',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.schiavello.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'encrypted-tbn0.gstatic.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'pollackpeacebuilding.com',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

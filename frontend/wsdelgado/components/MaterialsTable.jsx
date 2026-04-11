@@ -16,42 +16,6 @@ import {
 import { DataGrid, getGridStringOperators } from "@mui/x-data-grid";
 import { Plus } from "lucide-react";
 
-const initialMaterials = [
-  {
-    id: "1",
-    name: "Portland Cement",
-    quantity: 500,
-    unit: "bags",
-    status: "In Stock",
-    lastRestocked: "2023-10-15",
-    requestingEngineer: "Engr. Juan Dela Cruz",
-    siteLocation: "Project Sunrise Heights",
-    price: 35000,
-  },
-  {
-    id: "2",
-    name: "Steel Rebar (12mm)",
-    quantity: 50,
-    unit: "tons",
-    status: "Low Stock",
-    lastRestocked: "2023-10-01",
-    requestingEngineer: "Engr. Maria Santos",
-    siteLocation: "Skyline Bridge Sector 4",
-    price: 125000,
-  },
-  {
-    id: "3",
-    name: "Bricks (Standard)",
-    quantity: 0,
-    unit: "pallets",
-    status: "Out of Stock",
-    lastRestocked: "2023-09-20",
-    requestingEngineer: "Engr. Roberto Garcia",
-    siteLocation: "Downtown Commercial Mall",
-    price: 45000,
-  },
-];
-
 const getStatusColor = (status) => {
   switch (status) {
     case "In Stock":
@@ -66,9 +30,36 @@ const getStatusColor = (status) => {
 };
 
 export function MaterialsTable(props) {
+  const [materials, setMaterials] = useState([]);
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [materialRequest, setMaterialRequest] = useState({
+    name: "",
+    quantity: "",
+    requestingEngineer: "",
+    siteLocation: "",
+    price: "",
+  });
+
+  const fetchMaterials = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost/api/materials/read.php");
+      const data = await response.json();
+      setMaterials(data.records || []);
+    } catch (error) {
+      console.error("Error fetching materials:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchMaterials();
+  }, []);
+
   const handleOpen = (material) => {
-    if (material) {
+    if (material && material.id) {
       setMaterialRequest({
         name: material.name || "",
         quantity: material.quantity || "",
@@ -104,15 +95,6 @@ export function MaterialsTable(props) {
     console.log("Declined material request:", materialRequest);
     handleClose();
   };
-
-  const [materials] = useState(initialMaterials);
-  const [materialRequest, setMaterialRequest] = useState({
-    name: "",
-    quantity: "",
-    requestingEngineer: "",
-    siteLocation: "",
-    price: "",
-  });
 
   const filteredOperators = getGridStringOperators().filter((operator) =>
     ["contains", "startsWith", "equals"].includes(operator.value)

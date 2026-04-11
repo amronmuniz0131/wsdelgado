@@ -13,85 +13,53 @@ import {
   Typography,
   Box,
   CircularProgress,
+  MenuItem,
 } from "@mui/material";
 import { DataGrid, getGridStringOperators } from "@mui/x-data-grid";
 import { Plus } from "lucide-react";
 
-const initialProjects = [
-  {
-    id: "1",
-    name: "Downtown Commercial Base",
-    foreman: "John Smith",
-    engineer: "Alice Johnson",
-    location: "Bacoor",
-    client: "Acme Corp",
-    address: "123 Main St, Cityville",
-    progress: 50,
-  },
-  {
-    id: "2",
-    name: "Riverside Residential",
-    foreman: "Mike Davis",
-    engineer: "Test Watson",
-    location: "Sector 7",
-    client: "Riverside Devs",
-    address: "456 River Rd, Townsville",
-    progress: Math.floor(Math.random() * 100),
-  },
-  {
-    id: "3",
-    name: "Dionela",
-    foreman: "Test Foreman",
-    engineer: "Test Engineer",
-    location: "Imus",
-    client: "Riverside Devs",
-    address: "456 River Rd, Townsville",
-    progress: Math.floor(Math.random() * 100),
-  },
-  {
-    id: "4",
-    name: "Atillano",
-    foreman: "Mike Jords",
-    engineer: "Bob the builder",
-    location: "Dasmarinas",
-    client: "Riverside Devs",
-    address: "456 River Rd, Townsville",
-    progress: Math.floor(Math.random() * 100),
-  },
-  {
-    id: "5",
-    name: "Baldicano Residential",
-    foreman: "Trial Foreman",
-    engineer: "Train Wreck",
-    location: "Sector 27",
-    client: "Riverside Devs",
-    address: "456 River Rd, Townsville",
-    progress: Math.floor(Math.random() * 100),
-  },
-  {
-    id: "6",
-    name: "Riverside Residential",
-    foreman: "Mike Davis",
-    engineer: "Bob Wilson",
-    location: "Sector 457",
-    client: "Riverside Devs",
-    address: "456 River Rd, Townsville",
-    progress: Math.floor(Math.random() * 100),
-  },
-];
-
 export function ProjectsTable(props) {
   const router = useRouter();
-  const [projects, setProjects] = useState(initialProjects);
+  const [projects, setProjects] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [newProject, setNewProject] = useState({
     name: "",
-    foreman: "",
-    engineer: "",
+    foremanId: "",
+    engineerId: "",
     location: "",
     client: "",
     address: "",
   });
+
+  const fetchProjects = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost/api/projects/read.php");
+      const data = await response.json();
+      setProjects(data.records || []);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await fetch("http://localhost/api/employees/read.php");
+      const data = await response.json();
+      setEmployees(data.records || []);
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchProjects();
+    fetchEmployees();
+  }, []);
 
   const filteredOperators = getGridStringOperators().filter((operator) =>
     ["contains", "startsWith", "equals"].includes(operator.value)
@@ -110,14 +78,16 @@ export function ProjectsTable(props) {
       headerName: "Foreman", 
       flex: 1, 
       minWidth: 130,
-      filterOperators: filteredOperators
+      filterOperators: filteredOperators,
+      valueGetter: (value, row) => row?.foremanName || row?.foreman || ""
     },
     { 
       field: "engineer", 
       headerName: "Engineer", 
       flex: 1, 
       minWidth: 130,
-      filterOperators: filteredOperators
+      filterOperators: filteredOperators,
+      valueGetter: (value, row) => row?.engineerName || row?.engineer || ""
     },
     { 
       field: "location", 
@@ -149,7 +119,7 @@ export function ProjectsTable(props) {
         <Box sx={{ position: "relative", display: "inline-flex" }}>
           <CircularProgress
             variant="determinate"
-            value={params.value}
+            value={params.value || 0}
           />
           <Box
             sx={{
@@ -168,7 +138,7 @@ export function ProjectsTable(props) {
               component="div"
               sx={{ color: "text.secondary", fontSize: "0.65rem" }}
             >
-              {`${params.value}%`}
+              {`${params.value || 0}%`}
             </Typography>
           </Box>
         </Box>
@@ -201,8 +171,8 @@ export function ProjectsTable(props) {
     setOpen(false);
     setNewProject({
       name: "",
-      foreman: "",
-      engineer: "",
+      foremanId: "",
+      engineerId: "",
       location: "",
       client: "",
       address: "",
@@ -214,13 +184,23 @@ export function ProjectsTable(props) {
     setNewProject((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAddProject = () => {
-    const project = {
-      id: Math.random().toString(36).substr(2, 9),
-      ...newProject,
-    };
-    setProjects([...projects, project]);
-    handleClose();
+  const handleAddProject = async () => {
+    try {
+      const response = await fetch("http://localhost/api/projects/create.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newProject),
+      });
+      if (response.ok) {
+        fetchProjects();
+        handleClose();
+      } else {
+        const error = await response.json();
+        alert(error.message || "Failed to create project");
+      }
+    } catch (error) {
+      console.error("Error creating project:", error);
+    }
   };
 
   return (
@@ -250,6 +230,7 @@ export function ProjectsTable(props) {
         <DataGrid
           rows={projects}
           columns={columns}
+          loading={isLoading}
           initialState={{
             pagination: { paginationModel: { page: 0, pageSize: 5 } },
           }}
@@ -309,25 +290,51 @@ export function ProjectsTable(props) {
 
             <TextField
               margin="dense"
-              name="foreman"
+              name="foremanId"
               label="Foreman"
-              type="text"
+              select
               fullWidth
               variant="outlined"
-              value={newProject.foreman}
+              value={newProject.foremanId}
               onChange={handleInputChange}
-            />
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {employees
+                .filter((emp) =>
+                  emp.position?.toLowerCase().includes("foreman")
+                )
+                .map((emp) => (
+                  <MenuItem key={emp.id} value={emp.id}>
+                    {emp.name} ({emp.position})
+                  </MenuItem>
+                ))}
+            </TextField>
 
             <TextField
               margin="dense"
-              name="engineer"
+              name="engineerId"
               label="Engineer"
-              type="text"
+              select
               fullWidth
               variant="outlined"
-              value={newProject.engineer}
+              value={newProject.engineerId}
               onChange={handleInputChange}
-            />
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {employees
+                .filter((emp) =>
+                  emp.position?.toLowerCase().includes("engineer")
+                )
+                .map((emp) => (
+                  <MenuItem key={emp.id} value={emp.id}>
+                    {emp.name} ({emp.position})
+                  </MenuItem>
+                ))}
+            </TextField>
 
             <TextField
               margin="dense"
