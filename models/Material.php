@@ -1,0 +1,136 @@
+<?php
+class Material {
+    private $conn;
+    private $table_name = "materials";
+
+    public $id;
+    public $name;
+    public $quantity;
+    public $unit;
+    public $status;
+    public $last_restocked;
+    public $requesting_engineer_id;
+    public $project_id;
+    public $price;
+    public $created_at;
+    public $updated_at;
+
+    public function __construct($db) {
+        $this->conn = $db;
+    }
+
+    // CREATE
+    public function create() {
+        $query = "INSERT INTO " . $this->table_name . " 
+                SET name=:name, quantity=:quantity, unit=:unit, 
+                    status=:status, last_restocked=:last_restocked, 
+                    requesting_engineer_id=:requesting_engineer_id, 
+                    project_id=:project_id, price=:price";
+        
+        $stmt = $this->conn->prepare($query);
+
+        $this->sanitize();
+
+        $stmt->bindParam(":name", $this->name);
+        $stmt->bindParam(":quantity", $this->quantity);
+        $stmt->bindParam(":unit", $this->unit);
+        $stmt->bindParam(":status", $this->status);
+        $stmt->bindParam(":last_restocked", $this->last_restocked);
+        $stmt->bindParam(":requesting_engineer_id", $this->requesting_engineer_id);
+        $stmt->bindParam(":project_id", $this->project_id);
+        $stmt->bindParam(":price", $this->price);
+
+        if($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+
+    // READ ALL
+    public function read() {
+        $query = "SELECT m.*, e.name as engineer_name, p.name as project_name 
+                FROM " . $this->table_name . " m
+                LEFT JOIN employees e ON m.requesting_engineer_id = e.id
+                LEFT JOIN projects p ON m.project_id = p.id
+                ORDER BY m.created_at DESC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt;
+    }
+
+    // READ ONE
+    public function readOne() {
+        $query = "SELECT m.*, e.name as engineer_name, p.name as project_name 
+                FROM " . $this->table_name . " m
+                LEFT JOIN employees e ON m.requesting_engineer_id = e.id
+                LEFT JOIN projects p ON m.project_id = p.id
+                WHERE m.id = ? LIMIT 0,1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $this->id);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if($row) {
+            foreach($row as $key => $value) {
+                $this->$key = $value;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    // UPDATE
+    public function update() {
+        $query = "UPDATE " . $this->table_name . " 
+                SET name=:name, quantity=:quantity, unit=:unit, 
+                    status=:status, last_restocked=:last_restocked, 
+                    requesting_engineer_id=:requesting_engineer_id, 
+                    project_id=:project_id, price=:price 
+                WHERE id = :id";
+        
+        $stmt = $this->conn->prepare($query);
+
+        $this->sanitize();
+        $this->id = htmlspecialchars(strip_tags($this->id));
+
+        $stmt->bindParam(":name", $this->name);
+        $stmt->bindParam(":quantity", $this->quantity);
+        $stmt->bindParam(":unit", $this->unit);
+        $stmt->bindParam(":status", $this->status);
+        $stmt->bindParam(":last_restocked", $this->last_restocked);
+        $stmt->bindParam(":requesting_engineer_id", $this->requesting_engineer_id);
+        $stmt->bindParam(":project_id", $this->project_id);
+        $stmt->bindParam(":price", $this->price);
+        $stmt->bindParam(":id", $this->id);
+
+        if($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+
+    // DELETE
+    public function delete() {
+        $query = "DELETE FROM " . $this->table_name . " WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+        $this->id = htmlspecialchars(strip_tags($this->id));
+        $stmt->bindParam(1, $this->id);
+
+        if($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+
+    private function sanitize() {
+        $this->name = htmlspecialchars(strip_tags($this->name));
+        $this->quantity = htmlspecialchars(strip_tags($this->quantity));
+        $this->unit = htmlspecialchars(strip_tags($this->unit));
+        $this->status = htmlspecialchars(strip_tags($this->status));
+        $this->last_restocked = htmlspecialchars(strip_tags($this->last_restocked));
+        $this->requesting_engineer_id = $this->requesting_engineer_id ? htmlspecialchars(strip_tags($this->requesting_engineer_id)) : null;
+        $this->project_id = $this->project_id ? htmlspecialchars(strip_tags($this->project_id)) : null;
+        $this->price = htmlspecialchars(strip_tags($this->price));
+    }
+}
+?>
