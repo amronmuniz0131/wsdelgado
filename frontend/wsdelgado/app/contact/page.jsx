@@ -2,6 +2,7 @@
 
 import { Placeholder } from "@/components/Placeholder";
 import { useState } from "react";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -10,10 +11,37 @@ export default function ContactPage() {
     subject: "",
     message: "",
   });
-
-  const handleSubmit = (e) => {
+  const [status, setStatus] = useState("");
+  const [sentAmount, setSentAmount] = useState(localStorage.getItem('sent_amount') || 0);
+  const handleSubmit = async (e) => {
+    setSentAmount(sentAmount + 1);
+    localStorage.setItem('sent_amount', sentAmount + 1);
     e.preventDefault();
-    console.log("Contact form submitted:", formData);
+    setStatus("Sending...");
+
+    try {
+      if (sentAmount >= 3) {
+        setStatus("You have sent 3 messages already. Please try again later.");
+        return;
+      }
+      const response = await fetch(`${API_BASE_URL}/inquiries/create.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setStatus("Message sent successfully!");
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      } else {
+        setStatus(data.message || "Failed to send message.");
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setStatus("An error occurred. Please try again.");
+    }
   };
 
   return (
@@ -41,8 +69,8 @@ export default function ContactPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="block w-full border-gray-300 border-b focus:border-gray-900 focus:ring-0 sm:text-sm py-2 px-0 bg-transparent placeholder-gray-400"
-                  placeholder="Input field"
+                  className="block w-full border-gray-300 border-b focus:border-gray-900 focus:ring-0 pl-2 text-black sm:text-sm py-2 px-0 bg-transparent placeholder-gray-400"
+                  placeholder="Name"
                 />
               </div>
 
@@ -60,8 +88,8 @@ export default function ContactPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="block w-full border-gray-300 border-b focus:border-gray-900 focus:ring-0 sm:text-sm py-2 px-0 bg-transparent placeholder-gray-400"
-                  placeholder="Input field"
+                  className="block w-full border-gray-300 border-b focus:border-gray-900 focus:ring-0 pl-2 text-black sm:text-sm py-2 px-0 bg-transparent placeholder-gray-400"
+                  placeholder="Email"
                 />
               </div>
 
@@ -79,8 +107,8 @@ export default function ContactPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, subject: e.target.value })
                   }
-                  className="block w-full border-gray-300 border-b focus:border-gray-900 focus:ring-0 sm:text-sm py-2 px-0 bg-transparent placeholder-gray-400"
-                  placeholder="Input field"
+                  className="block w-full border-gray-300 border-b focus:border-gray-900 focus:ring-0 pl-2 text-black sm:text-sm py-2 px-0 bg-transparent placeholder-gray-400"
+                  placeholder="Subject"
                 />
               </div>
 
@@ -93,30 +121,35 @@ export default function ContactPage() {
                 </label>
                 <textarea
                   id="message"
-                  rows={1}
                   value={formData.message}
                   onChange={(e) =>
                     setFormData({ ...formData, message: e.target.value })
                   }
-                  className="block w-full border-gray-300 border-b focus:border-gray-900 focus:ring-0 sm:text-sm py-2 px-0 bg-transparent placeholder-gray-400 resize-none"
-                  placeholder="Input field"
+                  className="block w-full border-gray-300 border-b focus:border-gray-900 focus:ring-0 pl-2 text-black sm:text-sm py-2 px-0 bg-transparent placeholder-gray-400 resize-none"
+                  placeholder="Message"
                 />
               </div>
 
               <div className="pt-4">
                 <button
                   type="submit"
-                  className="w-full bg-gray-200 text-gray-900 py-3 px-6 rounded-none text-sm font-bold uppercase tracking-wider hover:bg-gray-300 transition-colors border border-gray-300"
+                  disabled={status === "Sending..."}
+                  className="w-full bg-gray-200 text-gray-900 py-3 px-6 rounded-none text-sm font-bold uppercase tracking-wider hover:bg-gray-300 transition-colors border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Send Message
+                  {status === "Sending..." ? "Sending..." : "Send Message"}
                 </button>
+                {status && status !== "Sending..." && (
+                  <p className={`mt-4 text-sm font-medium ${status.includes("success") ? "text-green-600" : "text-rose-600"}`}>
+                    {status}
+                  </p>
+                )}
               </div>
             </form>
           </div>
 
           {/* Right Column: Placeholder */}
           <div className="h-full min-h-[400px]">
-            <Placeholder className="w-full h-full min-h-[400px]" />
+            <img src="https://img.freepik.com/premium-photo/construction-team-working-with-blueprints-modern-devices-office_161094-12264.jpg" alt="Contact" className="w-full object-contain h-full min-h-[400px]" />
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { API_BASE_URL } from "@/lib/api";
 import {
   Table,
   TableBody,
@@ -50,7 +51,7 @@ export function EmployeesTable() {
   const fetchEmployees = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost/api/employees/read.php");
+      const response = await fetch(`${API_BASE_URL}/employees/read.php`);
       const data = await response.json();
       setEmployees(data.records || []);
     } catch (error) {
@@ -113,7 +114,7 @@ export function EmployeesTable() {
 
   const handleAddEmployee = async () => {
     try {
-      const response = await fetch("http://localhost/api/employees/create.php", {
+      const response = await fetch(`${API_BASE_URL}/employees/create.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newEmployee),
@@ -132,7 +133,7 @@ export function EmployeesTable() {
 
   const handleUpdateEmployee = async () => {
     try {
-      const response = await fetch("http://localhost/api/employees/update.php", {
+      const response = await fetch(`${API_BASE_URL}/employees/update.php`, {
         method: "POST", // Using POST for convenience as per PHP implementation
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editingEmployee),

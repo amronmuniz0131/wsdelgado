@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { API_BASE_URL } from "@/lib/api";
 import {
   Paper,
   Button,
@@ -58,7 +59,7 @@ export default function ProjectDetailsPage() {
   const fetchProjectDetails = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost/api/projects/single_read.php?id=${id}`);
+      const response = await fetch(`${API_BASE_URL}/projects/single_read.php?id=${id}`);
       if (response.ok) {
         const data = await response.json();
         setProject(data);

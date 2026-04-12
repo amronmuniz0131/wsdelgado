@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { API_BASE_URL } from "@/lib/api";
 import {
   Paper,
   Button,
@@ -47,7 +48,7 @@ export function EquipmentsTable(props) {
   const fetchEquipments = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost/api/equipments/read.php");
+      const response = await fetch(`${API_BASE_URL}/equipments/read.php`);
       const data = await response.json();
       setEquipments(data.records || []);
     } catch (error) {
@@ -110,10 +111,10 @@ export function EquipmentsTable(props) {
   );
 
   const columns = [
-    { 
-      field: "name", 
-      headerName: "Equipment Name", 
-      flex: 1, 
+    {
+      field: "name",
+      headerName: "Equipment Name",
+      flex: 1,
       minWidth: 180,
       filterOperators: filteredOperators
     },
@@ -132,17 +133,17 @@ export function EquipmentsTable(props) {
         />
       ),
     },
-    { 
-      field: "currentLocation", 
-      headerName: "Current Location", 
-      flex: 1, 
+    {
+      field: "currentLocation",
+      headerName: "Current Location",
+      flex: 1,
       minWidth: 150,
       filterOperators: filteredOperators
     },
-    { 
-      field: "operator", 
-      headerName: "Operator", 
-      flex: 1, 
+    {
+      field: "operator",
+      headerName: "Operator",
+      flex: 1,
       minWidth: 150,
       filterOperators: filteredOperators
     },
@@ -289,24 +290,39 @@ export function EquipmentsTable(props) {
           >
             Cancel
           </Button>
-          <Box className="flex gap-2">
-            <Button
-              onClick={handleDecline}
-              variant="outlined"
-              color="error"
-              className="border-red-600 text-red-600 hover:bg-red-50"
-            >
-              Decline
-            </Button>
-            <Button
-              onClick={handleApprove}
-              variant="contained"
-              color="success"
-              className="bg-green-600 hover:bg-green-700"
-            >
-              Approve
-            </Button>
-          </Box>
+          {
+            props.user === "admin" ? (
+              <Box className="flex gap-2">
+                <Button
+                  onClick={handleApprove}
+                  variant="contained"
+                  color="success"
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  Add
+                </Button>
+              </Box>
+            )
+              :
+              <Box className="flex gap-2">
+                <Button
+                  onClick={handleDecline}
+                  variant="outlined"
+                  color="error"
+                  className="border-red-600 text-red-600 hover:bg-red-50"
+                >
+                  Decline
+                </Button>
+                <Button
+                  onClick={handleApprove}
+                  variant="contained"
+                  color="success"
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  Approve
+                </Button>
+              </Box>
+          }
         </DialogActions>
       </Dialog>
     </Box>

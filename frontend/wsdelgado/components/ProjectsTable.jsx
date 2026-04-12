@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { API_BASE_URL } from "@/lib/api";
 import {
   Paper,
   Button,
@@ -23,6 +24,8 @@ export function ProjectsTable(props) {
   const [projects, setProjects] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [open, setOpen] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [newProject, setNewProject] = useState({
     name: "",
@@ -36,7 +39,7 @@ export function ProjectsTable(props) {
   const fetchProjects = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost/api/projects/read.php");
+      const response = await fetch(`${API_BASE_URL}/projects/read.php`);
       const data = await response.json();
       setProjects(data.records || []);
     } catch (error) {
@@ -48,7 +51,7 @@ export function ProjectsTable(props) {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch("http://localhost/api/employees/read.php");
+      const response = await fetch(`${API_BASE_URL}/employees/read.php`);
       const data = await response.json();
       setEmployees(data.records || []);
     } catch (error) {
@@ -56,9 +59,29 @@ export function ProjectsTable(props) {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/read.php`);
+      const data = await response.json();
+      setUsers(data.records || []);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  }
+
   React.useEffect(() => {
     fetchProjects();
     fetchEmployees();
+    fetchUsers();
+
+    const storedUserData = localStorage.getItem("userData");
+    if (storedUserData) {
+      try {
+        setUserData(JSON.parse(storedUserData));
+      } catch (e) {
+        console.error("Failed to parse userData:", e);
+      }
+    }
   }, []);
 
   const filteredOperators = getGridStringOperators().filter((operator) =>
@@ -66,47 +89,47 @@ export function ProjectsTable(props) {
   );
 
   const columns = [
-    { 
-      field: "name", 
-      headerName: "Name", 
-      flex: 1, 
+    {
+      field: "name",
+      headerName: "Name",
+      flex: 1,
       minWidth: 180,
       filterOperators: filteredOperators
     },
-    { 
-      field: "foreman", 
-      headerName: "Foreman", 
-      flex: 1, 
+    {
+      field: "foreman",
+      headerName: "Foreman",
+      flex: 1,
       minWidth: 130,
       filterOperators: filteredOperators,
       valueGetter: (value, row) => row?.foremanName || row?.foreman || ""
     },
-    { 
-      field: "engineer", 
-      headerName: "Engineer", 
-      flex: 1, 
+    {
+      field: "engineer",
+      headerName: "Engineer",
+      flex: 1,
       minWidth: 130,
       filterOperators: filteredOperators,
       valueGetter: (value, row) => row?.engineerName || row?.engineer || ""
     },
-    { 
-      field: "location", 
-      headerName: "Location", 
-      flex: 1, 
+    {
+      field: "location",
+      headerName: "Location",
+      flex: 1,
       minWidth: 120,
       filterOperators: filteredOperators
     },
-    { 
-      field: "client", 
-      headerName: "Client", 
-      flex: 1, 
+    {
+      field: "client",
+      headerName: "Client",
+      flex: 1,
       minWidth: 150,
       filterOperators: filteredOperators
     },
-    { 
-      field: "address", 
-      headerName: "Address", 
-      flex: 1.5, 
+    {
+      field: "address",
+      headerName: "Address",
+      flex: 1.5,
       minWidth: 200,
       filterOperators: filteredOperators
     },
@@ -186,7 +209,7 @@ export function ProjectsTable(props) {
 
   const handleAddProject = async () => {
     try {
-      const response = await fetch("http://localhost/api/projects/create.php", {
+      const response = await fetch(`${API_BASE_URL}/projects/create.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newProject),
@@ -202,6 +225,22 @@ export function ProjectsTable(props) {
       console.error("Error creating project:", error);
     }
   };
+
+  const filteredProjects = React.useMemo(() => {
+    if (props.user === "admin") return projects;
+    if (!userData) return [];
+
+    return projects.filter((project) => {
+      if (props.user === "engineer") {
+        const engineerName = project.engineerName || project.engineer;
+        return engineerName === userData.name;
+      }
+      if (props.user === "user") {
+        return project.client === userData.name;
+      }
+      return false;
+    });
+  }, [projects, props.user, userData]);
 
   return (
     <Box className="w-full">
@@ -228,7 +267,7 @@ export function ProjectsTable(props) {
 
       <Paper className="shadow-sm border border-gray-200 w-full" sx={{ width: '100%' }}>
         <DataGrid
-          rows={projects}
+          rows={filteredProjects}
           columns={columns}
           loading={isLoading}
           initialState={{
@@ -268,17 +307,6 @@ export function ProjectsTable(props) {
 
             <TextField
               margin="dense"
-              name="client"
-              label="Client"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={newProject.client}
-              onChange={handleInputChange}
-            />
-
-            <TextField
-              margin="dense"
               name="location"
               label="Location"
               type="text"
@@ -287,6 +315,30 @@ export function ProjectsTable(props) {
               value={newProject.location}
               onChange={handleInputChange}
             />
+
+            <TextField
+              margin="dense"
+              name="client"
+              label="Client"
+              select
+              fullWidth
+              variant="outlined"
+              value={newProject.client}
+              onChange={handleInputChange}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {users
+                .filter((emp) =>
+                  emp.role?.toLowerCase().includes("user")
+                )
+                .map((emp) => (
+                  <MenuItem key={emp.id} value={emp.name}>
+                    {emp.name} ({emp.role})
+                  </MenuItem>
+                ))}
+            </TextField>
 
             <TextField
               margin="dense"
@@ -325,13 +377,13 @@ export function ProjectsTable(props) {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              {employees
+              {users
                 .filter((emp) =>
-                  emp.position?.toLowerCase().includes("engineer")
+                  emp.role?.toLowerCase().includes("engineer")
                 )
                 .map((emp) => (
                   <MenuItem key={emp.id} value={emp.id}>
-                    {emp.name} ({emp.position})
+                    {emp.name} ({emp.role})
                   </MenuItem>
                 ))}
             </TextField>

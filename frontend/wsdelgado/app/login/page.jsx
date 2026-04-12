@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { API_BASE_URL } from "@/lib/api";
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -17,7 +18,7 @@ export default function LoginPage() {
     const data = Object.fromEntries(formData);
 
     try {
-      const response = await fetch("http://localhost/api/login.php", {
+      const response = await fetch(`${API_BASE_URL}/login.php`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

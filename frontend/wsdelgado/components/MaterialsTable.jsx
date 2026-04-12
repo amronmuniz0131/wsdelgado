@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { API_BASE_URL } from "@/lib/api";
 import {
   Paper,
   Button,
@@ -44,7 +45,7 @@ export function MaterialsTable(props) {
   const fetchMaterials = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost/api/materials/read.php");
+      const response = await fetch(`${API_BASE_URL}/materials/read.php`);
       const data = await response.json();
       setMaterials(data.records || []);
     } catch (error) {

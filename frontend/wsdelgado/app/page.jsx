@@ -35,8 +35,8 @@ export default function Home() {
                 <p className="text-gray-600 mb-6 leading-relaxed">
                   Precision, excellence, and dedication in every project. Building your dreams with the highest standards in the industry.
                 </p>
-                <button 
-                  onClick={() => window.location.href = "/about"} 
+                <button
+                  onClick={() => window.location.href = "/about"}
                   className="px-6 py-3 bg-white border border-gray-900 text-gray-900 font-medium hover:bg-gray-50 transition-colors min-w-[140px]"
                   aria-label="Learn more about WSDelgado Builders"
                 >
@@ -105,16 +105,17 @@ export default function Home() {
           {/* Location Row */}
           <div className="grid md:grid-cols-2 gap-12 items-center mb-24">
             <div className="aspect-square w-full relative">
-              <Placeholder className="w-full h-full" text="Map View" />
+              <img src="https://lh3.googleusercontent.com/gps-cs-s/APNQkAExLW5fmmTtC1u8BwY-NoI5WXDvUl1v_F6mETO9Iw7RPOIiCIh5yEXd73TY9_SMY7h32k6oC0oWhOlXObcOWqWTycLt2n2N6EvhkfT7bQttjC50SoGJAfxB1_Et21V3_zPKjpS2zw=s680-w680-h510-rw" alt="Map" className="w-full h-full object-contain" />
             </div>
             <div className="md:pl-10">
               <h2 className="text-3xl font-bold mb-6">Our Location</h2>
               <p className="text-gray-600 mb-8 leading-relaxed">
                 We are strategically located to serve our clients better. Visit us or get in touch for more information about our latest locations.
               </p>
-              <button 
-                className="px-6 py-2 border border-gray-300 rounded hover:border-gray-900 transition-colors"
+              <button
+                className="px-6 py-2 border cursor-pointer border-gray-300 rounded hover:border-gray-900 transition-colors"
                 aria-label="View our location on google maps"
+                onClick={() => window.location.href = "https://maps.app.goo.gl/HbWDmmrAimRgZsaV9"}
               >
                 View on Map
               </button>

@@ -24,12 +24,12 @@ export default function Header() {
             className="text-2xl font-bold tracking-tight flex items-center gap-2"
             aria-label="WSDelgado Builders Home"
           >
-            <Image 
-              src="/images/logo.png" 
-              alt="WSDelgado Builders Logo" 
+            <Image
+              src="/images/logo.png"
+              alt="WSDelgado Builders Logo"
               width={64}
               height={64}
-              className="h-16 w-auto" 
+              className="h-16 w-auto"
             />
             <span className="text-xl font-bold text-black">WSDelgado</span>
           </Link>
@@ -75,15 +75,24 @@ export default function Header() {
               Employees
             </Link>
           )}
+          {isAuthenticated && localStorage.getItem("user") === "admin" && (
+            <Link
+              href="/accounts"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+            >
+              Accounts
+            </Link>
+          )}
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
           {isAuthenticated ? (
             <button
-              className="px-4 py-2 text-gray-900 text-sm font-medium border border-gray-300 hover:border-gray-900 hover:cursor-pointer rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-gray-900 text-sm font-medium border border-black hover:border-gray-900 hover:cursor-pointer rounded-lg hover:bg-gray-50 transition-colors"
               onClick={() => {
                 window.location.href = "/";
                 localStorage.removeItem("isAuthenticated");
+                localStorage.removeItem("user");
               }}
               aria-label="Log out of your account"
             >
@@ -91,7 +100,7 @@ export default function Header() {
             </button>
           ) : (
             <button
-              className="px-4 py-2 text-sm font-medium border border-gray-300 hover:border-gray-900 hover:cursor-pointer rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-black border border-black hover:border-gray-900 hover:cursor-pointer rounded-lg hover:bg-gray-50 transition-colors"
               onClick={() => {
                 router.push("/login");
               }}
@@ -159,8 +168,19 @@ export default function Header() {
               Employees
             </Link>
           )}
+          {isAuthenticated && localStorage.getItem("user") === "admin" && (
+            <Link
+              href="/accounts"
+              className="block py-2 text-gray-600"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Accounts
+            </Link>
+          )}
           <div className="flex flex-col gap-2 pt-2 border-t border-gray-100">
-            <button className="w-full px-4 py-2 text-sm font-medium border text-gray-900 border-gray-300 rounded-lg">
+            <button onClick={() => {
+              window.location.href = "/login";
+            }} className="w-full px-4 py-2 text-sm font-medium border text-gray-900 border-gray-300 rounded-lg">
               Log in
             </button>
           </div>
