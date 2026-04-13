@@ -14,13 +14,13 @@ export default function ContactPage() {
   const [status, setStatus] = useState("");
   const [sentAmount, setSentAmount] = useState(localStorage.getItem('sent_amount') || 0);
   const handleSubmit = async (e) => {
-    setSentAmount(sentAmount + 1);
-    localStorage.setItem('sent_amount', sentAmount + 1);
+    setSentAmount(parseInt(sentAmount) + 1);
+    localStorage.setItem('sent_amount', parseInt(sentAmount) + 1);
     e.preventDefault();
     setStatus("Sending...");
 
     try {
-      if (sentAmount >= 3) {
+      if (parseInt(sentAmount) >= 3) {
         setStatus("You have sent 3 messages already. Please try again later.");
         return;
       }

@@ -12,6 +12,7 @@ class Material {
     public $requesting_engineer_id;
     public $project_id;
     public $price;
+    public $is_approved;
     public $created_at;
     public $updated_at;
 
@@ -25,7 +26,7 @@ class Material {
                 SET name=:name, quantity=:quantity, unit=:unit, 
                     status=:status, last_restocked=:last_restocked, 
                     requesting_engineer_id=:requesting_engineer_id, 
-                    project_id=:project_id, price=:price";
+                    project_id=:project_id, price=:price, is_approved=:is_approved";
         
         $stmt = $this->conn->prepare($query);
 
@@ -39,6 +40,7 @@ class Material {
         $stmt->bindParam(":requesting_engineer_id", $this->requesting_engineer_id);
         $stmt->bindParam(":project_id", $this->project_id);
         $stmt->bindParam(":price", $this->price);
+        $stmt->bindParam(":is_approved", $this->is_approved);
 
         if($stmt->execute()) {
             return true;
@@ -85,7 +87,7 @@ class Material {
                 SET name=:name, quantity=:quantity, unit=:unit, 
                     status=:status, last_restocked=:last_restocked, 
                     requesting_engineer_id=:requesting_engineer_id, 
-                    project_id=:project_id, price=:price 
+                    project_id=:project_id, price=:price, is_approved=:is_approved
                 WHERE id = :id";
         
         $stmt = $this->conn->prepare($query);
@@ -101,6 +103,7 @@ class Material {
         $stmt->bindParam(":requesting_engineer_id", $this->requesting_engineer_id);
         $stmt->bindParam(":project_id", $this->project_id);
         $stmt->bindParam(":price", $this->price);
+        $stmt->bindParam(":is_approved", $this->is_approved);
         $stmt->bindParam(":id", $this->id);
 
         if($stmt->execute()) {
@@ -131,6 +134,7 @@ class Material {
         $this->requesting_engineer_id = $this->requesting_engineer_id ? htmlspecialchars(strip_tags($this->requesting_engineer_id)) : null;
         $this->project_id = $this->project_id ? htmlspecialchars(strip_tags($this->project_id)) : null;
         $this->price = htmlspecialchars(strip_tags($this->price));
+        $this->is_approved = htmlspecialchars(strip_tags($this->is_approved));
     }
 }
 ?>

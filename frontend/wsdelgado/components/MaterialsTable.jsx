@@ -25,6 +25,9 @@ const getStatusColor = (status) => {
       return "warning";
     case "Out of Stock":
       return "error";
+    case "Pending":
+    case "Requested":
+      return "warning";
     default:
       return "default";
   }
@@ -35,11 +38,14 @@ export function MaterialsTable(props) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [materialRequest, setMaterialRequest] = useState({
+    id: null,
     name: "",
     quantity: "",
     requestingEngineer: "",
     siteLocation: "",
+    status: "In Stock",
     price: "",
+    is_approved: 0
   });
 
   const fetchMaterials = async () => {
@@ -62,23 +68,41 @@ export function MaterialsTable(props) {
   const handleOpen = (material) => {
     if (material && material.id) {
       setMaterialRequest({
+        id: material.id,
         name: material.name || "",
         quantity: material.quantity || "",
         requestingEngineer: material.requestingEngineer || "",
         siteLocation: material.siteLocation || "",
+        status: material.status || "",
         price: material.price || "",
+        is_approved: material.is_approved || 0
+      });
+    } else {
+      setMaterialRequest({
+        id: null,
+        name: "",
+        quantity: "",
+        requestingEngineer: "",
+        siteLocation: "",
+        status: "In Stock",
+        price: "",
+        is_approved: 0
       });
     }
     setOpen(true);
   };
+
   const handleClose = () => {
     setOpen(false);
     setMaterialRequest({
+      id: null,
       name: "",
       quantity: "",
       requestingEngineer: "",
       siteLocation: "",
+      status: "In Stock",
       price: "",
+      is_approved: 0
     });
   };
 
@@ -87,14 +111,39 @@ export function MaterialsTable(props) {
     setMaterialRequest((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleApprove = () => {
-    console.log("Approved material request:", materialRequest);
-    handleClose();
+  const submitMaterial = async (overrideData = {}) => {
+    const payload = { ...materialRequest, ...overrideData };
+    if (!payload.status) {
+      payload.status = "In Stock";
+    }
+
+    const endpoint = payload.id ? `${API_BASE_URL}/materials/update.php` : `${API_BASE_URL}/materials/create.php`;
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        fetchMaterials();
+        handleClose();
+      } else {
+        const error = await response.json();
+        alert(error.message || "Operation failed.");
+      }
+    } catch (error) {
+      console.error("Error submitting material:", error);
+    }
   };
 
-  const handleDecline = () => {
-    console.log("Declined material request:", materialRequest);
-    handleClose();
+  const handleDecline = async () => {
+    if (materialRequest.id) {
+      await submitMaterial({ is_approved: 0, status: "Declined" });
+    } else {
+      handleClose();
+    }
   };
 
   const filteredOperators = getGridStringOperators().filter((operator) =>
@@ -131,8 +180,8 @@ export function MaterialsTable(props) {
       filterOperators: filteredOperators,
       renderCell: (params) => (
         <Chip
-          label={params.value}
-          color={getStatusColor(params.value)}
+          label={params.row.is_approved == 1 ? params.value : "Pending..."}
+          color={params.row.is_approved == 1 ? getStatusColor(params.value) : "warning"}
           size="small"
           className="font-medium"
         />
@@ -170,12 +219,12 @@ export function MaterialsTable(props) {
             Construction Materials Inventory
           </Typography>
         </Box>
-        {props.user === "admin" && (
+        {(props.user === "admin" || props.user === "engineer") && (
           <Button
             variant="contained"
             color="primary"
             startIcon={<Plus size={18} />}
-            onClick={handleOpen}
+            onClick={() => handleOpen()}
             className="bg-blue-600 hover:bg-blue-700"
           >
             Add Materials
@@ -231,6 +280,24 @@ export function MaterialsTable(props) {
               onChange={handleInputChange}
             />
             <TextField
+              select
+              margin="dense"
+              name="status"
+              label="Status"
+              fullWidth
+              variant="outlined"
+              value={materialRequest.status || "In Stock"}
+              onChange={handleInputChange}
+              SelectProps={{
+                native: true,
+              }}
+            >
+              <option value="In Stock">In Stock</option>
+              <option value="Low Stock">Low Stock</option>
+              <option value="Out of Stock">Out of Stock</option>
+              <option value="Pending">Pending</option>
+            </TextField>
+            <TextField
               margin="dense"
               name="price"
               label="Price"
@@ -259,6 +326,7 @@ export function MaterialsTable(props) {
               variant="outlined"
               value={materialRequest.siteLocation}
               onChange={handleInputChange}
+              className="col-span-1 md:col-span-2"
             />
           </Box>
         </DialogContent>
@@ -270,23 +338,50 @@ export function MaterialsTable(props) {
           >
             Cancel
           </Button>
+          
           <Box className="flex gap-2">
-            <Button
-              onClick={handleDecline}
-              variant="outlined"
-              color="error"
-              className="border-red-600 text-red-600 hover:bg-red-50"
-            >
-              Decline
-            </Button>
-            <Button
-              onClick={handleApprove}
-              variant="contained"
-              color="success"
-              className="bg-green-600 hover:bg-green-700"
-            >
-              Approve
-            </Button>
+            {props.user === "admin" ? (
+                <>
+                { materialRequest.id ? (
+                  <>
+                    <Button
+                      onClick={handleDecline}
+                      variant="outlined"
+                      color="error"
+                      className="border-red-600 text-red-600 hover:bg-red-50"
+                    >
+                      Decline
+                    </Button>
+                    <Button
+                      onClick={() => submitMaterial({ is_approved: 1 })}
+                      variant="contained"
+                      color="success"
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      Approve & Save
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    onClick={() => submitMaterial({ is_approved: 1 })}
+                    variant="contained"
+                    color="success"
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    Add Material
+                  </Button>
+                )}
+                </>
+            ) : (
+              <Button
+                onClick={() => submitMaterial({ is_approved: 0, status: "Pending" })}
+                variant="contained"
+                color="primary"
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Submit Request
+              </Button>
+            )}
           </Box>
         </DialogActions>
       </Dialog>

@@ -11,6 +11,7 @@ class Equipment {
     public $operator_id;
     public $requested_by_id;
     public $estimated_hours;
+    public $is_approved;
     public $created_at;
     public $updated_at;
 
@@ -23,7 +24,8 @@ class Equipment {
         $query = "INSERT INTO " . $this->table_name . " 
                 SET name=:name, type=:type, status=:status, 
                     project_id=:project_id, operator_id=:operator_id, 
-                    requested_by_id=:requested_by_id, estimated_hours=:estimated_hours";
+                    requested_by_id=:requested_by_id, estimated_hours=:estimated_hours,
+                    is_approved=:is_approved";
         
         $stmt = $this->conn->prepare($query);
 
@@ -36,6 +38,7 @@ class Equipment {
         $stmt->bindParam(":operator_id", $this->operator_id);
         $stmt->bindParam(":requested_by_id", $this->requested_by_id);
         $stmt->bindParam(":estimated_hours", $this->estimated_hours);
+        $stmt->bindParam(":is_approved", $this->is_approved);
 
         if($stmt->execute()) {
             return true;
@@ -83,7 +86,8 @@ class Equipment {
         $query = "UPDATE " . $this->table_name . " 
                 SET name=:name, type=:type, status=:status, 
                     project_id=:project_id, operator_id=:operator_id, 
-                    requested_by_id=:requested_by_id, estimated_hours=:estimated_hours 
+                    requested_by_id=:requested_by_id, estimated_hours=:estimated_hours,
+                    is_approved=:is_approved
                 WHERE id = :id";
         
         $stmt = $this->conn->prepare($query);
@@ -98,6 +102,7 @@ class Equipment {
         $stmt->bindParam(":operator_id", $this->operator_id);
         $stmt->bindParam(":requested_by_id", $this->requested_by_id);
         $stmt->bindParam(":estimated_hours", $this->estimated_hours);
+        $stmt->bindParam(":is_approved", $this->is_approved);
         $stmt->bindParam(":id", $this->id);
 
         if($stmt->execute()) {
@@ -127,6 +132,7 @@ class Equipment {
         $this->operator_id = $this->operator_id ? htmlspecialchars(strip_tags($this->operator_id)) : null;
         $this->requested_by_id = $this->requested_by_id ? htmlspecialchars(strip_tags($this->requested_by_id)) : null;
         $this->estimated_hours = htmlspecialchars(strip_tags($this->estimated_hours));
+        $this->is_approved = htmlspecialchars(strip_tags($this->is_approved));
     }
 }
 ?>

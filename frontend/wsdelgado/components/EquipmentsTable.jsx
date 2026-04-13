@@ -26,6 +26,9 @@ const getStatusColor = (status) => {
       return "primary";
     case "Maintenance":
       return "error";
+    case "Pending":
+    case "Requested":
+      return "warning";
     default:
       return "default";
   }
@@ -61,7 +64,6 @@ export function EquipmentsTable(props) {
   React.useEffect(() => {
     fetchEquipments();
   }, []);
-
   const handleOpen = (equipment) => {
     if (equipment && equipment.id) {
       setEquipmentRequest({
@@ -80,13 +82,15 @@ export function EquipmentsTable(props) {
   const handleClose = () => {
     setOpen(false);
     setEquipmentRequest({
+      id: null,
       name: "",
       type: "",
-      status: "",
+      status: "Available",
       currentLocation: "",
       operator: "",
       requestedBy: "",
       estimatedHours: "",
+      is_approved: 0
     });
   };
 
@@ -95,16 +99,40 @@ export function EquipmentsTable(props) {
     setEquipmentRequest((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleApprove = () => {
-    console.log("Approved equipment request:", equipmentRequest);
-    handleClose();
-  };
+  const submitEquipment = async (overrideData = {}) => {
+    const payload = { ...equipmentRequest, ...overrideData };
+    if (!payload.status) {
+      payload.status = "Available";
+    }
 
-  const handleDecline = () => {
-    console.log("Declined equipment request:", equipmentRequest);
-    handleClose();
-  };
+    const endpoint = payload.id ? `${API_BASE_URL}/equipments/update.php` : `${API_BASE_URL}/equipments/create.php`;
 
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        fetchEquipments();
+        handleClose();
+      } else {
+        const error = await response.json();
+        alert(error.message || "Operation failed.");
+      }
+    } catch (error) {
+      console.error("Error submitting equipment:", error);
+    }
+  }
+
+  const handleDecline = async () => {
+    if (equipmentRequest.id) {
+      await submitEquipment({ is_approved: 0, status: "Declined" });
+    } else {
+      handleClose();
+    }
+  };
 
   const filteredOperators = getGridStringOperators().filter((operator) =>
     ["contains", "startsWith", "equals"].includes(operator.value)
@@ -126,7 +154,7 @@ export function EquipmentsTable(props) {
       filterOperators: filteredOperators,
       renderCell: (params) => (
         <Chip
-          label={params.value}
+          label={params.row.status}
           color={getStatusColor(params.value)}
           size="small"
           className="font-medium"
@@ -240,6 +268,24 @@ export function EquipmentsTable(props) {
               onChange={handleInputChange}
             />
             <TextField
+              select
+              margin="dense"
+              name="status"
+              label="Status"
+              fullWidth
+              variant="outlined"
+              value={equipmentRequest.status || "Available"}
+              onChange={handleInputChange}
+              SelectProps={{
+                native: true,
+              }}
+            >
+              <option value="Available">Available</option>
+              <option value="In Use">In Use</option>
+              <option value="Maintenance">Maintenance</option>
+              <option value="Pending">Pending</option>
+            </TextField>
+            <TextField
               margin="dense"
               name="estimatedHours"
               label="Estimated Hours"
@@ -290,39 +336,51 @@ export function EquipmentsTable(props) {
           >
             Cancel
           </Button>
-          {
-            props.user === "admin" ? (
-              <Box className="flex gap-2">
-                <Button
-                  onClick={handleApprove}
-                  variant="contained"
-                  color="success"
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  Add
-                </Button>
-              </Box>
-            )
-              :
-              <Box className="flex gap-2">
-                <Button
-                  onClick={handleDecline}
-                  variant="outlined"
-                  color="error"
-                  className="border-red-600 text-red-600 hover:bg-red-50"
-                >
-                  Decline
-                </Button>
-                <Button
-                  onClick={handleApprove}
-                  variant="contained"
-                  color="success"
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  Approve
-                </Button>
-              </Box>
-          }
+
+          <Box className="flex gap-2">
+            {props.user === "admin" ? (
+              <>
+                {equipmentRequest.id ? (
+                  <>
+                    <Button
+                      onClick={handleDecline}
+                      variant="outlined"
+                      color="error"
+                      className="border-red-600 text-red-600 hover:bg-red-50"
+                    >
+                      Decline
+                    </Button>
+                    <Button
+                      onClick={() => submitEquipment({ is_approved: 1 })}
+                      variant="contained"
+                      color="success"
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      Approve & Save
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    onClick={() => submitEquipment({ is_approved: 1 })}
+                    variant="contained"
+                    color="success"
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    Add Equipment
+                  </Button>
+                )}
+              </>
+            ) : (
+              <Button
+                onClick={() => submitEquipment({ is_approved: 0 })}
+                variant="contained"
+                color="primary"
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Submit Request
+              </Button>
+            )}
+          </Box>
         </DialogActions>
       </Dialog>
     </Box>

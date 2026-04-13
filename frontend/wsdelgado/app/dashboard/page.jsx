@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Badge } from "@mui/material";
 import { API_BASE_URL } from "@/lib/api";
 import { Mail } from "lucide-react";
@@ -24,6 +24,7 @@ import { EquipmentsTable } from "@/components/EquipmentsTable";
 import { InquiriesList } from "@/components/InquiriesList";
 
 export default function DashboardPage() {
+  const bottomRef = useRef(null);
   const [user, setUser] = useState("");
   const [unreadMessages, setUnreadMessages] = useState(0);
 
@@ -35,6 +36,9 @@ export default function DashboardPage() {
     }
   }, []);
 
+  const ScrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
   const [openAddModal, setOpenAddModal] = useState(false);
   const [newAccount, setNewAccount] = useState({
     name: "",
@@ -81,7 +85,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-3xl font-bold text-gray-900 capitalize">{user} Dashboard</h1>
         {user === "admin" && (
-          <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-100">
+          <div onClick={ScrollToBottom} className="flex cursor-pointer items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-100">
             <span className="text-sm font-medium text-gray-700">Messages:</span>
             <Badge badgeContent={unreadMessages} color="error" max={99}>
               <Mail className="text-gray-600" size={24} />
@@ -105,7 +109,7 @@ export default function DashboardPage() {
       </div>
 
       {user === "admin" && (
-        <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 mt-8">
+        <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 mt-8" ref={bottomRef}>
           <InquiriesList openModal={handleOpenAdd} setNewAccount={setNewAccount} user={user} onUnreadCountChange={setUnreadMessages} />
         </section>
       )}
