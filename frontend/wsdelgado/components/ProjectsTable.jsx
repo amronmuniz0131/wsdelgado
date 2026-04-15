@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL } from "@/lib/api";
 import {
@@ -35,7 +35,6 @@ export function ProjectsTable(props) {
     client: "",
     address: "",
   });
-
   const fetchProjects = async () => {
     setIsLoading(true);
     try {
@@ -84,6 +83,20 @@ export function ProjectsTable(props) {
     }
   }, []);
 
+
+  useEffect(() => {
+    if (props.userData) {
+      console.log(props.userData)
+      console.log(users)
+      users.map((d) => {
+        if (props.userData.email === d.email) {
+          setNewProject((prev) => ({ ...prev, client: d.id }));
+        }
+      })
+    }
+  }, [props.userData])
+
+
   const filteredOperators = getGridStringOperators().filter((operator) =>
     ["contains", "startsWith", "equals"].includes(operator.value)
   );
@@ -124,7 +137,8 @@ export function ProjectsTable(props) {
       headerName: "Client",
       flex: 1,
       minWidth: 150,
-      filterOperators: filteredOperators
+      filterOperators: filteredOperators,
+      valueGetter: (value, row) => row?.clientName || row?.client || ""
     },
     {
       field: "address",
@@ -189,9 +203,8 @@ export function ProjectsTable(props) {
     }
   ];
 
-  const handleOpen = () => setOpen(true);
   const handleClose = () => {
-    setOpen(false);
+    props.setOpenModal(false);
     setNewProject({
       name: "",
       foremanId: "",
@@ -257,7 +270,7 @@ export function ProjectsTable(props) {
             variant="contained"
             color="primary"
             startIcon={<Plus size={18} />}
-            onClick={handleOpen}
+            onClick={() => props.setOpenModal(true)}
             className="bg-blue-600 hover:bg-blue-700"
           >
             Add Project
@@ -286,7 +299,7 @@ export function ProjectsTable(props) {
       </Paper>
 
       {/* Add Project Modal */}
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+      <Dialog open={props.openModal} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 mb-4">
           Create New Project
         </DialogTitle>
@@ -334,7 +347,7 @@ export function ProjectsTable(props) {
                   emp.role?.toLowerCase().includes("user")
                 )
                 .map((emp) => (
-                  <MenuItem key={emp.id} value={emp.name}>
+                  <MenuItem key={emp.id} value={emp.id}>
                     {emp.name} ({emp.role})
                   </MenuItem>
                 ))}

@@ -45,10 +45,11 @@ class Project {
 
     // READ ALL
     public function read() {
-        $query = "SELECT p.*, f.name as foreman_name, u.name as engineer_name 
+        $query = "SELECT p.*, f.name as foreman_name, u.name as engineer_name, c.name as client_name 
                 FROM " . $this->table_name . " p
                 LEFT JOIN employees f ON p.foreman_id = f.id
                 LEFT JOIN users u ON p.engineer_id = u.id
+                LEFT JOIN users c ON p.client = c.id
                 ORDER BY p.created_at DESC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -57,10 +58,11 @@ class Project {
 
     // READ ONE
     public function readOne() {
-        $query = "SELECT p.*, f.name as foreman_name, u.name as engineer_name 
+        $query = "SELECT p.*, f.name as foreman_name, u.name as engineer_name, c.name as client_name 
                 FROM " . $this->table_name . " p
                 LEFT JOIN employees f ON p.foreman_id = f.id
                 LEFT JOIN users u ON p.engineer_id = u.id
+                LEFT JOIN users c ON p.client = c.id
                 WHERE p.id = ? LIMIT 0,1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $this->id);

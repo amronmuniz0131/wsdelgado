@@ -14,7 +14,7 @@ if(!empty($data->name)){
     $material->name = $data->name;
     $material->quantity = $data->quantity ?? 0;
     $material->unit = $data->unit ?? "";
-    $material->status = $data->status ?? "Low Stock";
+    $material->max_stock = $data->max_stock ?? 0;
     $material->last_restocked = $data->last_restocked ?? date('Y-m-d H:i:s');
     $material->requesting_engineer_id = $data->requesting_engineer_id ?? null;
     $material->project_id = $data->project_id ?? null;

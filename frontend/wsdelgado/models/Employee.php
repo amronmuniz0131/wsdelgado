@@ -9,7 +9,6 @@ class Employee {
     public $position;
     public $assigned_project_id;
     public $date_of_employment;
-    public $status;
     public $email;
     public $phone;
     public $address;
@@ -26,7 +25,7 @@ class Employee {
         $query = "INSERT INTO " . $this->table_name . " 
                 SET employee_id=:employee_id, name=:name, position=:position, 
                     assigned_project_id=:assigned_project_id, date_of_employment=:date_of_employment, 
-                    status=:status, email=:email, phone=:phone, address=:address, notes=:notes";
+                    email=:email, phone=:phone, address=:address, notes=:notes";
         
         $stmt = $this->conn->prepare($query);
 
@@ -36,8 +35,12 @@ class Employee {
         $stmt->bindParam(":name", $this->name);
         $stmt->bindParam(":position", $this->position);
         $stmt->bindParam(":assigned_project_id", $this->assigned_project_id);
+
+        if(empty($this->date_of_employment)) {
+            $this->date_of_employment = date('Y-m-d');
+        }
+
         $stmt->bindParam(":date_of_employment", $this->date_of_employment);
-        $stmt->bindParam(":status", $this->status);
         $stmt->bindParam(":email", $this->email);
         $stmt->bindParam(":phone", $this->phone);
         $stmt->bindParam(":address", $this->address);
@@ -84,8 +87,7 @@ class Employee {
     public function update() {
         $query = "UPDATE " . $this->table_name . " 
                 SET employee_id=:employee_id, name=:name, position=:position, 
-                    assigned_project_id=:assigned_project_id, date_of_employment=:date_of_employment, 
-                    status=:status, email=:email, phone=:phone, address=:address, notes=:notes 
+                    assigned_project_id=:assigned_project_id, date_of_employment=:date_of_employment, email=:email, phone=:phone, address=:address, notes=:notes 
                 WHERE id = :id";
         
         $stmt = $this->conn->prepare($query);
@@ -98,7 +100,6 @@ class Employee {
         $stmt->bindParam(":position", $this->position);
         $stmt->bindParam(":assigned_project_id", $this->assigned_project_id);
         $stmt->bindParam(":date_of_employment", $this->date_of_employment);
-        $stmt->bindParam(":status", $this->status);
         $stmt->bindParam(":email", $this->email);
         $stmt->bindParam(":phone", $this->phone);
         $stmt->bindParam(":address", $this->address);

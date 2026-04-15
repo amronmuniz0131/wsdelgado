@@ -7,8 +7,8 @@ class Material {
     public $name;
     public $quantity;
     public $unit;
-    public $status;
     public $last_restocked;
+    public $max_stock;
     public $requesting_engineer_id;
     public $project_id;
     public $price;
@@ -24,7 +24,7 @@ class Material {
     public function create() {
         $query = "INSERT INTO " . $this->table_name . " 
                 SET name=:name, quantity=:quantity, unit=:unit, 
-                    status=:status, last_restocked=:last_restocked, 
+                    max_stock=:max_stock, last_restocked=:last_restocked, 
                     requesting_engineer_id=:requesting_engineer_id, 
                     project_id=:project_id, price=:price, is_approved=:is_approved";
         
@@ -35,7 +35,7 @@ class Material {
         $stmt->bindParam(":name", $this->name);
         $stmt->bindParam(":quantity", $this->quantity);
         $stmt->bindParam(":unit", $this->unit);
-        $stmt->bindParam(":status", $this->status);
+        $stmt->bindParam(":max_stock", $this->max_stock);
         $stmt->bindParam(":last_restocked", $this->last_restocked);
         $stmt->bindParam(":requesting_engineer_id", $this->requesting_engineer_id);
         $stmt->bindParam(":project_id", $this->project_id);
@@ -85,7 +85,7 @@ class Material {
     public function update() {
         $query = "UPDATE " . $this->table_name . " 
                 SET name=:name, quantity=:quantity, unit=:unit, 
-                    status=:status, last_restocked=:last_restocked, 
+                    max_stock=:max_stock, last_restocked=:last_restocked, 
                     requesting_engineer_id=:requesting_engineer_id, 
                     project_id=:project_id, price=:price, is_approved=:is_approved
                 WHERE id = :id";
@@ -98,7 +98,7 @@ class Material {
         $stmt->bindParam(":name", $this->name);
         $stmt->bindParam(":quantity", $this->quantity);
         $stmt->bindParam(":unit", $this->unit);
-        $stmt->bindParam(":status", $this->status);
+        $stmt->bindParam(":max_stock", $this->max_stock);
         $stmt->bindParam(":last_restocked", $this->last_restocked);
         $stmt->bindParam(":requesting_engineer_id", $this->requesting_engineer_id);
         $stmt->bindParam(":project_id", $this->project_id);
@@ -129,7 +129,7 @@ class Material {
         $this->name = htmlspecialchars(strip_tags($this->name));
         $this->quantity = htmlspecialchars(strip_tags($this->quantity));
         $this->unit = htmlspecialchars(strip_tags($this->unit));
-        $this->status = htmlspecialchars(strip_tags($this->status));
+        $this->max_stock = htmlspecialchars(strip_tags($this->max_stock));
         $this->last_restocked = htmlspecialchars(strip_tags($this->last_restocked));
         $this->requesting_engineer_id = $this->requesting_engineer_id ? htmlspecialchars(strip_tags($this->requesting_engineer_id)) : null;
         $this->project_id = $this->project_id ? htmlspecialchars(strip_tags($this->project_id)) : null;

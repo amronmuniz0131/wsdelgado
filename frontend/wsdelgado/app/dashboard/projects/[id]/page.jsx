@@ -184,7 +184,7 @@ export default function ProjectDetailsPage() {
                         Client
                       </Typography>
                       <Typography variant="body1" className="font-semibold text-gray-700">
-                        {project.client}
+                        {project.client_name}
                       </Typography>
                     </Box>
 

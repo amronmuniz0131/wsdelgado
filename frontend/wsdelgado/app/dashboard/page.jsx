@@ -27,7 +27,7 @@ export default function DashboardPage() {
   const bottomRef = useRef(null);
   const [user, setUser] = useState("");
   const [unreadMessages, setUnreadMessages] = useState(0);
-
+  const [openModal, setOpenModal] = useState(false);
   useEffect(() => {
     setUser(localStorage.getItem("user"));
     const isAuthenticated = localStorage.getItem("isAuthenticated");
@@ -73,7 +73,14 @@ export default function DashboardPage() {
         handleCloseAdd();
       } else {
         const error = await response.json();
-        alert(error.message || "Failed to add account");
+        if (error.error === 401) {
+          setOpenModal(true)
+          setOpenAddModal(false)
+        }
+        // if (error.message === "Email already exists") {
+        // } else {
+        //   alert(error.message || "Failed to add account");
+        // }
       }
     } catch (error) {
       console.error("Error adding account:", error);
@@ -95,7 +102,7 @@ export default function DashboardPage() {
       </div>
 
       <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-        <ProjectsTable user={user} />
+        <ProjectsTable user={user} openModal={openModal} setOpenModal={setOpenModal} userData={newAccount} />
       </section>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">

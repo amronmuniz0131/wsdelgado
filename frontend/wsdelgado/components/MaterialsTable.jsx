@@ -42,6 +42,7 @@ export function MaterialsTable(props) {
     name: "",
     quantity: "",
     requestingEngineer: "",
+    max_stock: "",
     siteLocation: "",
     status: "In Stock",
     price: "",
@@ -71,6 +72,7 @@ export function MaterialsTable(props) {
         id: material.id,
         name: material.name || "",
         quantity: material.quantity || "",
+        max_stock: material.max_stock || "",
         requestingEngineer: material.requestingEngineer || "",
         siteLocation: material.siteLocation || "",
         status: material.status || "",
@@ -82,6 +84,7 @@ export function MaterialsTable(props) {
         id: null,
         name: "",
         quantity: "",
+        max_stock: "",
         requestingEngineer: "",
         siteLocation: "",
         status: "In Stock",
@@ -98,6 +101,7 @@ export function MaterialsTable(props) {
       id: null,
       name: "",
       quantity: "",
+      max_stock: "",
       requestingEngineer: "",
       siteLocation: "",
       status: "In Stock",
@@ -180,8 +184,8 @@ export function MaterialsTable(props) {
       filterOperators: filteredOperators,
       renderCell: (params) => (
         <Chip
-          label={params.row.is_approved == 1 ? params.value : "Pending..."}
-          color={params.row.is_approved == 1 ? getStatusColor(params.value) : "warning"}
+          label={params.row.quantity / params.row.max_stock >= 0.2 ? "In Stock" : params.row.quantity / params.row.max_stock == 0 ? "Out of stock" : "Low Stock"}
+          color={params.row.quantity / params.row.max_stock >= 0.2 ? getStatusColor("In Stock") : params.row.quantity / params.row.max_stock == 0 ? getStatusColor("Out of Stock") : getStatusColor("Low Stock")}
           size="small"
           className="font-medium"
         />
@@ -280,6 +284,16 @@ export function MaterialsTable(props) {
               onChange={handleInputChange}
             />
             <TextField
+              margin="dense"
+              name="max_stock"
+              label="Max Stock"
+              type="text"
+              fullWidth
+              variant="outlined"
+              value={materialRequest.max_stock}
+              onChange={handleInputChange}
+            />
+            <TextField
               select
               margin="dense"
               name="status"
@@ -338,11 +352,11 @@ export function MaterialsTable(props) {
           >
             Cancel
           </Button>
-          
+
           <Box className="flex gap-2">
             {props.user === "admin" ? (
-                <>
-                { materialRequest.id ? (
+              <>
+                {materialRequest.id ? (
                   <>
                     <Button
                       onClick={handleDecline}
@@ -371,7 +385,7 @@ export function MaterialsTable(props) {
                     Add Material
                   </Button>
                 )}
-                </>
+              </>
             ) : (
               <Button
                 onClick={() => submitMaterial({ is_approved: 0, status: "Pending" })}

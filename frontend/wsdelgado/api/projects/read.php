@@ -27,7 +27,8 @@ if($num > 0){
             "foremanId" => $foreman_id,
             "engineerId" => $engineer_id,
             "foremanName" => $foreman_name,
-            "engineerName" => $engineer_name
+            "engineerName" => $engineer_name,
+            "clientName" => $client_name
         );
         array_push($projects_arr["records"], $project_item);
     }

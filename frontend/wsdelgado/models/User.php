@@ -37,10 +37,39 @@ class User {
         $stmt->bindParam(":email", $this->email);
         $stmt->bindParam(":password", $this->password);
         $stmt->bindParam(":role", $this->role);
-
-        if($stmt->execute()) {
-            return true;
+        try {
+            if($stmt->execute()) {
+                // Automatically create an employee profile for engineers and admins
+                if ($this->role === 'engineer' || $this->role === 'admin') {
+                    include_once 'Employee.php';
+                    $employee = new Employee($this->conn);
+                    $employee->name = $this->name;
+                    $employee->email = $this->email;
+                    $employee->position = $this->role;
+                    $employee->employee_id = "EMP-" . strtoupper(substr(uniqid(), -5));
+                    $employee->date_of_employment = date('Y-m-d');
+                    $employee->create();
+                }
+                return true;
+            }
+        } catch (PDOException $e) {
+            // Check for duplicate entry in exception (SQLState 23000 or MySQL code 1062)
+            if ($e->getCode() == '23000' || strpos($e->getMessage(), '1062') !== false) {
+                http_response_code(401);
+                echo json_encode(array("message" => "Email already exists.", "error" => 401));
+                exit;
+            }
+            throw $e;
         }
+
+        // Check for duplicate entry via errorInfo (if silent mode)
+        $errorInfo = $stmt->errorInfo();
+        if ($stmt->errorCode() == '23000' || (isset($errorInfo[1]) && $errorInfo[1] == 1062)) {
+            http_response_code(401);
+            echo json_encode(array("message" => "Email already exists."));
+            exit;
+        }
+
         return false;
     }
 
@@ -90,9 +119,28 @@ class User {
             $stmt->bindParam(':password', $this->password);
         }
 
-        if($stmt->execute()) {
-            return true;
+        try {
+            if($stmt->execute()) {
+                return true;
+            }
+        } catch (PDOException $e) {
+            // Check for duplicate entry in exception (SQLState 23000 or MySQL code 1062)
+            if ($e->getCode() == '23000' || strpos($e->getMessage(), '1062') !== false) {
+                http_response_code(401);
+                echo json_encode(array("message" => "Email already exists."));
+                exit;
+            }
+            throw $e;
         }
+
+        // Check for duplicate entry via errorInfo (if silent mode)
+        $errorInfo = $stmt->errorInfo();
+        if ($stmt->errorCode() == '23000' || (isset($errorInfo[1]) && $errorInfo[1] == 1062)) {
+            http_response_code(401);
+            echo json_encode(array("message" => "Email already exists."));
+            exit;
+        }
+
         return false;
     }
 

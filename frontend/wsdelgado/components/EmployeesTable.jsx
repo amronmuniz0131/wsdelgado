@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { API_BASE_URL } from "@/lib/api";
 import {
   Table,
@@ -12,6 +12,7 @@ import {
   Paper,
   Button,
   Dialog,
+  MenuItem,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -34,9 +35,43 @@ export function EmployeesTable() {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+  const [projects, setProjects] = useState([]);
+  const [count, setCount] = useState(0)
+  const [positions, setPositions] = useState([]);
+
+  const fetchEmployees = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/employees/read.php`);
+      const data = await response.json();
+      setEmployees(data.records || []);
+      setCount(data.records.length)
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/projects/read.php`);
+      const data = await response.json();
+      setProjects(data.records || []);
+      console.log(data.records)
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchEmployees();
+    fetchPositions();
+    fetchProjects();
+  }, []);
+
   const [newEmployee, setNewEmployee] = useState({
-    employeeId: "",
+    employeeId: "EMP-" + (count),
     name: "",
     position: "",
     assignedProject: "",
@@ -48,28 +83,26 @@ export function EmployeesTable() {
     notes: "",
   });
 
-  const fetchEmployees = async () => {
-    setIsLoading(true);
+  const fetchPositions = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/employees/read.php`);
+      const response = await fetch(`${API_BASE_URL}/positions/read.php`);
       const data = await response.json();
-      setEmployees(data.records || []);
+      setPositions(data.records || []);
+      console.log(data.records)
     } catch (error) {
-      console.error("Error fetching employees:", error);
-    } finally {
-      setIsLoading(false);
+      console.error("Error fetching positions:", error);
     }
   };
 
-  React.useEffect(() => {
-    fetchEmployees();
-  }, []);
+  useEffect(() => {
+    setCount(employees.length + 1)
+  }, [employees])
 
   const handleOpenAdd = () => setOpenAddModal(true);
   const handleCloseAdd = () => {
     setOpenAddModal(false);
     setNewEmployee({
-      employeeId: "",
+      employeeId: "EMP-" + (count),
       name: "",
       position: "",
       assignedProject: "",
@@ -254,8 +287,8 @@ export function EmployeesTable() {
                 </TableCell>
                 <TableCell className="py-4">
                   <Chip
-                    label={getStatusLabel(row.status)}
-                    color={getStatusColor(row.status)}
+                    label={getStatusLabel(!row.assignedProject ? "available" : "ongoing")}
+                    color={getStatusColor(!row.assignedProject ? "available" : "ongoing")}
                     size="small"
                     className="font-bold text-[11px] uppercase tracking-wider"
                   />
@@ -263,8 +296,8 @@ export function EmployeesTable() {
                 <TableCell className="py-4 text-center">
                   <Box className="flex justify-center gap-1">
                     <Tooltip title="View Profile">
-                      <IconButton 
-                        size="small" 
+                      <IconButton
+                        size="small"
                         className="text-blue-500 hover:bg-blue-100 transition-colors"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -275,8 +308,8 @@ export function EmployeesTable() {
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Edit Information">
-                      <IconButton 
-                        size="small" 
+                      <IconButton
+                        size="small"
                         className="text-amber-500 hover:bg-amber-100 transition-colors"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -310,10 +343,10 @@ export function EmployeesTable() {
       </TableContainer>
 
       {/* View Employee Details Modal */}
-      <Dialog 
-        open={openViewModal} 
-        onClose={handleCloseView} 
-        maxWidth="md" 
+      <Dialog
+        open={openViewModal}
+        onClose={handleCloseView}
+        maxWidth="md"
         fullWidth
         PaperProps={{
           className: "rounded-3xl overflow-hidden",
@@ -326,7 +359,7 @@ export function EmployeesTable() {
             <Box className="bg-gradient-to-br from-blue-600 to-indigo-800 text-white p-10 md:w-1/3 flex flex-col items-center justify-center relative overflow-hidden">
               <Box className="absolute top-[-20%] left-[-20%] w-64 h-64 bg-white/10 rounded-full blur-3xl" />
               <Box className="absolute bottom-[-20%] right-[-20%] w-64 h-64 bg-indigo-400/20 rounded-full blur-3xl" />
-              
+
               <Avatar sx={{ width: 120, height: 120, mb: 3 }} className="bg-white text-blue-700 text-4xl font-bold shadow-2xl border-4 border-white/20">
                 {selectedEmployee.name.charAt(0)}
               </Avatar>
@@ -336,9 +369,9 @@ export function EmployeesTable() {
               <Typography variant="body2" className="opacity-80 font-medium tracking-widest uppercase mb-6">
                 {selectedEmployee.employeeId}
               </Typography>
-              
-              <Chip 
-                label={getStatusLabel(selectedEmployee.status)} 
+
+              <Chip
+                label={getStatusLabel(!selectedEmployee.assignedProject ? "available" : "ongoing")}
                 className="bg-white/20 text-white border border-white/30 backdrop-blur-md px-4 py-1.5 font-bold uppercase text-[10px]"
               />
             </Box>
@@ -379,7 +412,7 @@ export function EmployeesTable() {
               <Divider className="mb-8" />
 
               <Typography variant="h6" className="text-gray-800 font-bold mb-6 flex items-center gap-2">
-                 <MapPin size={20} className="text-blue-600" /> Contact Information
+                <MapPin size={20} className="text-blue-600" /> Contact Information
               </Typography>
 
               <Box className="grid grid-cols-1 md:grid-cols-2 gap-y-6 mb-8 bg-gray-50 p-6 rounded-2xl border border-gray-100">
@@ -433,8 +466,9 @@ export function EmployeesTable() {
               name="employeeId"
               label="Employee ID"
               fullWidth
+              disabled
               variant="outlined"
-              value={newEmployee.employeeId}
+              value={"EMP-" + count}
               onChange={handleInputChange}
             />
             <TextField
@@ -451,19 +485,35 @@ export function EmployeesTable() {
               name="position"
               label="Position"
               fullWidth
+              select
               variant="outlined"
               value={newEmployee.position}
               onChange={handleInputChange}
-            />
+            >
+              {positions.map((position) => (
+                position.position != "admin" && position.position != "engineer" && (
+                  <MenuItem key={position.id} value={position.position}>
+                    {position.position}
+                  </MenuItem>
+                )
+              ))}
+            </TextField>
             <TextField
               margin="dense"
               name="assignedProject"
               label="Assigned Project"
               fullWidth
+              select
               variant="outlined"
               value={newEmployee.assignedProject}
               onChange={handleInputChange}
-            />
+            >
+              {projects.map((project) => (
+                <MenuItem key={project.id} value={project.name}>
+                  {project.name}
+                </MenuItem>
+              ))}
+            </TextField>
             <TextField
               margin="dense"
               name="dateOfEmployment"
@@ -475,21 +525,6 @@ export function EmployeesTable() {
               value={newEmployee.dateOfEmployment}
               onChange={handleInputChange}
             />
-            <TextField
-              select
-              margin="dense"
-              name="status"
-              label="Status"
-              fullWidth
-              variant="outlined"
-              value={newEmployee.status}
-              onChange={handleInputChange}
-              SelectProps={{ native: true }}
-            >
-              <option value="available">Available</option>
-              <option value="ongoing">Ongoing</option>
-              <option value="on leave">On Leave</option>
-            </TextField>
             <TextField
               margin="dense"
               name="email"
@@ -562,24 +597,44 @@ export function EmployeesTable() {
                 value={editingEmployee.name}
                 onChange={handleEditInputChange}
               />
-              <TextField
-                margin="dense"
-                name="position"
-                label="Position"
-                fullWidth
-                variant="outlined"
-                value={editingEmployee.position}
-                onChange={handleEditInputChange}
-              />
-              <TextField
-                margin="dense"
-                name="assignedProject"
-                label="Assigned Project"
-                fullWidth
-                variant="outlined"
-                value={editingEmployee.assignedProject}
-                onChange={handleEditInputChange}
-              />
+              {editingEmployee.position != "admin" && editingEmployee.position != "engineer" && (
+                <TextField
+                  margin="dense"
+                  name="position"
+                  label="Position"
+                  fullWidth
+                  select
+                  variant="outlined"
+                  value={editingEmployee.position}
+                  onChange={handleEditInputChange}
+                >
+                  {positions.map((position) => (
+                    position.position != "admin" && position.position != "engineer" && (
+                      <MenuItem key={position.id} value={position.position}>
+                        {position.position}
+                      </MenuItem>
+                    )
+                  ))}
+                </TextField>
+              )}
+              {editingEmployee.position != "admin" && (
+                <TextField
+                  margin="dense"
+                  name="assignedProjectId"
+                  label="Assigned Project"
+                  select
+                  fullWidth
+                  variant="outlined"
+                  value={editingEmployee.assignedProjectId || ""}
+                  onChange={handleEditInputChange}
+                >
+                  {projects.map((project) => (
+                    <MenuItem key={project.id} value={project.id}>
+                      {project.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
               <TextField
                 margin="dense"
                 name="dateOfEmployment"
@@ -591,21 +646,6 @@ export function EmployeesTable() {
                 value={editingEmployee.dateOfEmployment}
                 onChange={handleEditInputChange}
               />
-              <TextField
-                select
-                margin="dense"
-                name="status"
-                label="Status"
-                fullWidth
-                variant="outlined"
-                value={editingEmployee.status}
-                onChange={handleEditInputChange}
-                SelectProps={{ native: true }}
-              >
-                <option value="available">Available</option>
-                <option value="ongoing">Ongoing</option>
-                <option value="on leave">On Leave</option>
-              </TextField>
               <TextField
                 margin="dense"
                 name="email"

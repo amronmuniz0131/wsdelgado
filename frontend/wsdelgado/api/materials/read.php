@@ -22,8 +22,8 @@ if($num > 0){
             "name" => $name,
             "quantity" => $quantity,
             "unit" => $unit,
-            "status" => $status,
             "lastRestocked" => $last_restocked,
+            "max_stock" => $max_stock,
             "requestingEngineerId" => $requesting_engineer_id,
             "projectId" => $project_id,
             "price" => $price

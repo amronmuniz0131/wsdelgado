@@ -21,7 +21,8 @@ if($project->readOne()){
         "foreman_id" => $project->foreman_id,
         "engineer_id" => $project->engineer_id,
         "foreman_name" => $project->foreman_name,
-        "engineer_name" => $project->engineer_name
+        "engineer_name" => $project->engineer_name,
+        "client_name" => $project->client_name
     );
     http_response_code(200);
     echo json_encode($project_arr);
