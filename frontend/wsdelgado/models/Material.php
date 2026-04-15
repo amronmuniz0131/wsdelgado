@@ -9,12 +9,7 @@ class Material {
     public $unit;
     public $last_restocked;
     public $max_stock;
-    public $requesting_engineer_id;
-    public $project_id;
     public $price;
-    public $is_approved;
-    public $created_at;
-    public $updated_at;
 
     public function __construct($db) {
         $this->conn = $db;
@@ -25,8 +20,7 @@ class Material {
         $query = "INSERT INTO " . $this->table_name . " 
                 SET name=:name, quantity=:quantity, unit=:unit, 
                     max_stock=:max_stock, last_restocked=:last_restocked, 
-                    requesting_engineer_id=:requesting_engineer_id, 
-                    project_id=:project_id, price=:price, is_approved=:is_approved";
+                    price=:price";
         
         $stmt = $this->conn->prepare($query);
 
@@ -37,10 +31,7 @@ class Material {
         $stmt->bindParam(":unit", $this->unit);
         $stmt->bindParam(":max_stock", $this->max_stock);
         $stmt->bindParam(":last_restocked", $this->last_restocked);
-        $stmt->bindParam(":requesting_engineer_id", $this->requesting_engineer_id);
-        $stmt->bindParam(":project_id", $this->project_id);
         $stmt->bindParam(":price", $this->price);
-        $stmt->bindParam(":is_approved", $this->is_approved);
 
         if($stmt->execute()) {
             return true;
@@ -50,11 +41,7 @@ class Material {
 
     // READ ALL
     public function read() {
-        $query = "SELECT m.*, e.name as engineer_name, p.name as project_name 
-                FROM " . $this->table_name . " m
-                LEFT JOIN employees e ON m.requesting_engineer_id = e.id
-                LEFT JOIN projects p ON m.project_id = p.id
-                ORDER BY m.created_at DESC";
+        $query = "SELECT m.* FROM " . $this->table_name . " m ORDER BY m.name ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt;
@@ -62,10 +49,8 @@ class Material {
 
     // READ ONE
     public function readOne() {
-        $query = "SELECT m.*, e.name as engineer_name, p.name as project_name 
+        $query = "SELECT m.* 
                 FROM " . $this->table_name . " m
-                LEFT JOIN employees e ON m.requesting_engineer_id = e.id
-                LEFT JOIN projects p ON m.project_id = p.id
                 WHERE m.id = ? LIMIT 0,1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $this->id);
@@ -86,8 +71,7 @@ class Material {
         $query = "UPDATE " . $this->table_name . " 
                 SET name=:name, quantity=:quantity, unit=:unit, 
                     max_stock=:max_stock, last_restocked=:last_restocked, 
-                    requesting_engineer_id=:requesting_engineer_id, 
-                    project_id=:project_id, price=:price, is_approved=:is_approved
+                    price=:price
                 WHERE id = :id";
         
         $stmt = $this->conn->prepare($query);
@@ -100,10 +84,7 @@ class Material {
         $stmt->bindParam(":unit", $this->unit);
         $stmt->bindParam(":max_stock", $this->max_stock);
         $stmt->bindParam(":last_restocked", $this->last_restocked);
-        $stmt->bindParam(":requesting_engineer_id", $this->requesting_engineer_id);
-        $stmt->bindParam(":project_id", $this->project_id);
         $stmt->bindParam(":price", $this->price);
-        $stmt->bindParam(":is_approved", $this->is_approved);
         $stmt->bindParam(":id", $this->id);
 
         if($stmt->execute()) {
@@ -131,10 +112,7 @@ class Material {
         $this->unit = htmlspecialchars(strip_tags($this->unit));
         $this->max_stock = htmlspecialchars(strip_tags($this->max_stock));
         $this->last_restocked = htmlspecialchars(strip_tags($this->last_restocked));
-        $this->requesting_engineer_id = $this->requesting_engineer_id ? htmlspecialchars(strip_tags($this->requesting_engineer_id)) : null;
-        $this->project_id = $this->project_id ? htmlspecialchars(strip_tags($this->project_id)) : null;
         $this->price = htmlspecialchars(strip_tags($this->price));
-        $this->is_approved = htmlspecialchars(strip_tags($this->is_approved));
     }
 }
 ?>

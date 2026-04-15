@@ -24,8 +24,6 @@ if($num > 0){
             "unit" => $unit,
             "lastRestocked" => $last_restocked,
             "max_stock" => $max_stock,
-            "requestingEngineerId" => $requesting_engineer_id,
-            "projectId" => $project_id,
             "price" => $price
         );
         array_push($materials_arr["records"], $material_item);

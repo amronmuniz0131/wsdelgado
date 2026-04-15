@@ -15,12 +15,9 @@ if(!empty($data->id)) {
     $material->name = $data->name ?? "";
     $material->quantity = $data->quantity ?? 0;
     $material->unit = $data->unit ?? "";
-    $material->status = $data->status ?? "Unknown";
     $material->last_restocked = $data->last_restocked ?? date('Y-m-d H:i:s');
-    $material->requesting_engineer_id = $data->requesting_engineer_id ?? null;
-    $material->project_id = $data->project_id ?? null;
     $material->price = $data->price ?? 0;
-    $material->is_approved = $data->is_approved ?? 0;
+    $material->max_stock = $data->max_stock ?? 0;
 
     if($material->update()) {
         http_response_code(200);
