@@ -166,10 +166,10 @@ export function EquipmentsTable(props) {
       const response = await fetch(`${API_BASE_URL}/equipments/update.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          id, 
-          status: "Maintenance", 
-          is_approved: 1 
+        body: JSON.stringify({
+          id,
+          status: "Maintenance",
+          is_approved: 1
         }),
       });
 
@@ -189,7 +189,7 @@ export function EquipmentsTable(props) {
     // Assuming 8 working hours per day for estimation
     const hours = parseFloat(equipmentRequest.estimatedHours || 0);
     const daysToAdd = hours > 0 ? Math.ceil(hours / 8) : 0;
-    
+
     const returnDay = new Date(today);
     returnDay.setDate(today.getDate() + daysToAdd);
 
@@ -262,12 +262,13 @@ export function EquipmentsTable(props) {
       sortable: false,
       filterable: false,
       renderCell: (params) => (
-        <Box className="flex gap-2">
+        <Box className="flex gap-2 items-center h-full">
           <Button
             variant="contained"
             onClick={() => handleOpen(params.row)}
             className="bg-blue-600 !text-2xs hover:bg-blue-700"
             size="small"
+            disabled={props.user !== "admin"}
           >
             Edit
           </Button>

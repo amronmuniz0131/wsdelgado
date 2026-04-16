@@ -530,7 +530,7 @@ export function MaterialsTable(props) {
                                 variant="contained"
                                 color="success"
                                 className="bg-green-600 !text-3xs"
-                                onClick={() => handleApproveRequest(req)}
+                                onClick={() => handleApproveRequest({ ...req, engineer_id: req.id })}
                               >
                                 Approve
                               </Button>
