@@ -39,13 +39,20 @@ export function EquipmentsTable(props) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [equipmentRequest, setEquipmentRequest] = useState({
+    id: null,
     name: "",
     type: "",
-    status: "",
-    currentLocation: "",
+    status: "Available",
+    projectId: "",
+    projectName: "",
+    operatorId: "",
     operator: "",
+    requestedById: "",
     requestedBy: "",
-    estimatedHours: "",
+    estimatedHours: 0,
+    borrowDate: "",
+    returnDate: "",
+    is_approved: 0
   });
 
   const fetchEquipments = async () => {
@@ -67,13 +74,20 @@ export function EquipmentsTable(props) {
   const handleOpen = (equipment) => {
     if (equipment && equipment.id) {
       setEquipmentRequest({
+        id: equipment.id,
         name: equipment.name || "",
         type: equipment.type || "",
-        status: equipment.status || "",
-        currentLocation: equipment.currentLocation || "",
+        status: equipment.status || "Available",
+        projectId: equipment.projectId || "",
+        projectName: equipment.projectName || "",
+        operatorId: equipment.operatorId || "",
         operator: equipment.operator || "",
+        requestedById: equipment.requestedById || "",
         requestedBy: equipment.requestedBy || "",
-        estimatedHours: equipment.estimatedHours || "",
+        estimatedHours: equipment.estimatedHours || 0,
+        borrowDate: equipment.borrowDate || "",
+        returnDate: equipment.returnDate || "",
+        is_approved: equipment.is_approved || 0
       });
     }
     setOpen(true);
@@ -86,10 +100,15 @@ export function EquipmentsTable(props) {
       name: "",
       type: "",
       status: "Available",
-      currentLocation: "",
+      projectId: "",
+      projectName: "",
+      operatorId: "",
       operator: "",
+      requestedById: "",
       requestedBy: "",
-      estimatedHours: "",
+      estimatedHours: 0,
+      borrowDate: "",
+      returnDate: "",
       is_approved: 0
     });
   };
@@ -100,7 +119,23 @@ export function EquipmentsTable(props) {
   };
 
   const submitEquipment = async (overrideData = {}) => {
-    const payload = { ...equipmentRequest, ...overrideData };
+    const data = { ...equipmentRequest, ...overrideData };
+
+    // Convert to snake_case for API
+    const payload = {
+      id: data.id,
+      name: data.name,
+      type: data.type,
+      status: data.status,
+      project_id: data.projectId,
+      operator_id: data.operatorId,
+      requested_by_id: data.requestedById,
+      estimated_hours: data.estimatedHours,
+      borrow_date: data.borrowDate,
+      return_date: data.returnDate,
+      is_approved: data.is_approved
+    };
+
     if (!payload.status) {
       payload.status = "Available";
     }
@@ -126,12 +161,55 @@ export function EquipmentsTable(props) {
     }
   }
 
-  const handleDecline = async () => {
-    if (equipmentRequest.id) {
-      await submitEquipment({ is_approved: 0, status: "Declined" });
-    } else {
-      handleClose();
+  const handleMaintenance = async (id) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/equipments/update.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          id, 
+          status: "Maintenance", 
+          is_approved: 1 
+        }),
+      });
+
+      if (response.ok) {
+        fetchEquipments();
+      } else {
+        const error = await response.json();
+        alert(error.message || "Failed to set maintenance status");
+      }
+    } catch (error) {
+      console.error("Error setting maintenance:", error);
     }
+  };
+
+  const handleApprove = async () => {
+    const today = new Date();
+    // Assuming 8 working hours per day for estimation
+    const hours = parseFloat(equipmentRequest.estimatedHours || 0);
+    const daysToAdd = hours > 0 ? Math.ceil(hours / 8) : 0;
+    
+    const returnDay = new Date(today);
+    returnDay.setDate(today.getDate() + daysToAdd);
+
+    await submitEquipment({
+      status: "In Use",
+      is_approved: 1,
+      borrowDate: today.toISOString().split('T')[0],
+      returnDate: returnDay.toISOString().split('T')[0]
+    });
+  };
+
+  const handleDecline = async () => {
+    await submitEquipment({
+      status: "Available",
+      is_approved: 0,
+      projectId: null,
+      requestedById: null,
+      borrowDate: null,
+      returnDate: null
+    });
   };
 
   const filteredOperators = getGridStringOperators().filter((operator) =>
@@ -162,11 +240,12 @@ export function EquipmentsTable(props) {
       ),
     },
     {
-      field: "currentLocation",
-      headerName: "Current Location",
+      field: "projectName",
+      headerName: "Project",
       flex: 1,
       minWidth: 150,
-      filterOperators: filteredOperators
+      filterOperators: filteredOperators,
+      valueGetter: (value, row) => row.projectName || "N/A"
     },
     {
       field: "operator",
@@ -183,14 +262,26 @@ export function EquipmentsTable(props) {
       sortable: false,
       filterable: false,
       renderCell: (params) => (
-        <Button
-          variant="contained"
-          onClick={() => handleOpen(params.row)}
-          className="bg-blue-600 !text-2xs hover:bg-blue-700"
-          size="small"
-        >
-          View More
-        </Button>
+        <Box className="flex gap-2">
+          <Button
+            variant="contained"
+            onClick={() => handleOpen(params.row)}
+            className="bg-blue-600 !text-2xs hover:bg-blue-700"
+            size="small"
+          >
+            Edit
+          </Button>
+          {params.row.status !== "Maintenance" && props.user === "admin" && (
+            <Button
+              variant="outlined"
+              onClick={() => handleMaintenance(params.row.id)}
+              className="border-red-600 text-red-600 hover:bg-red-50 !text-2xs"
+              size="small"
+            >
+              Maint.
+            </Button>
+          )}
+        </Box>
       ),
     },
   ];
@@ -267,24 +358,26 @@ export function EquipmentsTable(props) {
               value={equipmentRequest.type}
               onChange={handleInputChange}
             />
-            <TextField
-              select
-              margin="dense"
-              name="status"
-              label="Status"
-              fullWidth
-              variant="outlined"
-              value={equipmentRequest.status || "Available"}
-              onChange={handleInputChange}
-              SelectProps={{
-                native: true,
-              }}
-            >
-              <option value="Available">Available</option>
-              <option value="In Use">In Use</option>
-              <option value="Maintenance">Maintenance</option>
-              <option value="Pending">Pending</option>
-            </TextField>
+            {!equipmentRequest.requestedById && (
+              <TextField
+                select
+                margin="dense"
+                name="status"
+                label="Status"
+                fullWidth
+                variant="outlined"
+                value={equipmentRequest.status || "Available"}
+                onChange={handleInputChange}
+                SelectProps={{
+                  native: true,
+                }}
+              >
+                <option value="Available">Available</option>
+                <option value="In Use">In Use</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="Requested">Requested</option>
+              </TextField>
+            )}
             <TextField
               margin="dense"
               name="estimatedHours"
@@ -307,25 +400,65 @@ export function EquipmentsTable(props) {
             />
             <TextField
               margin="dense"
-              name="requestedBy"
-              label="Requested By"
-              type="text"
+              name="borrowDate"
+              label="Borrow Date"
+              type="date"
               fullWidth
               variant="outlined"
-              value={equipmentRequest.requestedBy}
+              InputLabelProps={{ shrink: true }}
+              value={equipmentRequest.borrowDate}
               onChange={handleInputChange}
+              disabled
             />
             <TextField
               margin="dense"
-              name="currentLocation"
-              label="Site Location"
-              type="text"
+              name="returnDate"
+              label="Return Date"
+              type="date"
               fullWidth
               variant="outlined"
-              value={equipmentRequest.currentLocation}
+              InputLabelProps={{ shrink: true }}
+              value={equipmentRequest.returnDate}
               onChange={handleInputChange}
-              className="col-span-1 md:col-span-2"
             />
+            <Box className="col-span-1 md:col-span-2 bg-blue-50 p-4 rounded-xl space-y-4">
+              <Box className="space-y-2">
+                <Typography variant="subtitle2" className="font-bold text-blue-800">Requesting Info</Typography>
+                <Box className="grid grid-cols-2 gap-4">
+                  <Box>
+                    <Typography variant="caption" className="text-gray-400 block uppercase">Project</Typography>
+                    <Typography variant="body2" className="font-medium text-gray-700">{equipmentRequest.projectName || "None"}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" className="text-gray-400 block uppercase">Engineer</Typography>
+                    <Typography variant="body2" className="font-medium text-gray-700">{equipmentRequest.requestedBy || "None"}</Typography>
+                  </Box>
+                </Box>
+              </Box>
+
+              {equipmentRequest.status === "Requested" && props.user === "admin" && (
+                <Box className="flex gap-2 pt-2 border-t border-blue-100">
+                  <Button
+                    onClick={handleApprove}
+                    variant="contained"
+                    color="success"
+                    fullWidth
+                    className="bg-green-600 hover:bg-green-700 py-2 font-bold"
+                  >
+                    Approve & Deploy
+                  </Button>
+                  <Button
+                    onClick={handleDecline}
+                    variant="outlined"
+                    color="error"
+                    fullWidth
+                    className="border-red-600 text-red-600 hover:bg-red-50 py-2 font-bold"
+                  >
+                    Reject
+                  </Button>
+                </Box>
+              )}
+            </Box>
           </Box>
         </DialogContent>
         <DialogActions className="p-4 border-t border-gray-100 flex justify-between">
@@ -342,22 +475,16 @@ export function EquipmentsTable(props) {
               <>
                 {equipmentRequest.id ? (
                   <>
-                    <Button
-                      onClick={handleDecline}
-                      variant="outlined"
-                      color="error"
-                      className="border-red-600 text-red-600 hover:bg-red-50"
-                    >
-                      Decline
-                    </Button>
-                    <Button
-                      onClick={() => submitEquipment({ is_approved: 1 })}
-                      variant="contained"
-                      color="success"
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      Approve & Save
-                    </Button>
+                    {equipmentRequest.status !== "Requested" && (
+                      <Button
+                        onClick={() => submitEquipment()}
+                        variant="contained"
+                        color="success"
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Save Changes
+                      </Button>
+                    )}
                   </>
                 ) : (
                   <Button

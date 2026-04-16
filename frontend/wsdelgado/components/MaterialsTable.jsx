@@ -13,6 +13,12 @@ import {
   Typography,
   Box,
   Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
 } from "@mui/material";
 import { DataGrid, getGridStringOperators } from "@mui/x-data-grid";
 import { Plus } from "lucide-react";
@@ -110,6 +116,8 @@ export function MaterialsTable(props) {
     });
   };
 
+  const [currentMaterial, setCurrentMaterial] = useState(null);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setMaterialRequest((prev) => ({ ...prev, [name]: value }));
@@ -149,6 +157,86 @@ export function MaterialsTable(props) {
       handleClose();
     }
   };
+
+  const [table, openTable] = useState(false);
+  const [requests, setRequests] = useState([]);
+
+  const fetchRequests = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/request/read.php`);
+      const data = await response.json();
+      setRequests(data.records || []);
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+    }
+  };
+
+  React.useEffect(() => {
+    if (table) {
+      fetchRequests();
+    }
+  }, [table]);
+
+  const handleApproveRequest = async (req) => {
+    try {
+      // 1. Update request status to "Approve"
+      const updateReqResponse = await fetch(`${API_BASE_URL}/request/update.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...req,
+          is_approve: "Approve"
+        }),
+      });
+
+      if (updateReqResponse.ok) {
+        // 2. Deduct quantity from material
+        const material = materials.find(m => m.id === req.material_id);
+        if (material) {
+          const newQuantity = Math.max(0, parseInt(material.quantity) - parseInt(req.quantity));
+          const updateMatResponse = await fetch(`${API_BASE_URL}/materials/update.php`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...material,
+              quantity: newQuantity
+            }),
+          });
+
+          if (updateMatResponse.ok) {
+            alert("Request approved and inventory updated!");
+          } else {
+            console.error("Failed to update material quantity");
+          }
+        }
+        fetchRequests();
+        fetchMaterials();
+      }
+    } catch (error) {
+      console.error("Error approving request:", error);
+    }
+  };
+
+  const handleRejectRequest = async (req) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/request/update.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...req,
+          is_approve: "Reject"
+        }),
+      });
+
+      if (response.ok) {
+        alert("Request rejected.");
+        fetchRequests();
+      }
+    } catch (error) {
+      console.error("Error rejecting request:", error);
+    }
+  };
+
 
   const filteredOperators = getGridStringOperators().filter((operator) =>
     ["contains", "startsWith", "equals"].includes(operator.value)
@@ -199,14 +287,26 @@ export function MaterialsTable(props) {
       sortable: false,
       filterable: false,
       renderCell: (params) => (
-        <Button
-          variant="contained"
-          onClick={() => handleOpen(params.row)}
-          className="bg-blue-600 !text-2xs hover:bg-blue-700"
-          size="small"
-        >
-          View More
-        </Button>
+        <div className="h-full gap-2 flex items-center justify-between">
+          <Button
+            variant="contained"
+            onClick={() => { openTable(true); setCurrentMaterial(params.row.id) }}
+            disabled={props.user === "engineer"}
+            className="bg-blue-600 !text-2xs hover:bg-blue-700"
+            size="small"
+          >
+            View More
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => handleOpen(params.row)}
+            disabled={props.user === "engineer"}
+            className="bg-blue-600 !text-2xs hover:bg-blue-700"
+            size="small"
+          >
+            Edit
+          </Button>
+        </div>
       ),
     },
   ];
@@ -223,7 +323,7 @@ export function MaterialsTable(props) {
             Construction Materials Inventory
           </Typography>
         </Box>
-        {(props.user === "admin" || props.user === "engineer") && (
+        {(props.user === "admin") && (
           <Button
             variant="contained"
             color="primary"
@@ -321,27 +421,6 @@ export function MaterialsTable(props) {
               value={materialRequest.price}
               onChange={handleInputChange}
             />
-            <TextField
-              margin="dense"
-              name="requestingEngineer"
-              label="Requesting Engineer"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={materialRequest.requestingEngineer}
-              onChange={handleInputChange}
-            />
-            <TextField
-              margin="dense"
-              name="siteLocation"
-              label="Site Location"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={materialRequest.siteLocation}
-              onChange={handleInputChange}
-              className="col-span-1 md:col-span-2"
-            />
           </Box>
         </DialogContent>
         <DialogActions className="p-4 border-t border-gray-100 flex justify-between">
@@ -399,6 +478,88 @@ export function MaterialsTable(props) {
           </Box>
         </DialogActions>
       </Dialog>
+
+      {/* Material Request Modal */}
+      <Dialog open={table} onClose={() => openTable(false)} maxWidth="md" fullWidth>
+        <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 mb-4">
+          Material Request
+        </DialogTitle>
+        <DialogContent>
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableHead className="bg-gray-50">
+                <TableRow>
+                  <TableCell className="font-bold">Project</TableCell>
+                  <TableCell className="font-bold">Engineer</TableCell>
+                  <TableCell className="font-bold">Material ID</TableCell>
+                  <TableCell className="font-bold text-right">Qty</TableCell>
+                  <TableCell className="font-bold">Date</TableCell>
+                  <TableCell className="font-bold">Status</TableCell>
+                  <TableCell className="font-bold text-center">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {requests.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center" className="py-8">
+                      No material requests found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  requests.map((req) => (
+
+                    req.material_id === currentMaterial && (
+                      <TableRow key={req.id} hover>
+                        <TableCell>{req.project_name || req.project_id}</TableCell>
+                        <TableCell>{req.engineer_name || req.engineer_id}</TableCell>
+                        <TableCell>{req.material_id}</TableCell>
+                        <TableCell align="right">{req.quantity}</TableCell>
+                        <TableCell>{new Date(req.request_date).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={req.is_approve}
+                            size="small"
+                            color={req.is_approve === "Approve" ? "success" : req.is_approve === "Reject" ? "error" : "warning"}
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          {req.is_approve === "pending" && props.user === "admin" && (
+                            <Box className="flex gap-1 justify-center">
+                              <Button
+                                size="small"
+                                variant="contained"
+                                color="success"
+                                className="bg-green-600 !text-3xs"
+                                onClick={() => handleApproveRequest(req)}
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                size="small"
+                                variant="contained"
+                                color="error"
+                                className="bg-red-600 !text-3xs"
+                                onClick={() => handleRejectRequest(req)}
+                              >
+                                Reject
+                              </Button>
+                            </Box>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )
+
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => openTable(false)} color="inherit">Close</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
+
   );
 }

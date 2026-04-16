@@ -11,6 +11,8 @@ class Equipment {
     public $operator_id;
     public $requested_by_id;
     public $estimated_hours;
+    public $borrow_date;
+    public $return_date;
     public $is_approved;
     public $created_at;
     public $updated_at;
@@ -25,6 +27,7 @@ class Equipment {
                 SET name=:name, type=:type, status=:status, 
                     project_id=:project_id, operator_id=:operator_id, 
                     requested_by_id=:requested_by_id, estimated_hours=:estimated_hours,
+                    borrow_date=:borrow_date, return_date=:return_date,
                     is_approved=:is_approved";
         
         $stmt = $this->conn->prepare($query);
@@ -38,6 +41,8 @@ class Equipment {
         $stmt->bindParam(":operator_id", $this->operator_id);
         $stmt->bindParam(":requested_by_id", $this->requested_by_id);
         $stmt->bindParam(":estimated_hours", $this->estimated_hours);
+        $stmt->bindParam(":borrow_date", $this->borrow_date);
+        $stmt->bindParam(":return_date", $this->return_date);
         $stmt->bindParam(":is_approved", $this->is_approved);
 
         if($stmt->execute()) {
@@ -87,6 +92,7 @@ class Equipment {
                 SET name=:name, type=:type, status=:status, 
                     project_id=:project_id, operator_id=:operator_id, 
                     requested_by_id=:requested_by_id, estimated_hours=:estimated_hours,
+                    borrow_date=:borrow_date, return_date=:return_date,
                     is_approved=:is_approved
                 WHERE id = :id";
         
@@ -102,6 +108,8 @@ class Equipment {
         $stmt->bindParam(":operator_id", $this->operator_id);
         $stmt->bindParam(":requested_by_id", $this->requested_by_id);
         $stmt->bindParam(":estimated_hours", $this->estimated_hours);
+        $stmt->bindParam(":borrow_date", $this->borrow_date);
+        $stmt->bindParam(":return_date", $this->return_date);
         $stmt->bindParam(":is_approved", $this->is_approved);
         $stmt->bindParam(":id", $this->id);
 
@@ -131,8 +139,10 @@ class Equipment {
         $this->project_id = $this->project_id ? htmlspecialchars(strip_tags($this->project_id)) : null;
         $this->operator_id = $this->operator_id ? htmlspecialchars(strip_tags($this->operator_id)) : null;
         $this->requested_by_id = $this->requested_by_id ? htmlspecialchars(strip_tags($this->requested_by_id)) : null;
-        $this->estimated_hours = htmlspecialchars(strip_tags($this->estimated_hours));
-        $this->is_approved = htmlspecialchars(strip_tags($this->is_approved));
+        $this->estimated_hours = $this->estimated_hours ? htmlspecialchars(strip_tags($this->estimated_hours)) : 0;
+        $this->borrow_date = $this->borrow_date ? htmlspecialchars(strip_tags($this->borrow_date)) : null;
+        $this->return_date = $this->return_date ? htmlspecialchars(strip_tags($this->return_date)) : null;
+        $this->is_approved = is_numeric($this->is_approved) ? htmlspecialchars(strip_tags($this->is_approved)) : 0;
     }
 }
 ?>

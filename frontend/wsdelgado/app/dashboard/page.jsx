@@ -77,10 +77,6 @@ export default function DashboardPage() {
           setOpenModal(true)
           setOpenAddModal(false)
         }
-        // if (error.message === "Email already exists") {
-        // } else {
-        //   alert(error.message || "Failed to add account");
-        // }
       }
     } catch (error) {
       console.error("Error adding account:", error);

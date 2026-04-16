@@ -38,6 +38,7 @@ export function EmployeesTable() {
   const [projects, setProjects] = useState([]);
   const [count, setCount] = useState(0)
   const [positions, setPositions] = useState([]);
+  const [prevProject, setPrevProject] = useState(null);
 
   const fetchEmployees = async () => {
     setIsLoading(true);
@@ -127,6 +128,7 @@ export function EmployeesTable() {
 
   const handleOpenEdit = (employee) => {
     setEditingEmployee(employee);
+    setPrevProject(employee.assignedProjectId);
     setOpenEditModal(true);
   };
 
@@ -172,6 +174,44 @@ export function EmployeesTable() {
         body: JSON.stringify(editingEmployee),
       });
       if (response.ok) {
+        // Sync project assignment for Engineers and Foremen
+        const pos = editingEmployee.position?.toLowerCase();
+        if ((pos === "engineer" || pos === "foreman") && editingEmployee.assignedProjectId !== prevProject) {
+          // 1. Clear from previous project
+          if (prevProject) {
+            try {
+              const clearPayload = { id: prevProject };
+              if (pos === "engineer") clearPayload.engineer_id = null;
+              if (pos === "foreman") clearPayload.foreman_id = null;
+
+              await fetch(`${API_BASE_URL}/projects/update.php`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(clearPayload),
+              });
+            } catch (clearError) {
+              console.error("Error clearing old project assignment:", clearError);
+            }
+          }
+
+          // 2. Assign to new project
+          if (editingEmployee.assignedProjectId) {
+            try {
+              const projectUpdatePayload = { id: editingEmployee.assignedProjectId };
+              if (pos === "engineer") projectUpdatePayload.engineer_id = editingEmployee.id;
+              if (pos === "foreman") projectUpdatePayload.foreman_id = editingEmployee.id;
+
+              await fetch(`${API_BASE_URL}/projects/update.php`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(projectUpdatePayload),
+              });
+            } catch (projError) {
+              console.error("Error updating project lead:", projError);
+            }
+          }
+        }
+
         fetchEmployees();
         handleCloseEdit();
       } else {

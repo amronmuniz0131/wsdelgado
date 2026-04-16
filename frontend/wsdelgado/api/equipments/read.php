@@ -23,8 +23,14 @@ if($num > 0){
             "type" => $type,
             "status" => $status,
             "projectId" => $project_id,
+            "projectName" => $project_name,
             "operatorId" => $operator_id,
+            "operator" => $operator_name,
             "requestedById" => $requested_by_id,
+            "requestedBy" => $requested_by_name,
+            "borrowDate" => $borrow_date,
+            "returnDate" => $return_date,
+            "is_approved" => $is_approved,
             "estimatedHours" => $estimated_hours
         );
         array_push($equipments_arr["records"], $equipment_item);

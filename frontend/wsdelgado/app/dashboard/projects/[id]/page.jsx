@@ -21,7 +21,9 @@ import {
   TextField,
   IconButton,
 } from "@mui/material";
-import { ArrowLeft, User, MapPin, Briefcase, CheckCircle2, Image as ImageIcon, Upload, Plus, X } from "lucide-react";
+import { ArrowLeft, User, MapPin, Briefcase, CheckCircle2, Image as ImageIcon, Upload, Plus, X, Package } from "lucide-react";
+import { MenuItem, Select, InputLabel, FormControl } from "@mui/material";
+
 
 export default function ProjectDetailsPage() {
   const { id } = useParams();
@@ -56,6 +58,22 @@ export default function ProjectDetailsPage() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [newImage, setNewImage] = useState({ title: "", description: "", url: "" });
 
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [isEquipmentModalOpen, setIsEquipmentModalOpen] = useState(false);
+  const [materials, setMaterials] = useState([]);
+  const [allEquipments, setAllEquipments] = useState([]);
+  const [requestData, setRequestData] = useState({
+    material_id: "",
+    quantity: "",
+  });
+  const [equipmentRequestData, setEquipmentRequestData] = useState({
+    equipment_id: "",
+    estimated_hours: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userRole, setUserRole] = useState("");
+  const [team, setTeam] = useState([]);
+
   const fetchProjectDetails = async () => {
     setIsLoading(true);
     try {
@@ -73,9 +91,54 @@ export default function ProjectDetailsPage() {
     }
   };
 
+  const fetchMaterials = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/materials/read.php`);
+      if (response.ok) {
+        const data = await response.json();
+        setMaterials(data.records || []);
+      }
+    } catch (error) {
+      console.error("Error fetching materials:", error);
+    }
+  };
+
+  const fetchEquipments = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/equipments/read.php`);
+      if (response.ok) {
+        const data = await response.json();
+        // Only show available equipment
+        setAllEquipments((data.records || []).filter(e => e.status === "Available"));
+      }
+    } catch (error) {
+      console.error("Error fetching equipments:", error);
+    }
+  };
+
+  const fetchTeam = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/employees/read.php`);
+      if (response.ok) {
+        const data = await response.json();
+        // Filter employees assigned to this project
+        const assignedEmployees = (data.records || []).filter(
+          emp => String(emp.assignedProjectId) === String(id)
+        );
+        setTeam(assignedEmployees);
+      }
+    } catch (error) {
+      console.error("Error fetching team:", error);
+    }
+  };
+
   useEffect(() => {
+    setUserRole(localStorage.getItem("user")); // Use 'user' key as defined in login/page.jsx
     if (id) {
       fetchProjectDetails();
+      fetchMaterials();
+      fetchEquipments();
+      fetchTeam();
     }
   }, [id]);
 
@@ -94,6 +157,99 @@ export default function ProjectDetailsPage() {
       };
       setImages([img, ...images]);
       handleCloseUpload();
+    }
+  };
+
+  const handleOpenRequest = () => setIsRequestModalOpen(true);
+  const handleCloseRequest = () => {
+    setIsRequestModalOpen(false);
+    setRequestData({ material_id: "", quantity: "" });
+  };
+
+  const handleOpenEquipmentRequest = () => setIsEquipmentModalOpen(true);
+  const handleCloseEquipmentRequest = () => {
+    setIsEquipmentModalOpen(false);
+    setEquipmentRequestData({ equipment_id: "", estimated_hours: "" });
+  };
+
+  const handleEquipmentRequestSubmit = async () => {
+    if (!equipmentRequestData.equipment_id || !equipmentRequestData.estimated_hours) {
+      alert("Please fill in all fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        id: equipmentRequestData.equipment_id,
+        project_id: project.id,
+        requested_by_id: project.engineer_id,
+        estimated_hours: equipmentRequestData.estimated_hours,
+        status: "Requested",
+        is_approved: 0
+      };
+
+      const response = await fetch(`${API_BASE_URL}/equipments/update.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        alert("Equipment request submitted successfully!");
+        handleCloseEquipmentRequest();
+        fetchEquipments(); // Refresh list
+      } else {
+        const error = await response.json();
+        alert(`Failed to submit request: ${error.message}`);
+      }
+    } catch (error) {
+      console.error("Error submitting equipment request:", error);
+      alert("An error occurred while submitting the request.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRequestSubmit = async () => {
+    if (!requestData.material_id || !requestData.quantity) {
+      alert("Please fill in all fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        material_id: requestData.material_id,
+        quantity: requestData.quantity,
+        engineer_id: project.engineer_id,
+        project_id: project.id,
+        request_date: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        is_approve: "Pending"
+      };
+
+      const response = await fetch(`${API_BASE_URL}/request/create.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        alert("Material request submitted successfully!");
+        handleCloseRequest();
+      } else {
+        const error = await response.json();
+        alert(`Failed to submit request: ${error.message}`);
+      }
+    } catch (error) {
+      console.error("Error submitting request:", error);
+      alert("An error occurred while submitting the request.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -125,238 +281,227 @@ export default function ProjectDetailsPage() {
       </Button>
 
       <Box className="max-w-6xl mx-auto space-y-6">
-        {/* Header Section */}
-        <Paper className="p-8 shadow-sm border border-gray-100 rounded-xl overflow-hidden relative">
-          <Box className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <Box>
-              <Typography variant="h4" className="font-bold text-gray-900 mb-2">
-                {project.name}
-              </Typography>
-              <Box className="flex items-center gap-2">
-                <Chip
-                  label={project.progress === 100 ? "Completed" : "In Progress"}
-                  color={project.progress === 100 ? "success" : "primary"}
-                  size="small"
-                  variant="outlined"
-                />
-                <Typography variant="body2" className="text-gray-500">
-                  ID: #{project.id}
-                </Typography>
-              </Box>
-            </Box>
-
+        {/* Header Section - Modern Slim */}
+        <Box className="flex flex-col md:flex-row justify-between items-end gap-6 bg-white p-8 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
+          <Box className="z-10 flex-1">
+            <Typography variant="h3" className="font-black text-gray-900 mb-2 tracking-tight">
+              {project.name}
+            </Typography>
             <Box className="flex items-center gap-4">
-              <Box className="text-right">
-                <Typography variant="h3" className="font-bold text-blue-600">
-                  {project.progress}%
-                </Typography>
-                <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-wider">
-                  COMPLETION PROGRESS
-                </Typography>
-              </Box>
-              <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-                <CircularProgress
-                  variant="determinate"
-                  value={project.progress}
-                  size={80}
-                  thickness={6}
-                  className="text-blue-600"
-                />
-              </Box>
+              <Chip
+                label={project.progress === 100 ? "Completed" : "In Progress"}
+                color={project.progress === 100 ? "success" : "primary"}
+                className="font-bold rounded-lg"
+              />
+              <Typography variant="body2" className="text-gray-400 font-medium">#{project.id} • Registered {new Date(project.created_at).toLocaleDateString()}</Typography>
             </Box>
           </Box>
-        </Paper>
 
-        <Grid container spacing={4}>
-          {/* Main Info Card */}
-          <Grid item xs={12} md={8}>
-            <Card className="shadow-sm border border-gray-100 h-full rounded-xl">
-              <CardContent className="p-6">
-                <Typography variant="h6" className="font-bold text-gray-800 mb-6 flex items-center gap-2">
-                  <Briefcase size={20} className="text-blue-600" />
-                  Project Information
-                </Typography>
+          <Box className="z-10 flex items-center gap-8 bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+            <Box className="text-right">
+              <Typography variant="h3" className="font-black text-blue-600 leading-none">
+                {project.progress}<span className="text-xl">%</span>
+              </Typography>
+              <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-tighter">Progress</Typography>
+            </Box>
+            <Box sx={{ position: 'relative' }}>
+              <CircularProgress
+                variant="determinate"
+                value={project.progress}
+                size={60}
+                thickness={8}
+                className="text-blue-600"
+              />
+            </Box>
+          </Box>
+        </Box>
 
-                <Box className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <Box className="space-y-4">
-                    <Box>
-                      <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-wider">
-                        Client
-                      </Typography>
-                      <Typography variant="body1" className="font-semibold text-gray-700">
-                        {project.client_name}
-                      </Typography>
-                    </Box>
-
-                    <Box>
-                      <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-wider">
-                        Location
-                      </Typography>
-                      <Box className="flex items-start gap-1 mt-1">
-                        <MapPin size={16} className="text-red-400 mt-0.5" />
-                        <Typography variant="body1" className="text-gray-700">
-                          {project.location}
-                        </Typography>
-                      </Box>
-                    </Box>
-
-                    <Box>
-                      <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-wider">
-                        Full Address
-                      </Typography>
-                      <Typography variant="body2" className="text-gray-600 leading-relaxed">
-                        {project.address}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  <Box className="space-y-4">
-                    <Box>
-                      <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-wider">
-                        Team Lead / Foreman
-                      </Typography>
-                      <Box className="flex items-center gap-2 mt-1">
-                        <User size={18} className="text-blue-400" />
-                        <Typography variant="body1" className="font-semibold text-gray-700">
-                          {project.foreman_name || project.foreman || "Unassigned"}
-                        </Typography>
-                      </Box>
-                    </Box>
-
-                    <Box>
-                      <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-wider">
-                        Lead Engineer
-                      </Typography>
-                      <Box className="flex items-center gap-2 mt-1">
-                        <User size={18} className="text-green-400" />
-                        <Typography variant="body1" className="font-semibold text-gray-700">
-                          {project.engineer_name || project.engineer || "Unassigned"}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
+        <Grid container spacing={3}>
+          {/* Main Context - Left Column */}
+          <Grid item xs={12} lg={9} className="space-y-6">
+            <Card className="shadow-sm border border-gray-100 rounded-2xl overflow-hidden">
+              <CardContent className="p-0">
+                <Box className="bg-gray-50/50 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                  <Typography variant="subtitle1" className="font-bold text-gray-800 flex items-center gap-2">
+                    <Briefcase size={18} className="text-blue-600" />
+                    Overview & Logistics
+                  </Typography>
                 </Box>
-
-                <Divider className="my-6" />
-
-                <Box className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <Box>
-                    <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-wider">
-                      Date Started
-                    </Typography>
-                    <Typography variant="body1" className="font-semibold text-gray-700">
-                      {project.startDate || (project.created_at ? new Date(project.created_at).toLocaleDateString() : "N/A")}
-                    </Typography>
+                <Box className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <Box className="space-y-4">
+                    <Box>
+                      <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Client</Typography>
+                      <Typography variant="body1" className="font-bold text-gray-700">{project.client_name}</Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Primary Location</Typography>
+                      <Box className="flex items-start gap-1 mt-1">
+                        <MapPin size={14} className="text-red-500 mt-1" />
+                        <Typography variant="body2" className="text-gray-700 leading-tight font-medium">
+                          {project.location}<br />
+                          <span className="text-gray-400 text-xs font-normal">{project.address}</span>
+                        </Typography>
+                      </Box>
+                    </Box>
                   </Box>
-                  <Box>
-                    <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-wider">
-                      Projected Completion Date
-                    </Typography>
-                    <Typography variant="body1" className="font-semibold text-blue-600">
-                      {project.projectedCompletionDate || "TBA"}
-                    </Typography>
+
+                  <Box className="space-y-4">
+                    <Box>
+                      <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Field Leadership</Typography>
+                      <Box className="space-y-2 mt-1">
+                        <Box className="flex items-center gap-2">
+                          <User size={14} className="text-blue-400" />
+                          <Typography variant="body2" className="font-bold text-gray-700 text-xs">
+                            {project.foreman_name || project.foreman || "Unassigned"} <span className="text-[10px] text-gray-400 font-normal ml-1">FOREMAN</span>
+                          </Typography>
+                        </Box>
+                        <Box className="flex items-center gap-2">
+                          <User size={14} className="text-green-400" />
+                          <Typography variant="body2" className="font-bold text-gray-700 text-xs">
+                            {project.engineer_name || project.engineer || "Unassigned"} <span className="text-[10px] text-gray-400 font-normal ml-1">ENGINEER</span>
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Box>
+
+                  <Box className="space-y-4 bg-blue-50/30 p-4 rounded-xl border border-blue-50">
+                    <Box className="flex justify-between items-center border-b border-blue-100 pb-2">
+                      <Typography variant="caption" className="text-blue-400 font-bold">TIMELINES</Typography>
+                      <Chip label="On Schedule" size="small" className="h-5 text-[10px] bg-blue-100 text-blue-700 font-black" />
+                    </Box>
+                    <Grid container spacing={2}>
+                      <Grid item xs={6}>
+                        <Typography variant="caption" className="text-gray-400 text-[9px] uppercase font-bold block">Start</Typography>
+                        <Typography variant="body2" className="font-bold text-gray-700">{project.startDate || (project.created_at ? new Date(project.created_at).toLocaleDateString() : "N/A")}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="caption" className="text-gray-400 text-[9px] uppercase font-bold block">Target</Typography>
+                        <Typography variant="body2" className="font-bold text-blue-600">{project.projectedCompletionDate || "TBA"}</Typography>
+                      </Grid>
+                    </Grid>
                   </Box>
                 </Box>
               </CardContent>
             </Card>
+
+            {/* Project Team Members Table - Move up to reduce scrolling */}
+            <Card className="shadow-sm border border-gray-100 rounded-2xl overflow-hidden">
+              <Box className="bg-gray-50/50 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <Typography variant="subtitle1" className="font-bold text-gray-800 flex items-center gap-2">
+                  <User size={18} className="text-blue-600" />
+                  Execution Team
+                </Typography>
+                <Chip label={`${team.length} Active`} size="small" variant="outlined" className="text-[10px] font-bold" />
+              </Box>
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-gray-50/30 border-b border-gray-100">
+                    <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase">Employee</th>
+                    <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase text-center">Contact</th>
+                    <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {team.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="px-6 py-8 text-center text-gray-300 text-sm">No members linked</td>
+                    </tr>
+                  ) : (
+                    team.map((member) => (
+                      <tr key={member.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-6 py-3">
+                          <Typography variant="body2" className="font-bold text-gray-700 text-xs">{member.name}</Typography>
+                          <Typography className="text-[10px] text-gray-400 uppercase">{member.position}</Typography>
+                        </td>
+                        <td className="px-6 py-3 text-center">
+                          <Typography className="text-[11px] font-medium text-gray-600">{member.phone || member.email || "-"}</Typography>
+                        </td>
+                        <td className="px-6 py-3 text-right">
+                          <Chip
+                            label={member.status}
+                            size="small"
+                            className={`h-5 text-[9px] font-black uppercase ${member.status === "Available" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
+                              }`}
+                          />
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </Card>
           </Grid>
 
-          {/* Quick Stats Sidebar */}
-          <Grid item xs={12} md={4}>
-            <Box className="space-y-6">
-              <Card className="shadow-sm border border-gray-100 rounded-xl">
-                <CardContent className="p-6">
-                  <Typography variant="h6" className="font-bold text-gray-800 mb-4">
-                    Project Stats
-                  </Typography>
-                  <Divider className="mb-4" />
-
-                  <Box className="space-y-4">
-                    <Box className="flex justify-between items-center">
-                      <Typography variant="body2" className="text-gray-500">Status</Typography>
-                      <Chip label="Active" color="success" size="small" />
-                    </Box>
-                    <Box className="flex justify-between items-center">
-                      <Typography variant="body2" className="text-gray-500">Team Size</Typography>
-                      <Typography variant="body2" className="font-bold">12 Members</Typography>
-                    </Box>
-                    <Box className="flex justify-between items-center">
-                      <Typography variant="body2" className="text-gray-500">Priority</Typography>
-                      <Chip label="High" color="warning" size="small" />
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-sm border border-gray-100 rounded-xl bg-blue-600 text-white">
-                <CardContent className="p-6 text-center">
-                  <CheckCircle2 size={40} className="mx-auto mb-2 text-blue-200" />
-                  <Typography variant="h6" className="font-bold">Daily Report</Typography>
-                  <Typography variant="body2" className="opacity-80 mb-4">
-                    Project is currently following its target timeline.
-                  </Typography>
-                  <Button variant="contained" className="bg-white text-blue-600 hover:bg-gray-100 fullWidth">
-                    View Full Audit
+          {/* Right Sidebar - Action & Stats */}
+          <Grid item xs={12} lg={3} className="space-y-4">
+            <Box className="space-y-4 sticky top-6">
+              {userRole === "engineer" && (
+                <Box className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-3">
+                  <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest pl-1">Actions</Typography>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    startIcon={<Package size={16} />}
+                    onClick={handleOpenRequest}
+                    className="bg-orange-500 hover:bg-orange-600 h-11 rounded-xl font-bold shadow-none text-white normal-case"
+                  >
+                    Request Material
                   </Button>
-                </CardContent>
-              </Card>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    startIcon={<Briefcase size={16} />}
+                    onClick={handleOpenEquipmentRequest}
+                    className="bg-blue-600 hover:bg-blue-700 h-11 rounded-xl font-bold shadow-none text-white normal-case"
+                  >
+                    Request Equipment
+                  </Button>
+                </Box>
+              )}
+
+              <Box className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-2xl text-white shadow-xl shadow-blue-100">
+                <Typography variant="h6" className="font-bold mb-1 leading-tight">Daily Status</Typography>
+                <Typography variant="body2" className="opacity-70 text-xs mb-4">On track with adjusted timelines for Q2 delivery.</Typography>
+                <Button fullWidth className="bg-white/10 hover:bg-white/20 text-white border-white/20 border text-xs py-2 rounded-lg normal-case font-bold">
+                  View Latest Audit
+                </Button>
+              </Box>
             </Box>
           </Grid>
         </Grid>
 
-        {/* Image Showcase Section */}
-        <Box className="mt-12">
+        {/* Gallery - Now at the bottom with full width/grid transition */}
+        <Box className="mt-8">
           <Box className="flex justify-between items-center mb-6">
-            <Typography variant="h5" className="font-bold text-gray-800 flex items-center gap-2">
-              <ImageIcon size={24} className="text-blue-600" />
-              Project Gallery
+            <Typography variant="h5" className="font-black text-gray-900 flex items-center gap-2">
+              <ImageIcon size={22} className="text-blue-600" />
+              Gallery <span className="text-gray-300 font-normal text-lg">({images.length})</span>
             </Typography>
             <Button
-              variant="contained"
-              startIcon={<Plus size={18} />}
+              variant="outlined"
+              size="small"
+              startIcon={<Plus size={14} />}
               onClick={handleOpenUpload}
-              className="bg-blue-600 hover:bg-blue-700 rounded-lg px-6"
+              className="rounded-lg border-gray-200 text-gray-600 font-bold px-4 hover:bg-white"
             >
-              Upload Image
+              Add Photo
             </Button>
           </Box>
 
-          {images.length === 0 ? (
-            <Paper className="p-12 text-center border-2 border-dashed border-gray-200 bg-gray-50/50 rounded-2xl">
-              <ImageIcon size={48} className="mx-auto text-gray-300 mb-4" />
-              <Typography variant="h6" className="text-gray-400">No images uploaded yet</Typography>
-              <Typography variant="body2" className="text-gray-400">Add progress photos to showcase project development</Typography>
-            </Paper>
-          ) : (
-            <Grid container spacing={3}>
-              {images.map((image) => (
-                <Grid item xs={12} sm={6} md={4} key={image.id}>
-                  <Card className="group shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 rounded-2xl overflow-hidden h-full">
-                    <Box className="relative h-56 w-full overflow-hidden">
-                      <img
-                        src={image.url}
-                        alt={image.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <Box className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Typography variant="caption" className="text-white font-bold bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">
-                          {image.date}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <CardContent className="p-5">
-                      <Typography variant="subtitle1" className="font-bold text-gray-800 mb-1">
-                        {image.title}
-                      </Typography>
-                      <Typography variant="body2" className="text-gray-500 line-clamp-2">
-                        {image.description}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          )}
+          <Grid container spacing={2}>
+            {images.map((image) => (
+              <Grid item xs={12} sm={6} md={4} key={image.id}>
+                <Box className="group relative rounded-2xl overflow-hidden aspect-video shadow-sm border border-gray-100">
+                  <img src={image.url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <Box className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
+                    <Typography className="text-white font-bold text-sm leading-tight">{image.title}</Typography>
+                    <Typography className="text-white/60 text-[10px]">{image.date}</Typography>
+                  </Box>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
         </Box>
       </Box>
 
@@ -409,6 +554,126 @@ export default function ProjectDetailsPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Request Material Modal */}
+
+      <Dialog
+        open={isRequestModalOpen}
+        onClose={handleCloseRequest}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ className: "rounded-2xl" }}
+      >
+        <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 pb-4">
+          Request Material
+        </DialogTitle>
+        <DialogContent className="pt-6 space-y-4">
+          <FormControl fullWidth variant="outlined">
+            <InputLabel id="material-select-label">Select Material</InputLabel>
+            <Select
+              labelId="material-select-label"
+              value={requestData.material_id}
+              onChange={(e) => setRequestData({ ...requestData, material_id: e.target.value })}
+              label="Select Material"
+            >
+              {materials.map((m) => (
+                <MenuItem key={m.id} value={m.id}>
+                  {m.name} ({m.unit})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <TextField
+            label="Quantity"
+            type="number"
+            fullWidth
+            variant="outlined"
+            value={requestData.quantity}
+            onChange={(e) => setRequestData({ ...requestData, quantity: e.target.value })}
+            inputProps={{ min: 1 }}
+          />
+          <Box className="bg-gray-50 p-3 rounded-lg space-y-1">
+            <Typography variant="caption" className="text-gray-400 block uppercase">Project</Typography>
+            <Typography variant="body2" className="font-medium">{project.name}</Typography>
+
+            <Typography variant="caption" className="text-gray-400 block uppercase mt-2">Engineer</Typography>
+            <Typography variant="body2" className="font-medium">{project.engineer_name || "N/A"}</Typography>
+
+            <Typography variant="caption" className="text-gray-400 block uppercase mt-2">Date</Typography>
+            <Typography variant="body2" className="font-medium">{new Date().toLocaleDateString()}</Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions className="p-4 border-t border-gray-100">
+          <Button onClick={handleCloseRequest} color="inherit">Cancel</Button>
+          <Button
+            onClick={handleRequestSubmit}
+            variant="contained"
+            className="bg-orange-500 hover:bg-orange-600 text-white"
+            disabled={isSubmitting || !requestData.material_id || !requestData.quantity}
+          >
+            {isSubmitting ? <CircularProgress size={24} /> : "Submit Request"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Request Equipment Modal */}
+      <Dialog
+        open={isEquipmentModalOpen}
+        onClose={handleCloseEquipmentRequest}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ className: "rounded-2xl" }}
+      >
+        <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 pb-4">
+          Request Equipment
+        </DialogTitle>
+        <DialogContent className="pt-6 space-y-4">
+          <FormControl fullWidth variant="outlined">
+            <InputLabel id="equipment-select-label">Select Equipment</InputLabel>
+            <Select
+              labelId="equipment-select-label"
+              value={equipmentRequestData.equipment_id}
+              onChange={(e) => setEquipmentRequestData({ ...equipmentRequestData, equipment_id: e.target.value })}
+              label="Select Equipment"
+            >
+              {allEquipments.map((e) => (
+                <MenuItem key={e.id} value={e.id}>
+                  {e.name} ({e.type})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <TextField
+            label="Estimated Usage Hours"
+            type="number"
+            fullWidth
+            variant="outlined"
+            placeholder="e.g. 16"
+            value={equipmentRequestData.estimated_hours}
+            onChange={(e) => setEquipmentRequestData({ ...equipmentRequestData, estimated_hours: e.target.value })}
+            inputProps={{ min: 1 }}
+          />
+          <Box className="bg-gray-50 p-3 rounded-lg space-y-1">
+            <Typography variant="caption" className="text-gray-400 block uppercase">Project</Typography>
+            <Typography variant="body2" className="font-medium">{project.name}</Typography>
+
+            <Typography variant="caption" className="text-gray-400 block uppercase mt-2">Engineer</Typography>
+            <Typography variant="body2" className="font-medium">{project.engineer_name || "N/A"}</Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions className="p-4 border-t border-gray-100">
+          <Button onClick={handleCloseEquipmentRequest} color="inherit">Cancel</Button>
+          <Button
+            onClick={handleEquipmentRequestSubmit}
+            variant="contained"
+            className="bg-blue-500 hover:bg-blue-600 text-white"
+            disabled={isSubmitting || !equipmentRequestData.equipment_id || !equipmentRequestData.estimated_hours}
+          >
+            {isSubmitting ? <CircularProgress size={24} /> : "Submit Request"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
     </Box>
   );
 }

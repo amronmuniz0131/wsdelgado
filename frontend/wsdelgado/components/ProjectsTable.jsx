@@ -48,11 +48,20 @@ export function ProjectsTable(props) {
     }
   };
 
+  const [engineers, setEngineers] = useState([]);
+
   const fetchEmployees = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/employees/read.php`);
       const data = await response.json();
+      let arr = []
       setEmployees(data.records || []);
+      data.records.map((d) => {
+        if (d.position?.toLowerCase() === "engineer" && d.assignedProjectId === null) {
+          arr.push(d)
+        }
+      })
+      setEngineers(arr);
     } catch (error) {
       console.error("Error fetching employees:", error);
     }
@@ -368,7 +377,7 @@ export function ProjectsTable(props) {
               </MenuItem>
               {employees
                 .filter((emp) =>
-                  emp.position?.toLowerCase().includes("foreman")
+                  emp.position?.toLowerCase().includes("foreman") && emp.assignedProjectId === null
                 )
                 .map((emp) => (
                   <MenuItem key={emp.id} value={emp.id}>
@@ -390,13 +399,10 @@ export function ProjectsTable(props) {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              {users
-                .filter((emp) =>
-                  emp.role?.toLowerCase().includes("engineer")
-                )
+              {engineers
                 .map((emp) => (
                   <MenuItem key={emp.id} value={emp.id}>
-                    {emp.name} ({emp.role})
+                    {emp.name}
                   </MenuItem>
                 ))}
             </TextField>

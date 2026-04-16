@@ -18,6 +18,8 @@ if(!empty($data->name)){
     $equipment->operator_id = $data->operator_id ?? null;
     $equipment->requested_by_id = $data->requested_by_id ?? null;
     $equipment->estimated_hours = $data->estimated_hours ?? 0;
+    $equipment->borrow_date = $data->borrow_date ?? null;
+    $equipment->return_date = $data->return_date ?? null;
     $equipment->is_approved = $data->is_approved ?? 0;
 
     if($equipment->create()){
