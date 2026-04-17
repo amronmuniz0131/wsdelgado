@@ -25,6 +25,7 @@ const getStatusColor = (status) => {
     case "In Use":
       return "primary";
     case "Maintenance":
+    case "Overdue":
       return "error";
     case "Pending":
     case "Requested":
@@ -207,6 +208,34 @@ export function EquipmentsTable(props) {
     }
   };
 
+  const handleReturn = async (id) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/equipments/update.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          status: "Available",
+          project_id: null,
+          requested_by_id: null,
+          borrow_date: null,
+          return_date: null,
+          estimated_hours: 0,
+          is_approved: 1
+        }),
+      });
+
+      if (response.ok) {
+        fetchEquipments();
+      } else {
+        const error = await response.json();
+        alert(error.message || "Failed to return equipment");
+      }
+    } catch (error) {
+      console.error("Error returning equipment:", error);
+    }
+  };
+
   const handleApprove = async () => {
     const today = new Date();
     // Assuming 8 working hours per day for estimation
@@ -253,14 +282,25 @@ export function EquipmentsTable(props) {
       flex: 1,
       minWidth: 120,
       filterOperators: filteredOperators,
-      renderCell: (params) => (
-        <Chip
-          label={params.row.status}
-          color={getStatusColor(params.value)}
-          size="small"
-          className="font-medium"
-        />
-      ),
+      renderCell: (params) => {
+        let status = params.row.status;
+        if (status === "In Use" && params.row.returnDate) {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const rDate = new Date(params.row.returnDate);
+          if (rDate < today) {
+            status = "Overdue";
+          }
+        }
+        return (
+          <Chip
+            label={status}
+            color={getStatusColor(status)}
+            size="small"
+            className="font-medium"
+          />
+        );
+      },
     },
     {
       field: "projectName",
@@ -314,6 +354,16 @@ export function EquipmentsTable(props) {
               size="small"
             >
               End Maint.
+            </Button>
+          )}
+          {params.row.status === "In Use" && props.user === "admin" && (
+            <Button
+              variant="outlined"
+              onClick={() => handleReturn(params.row.id)}
+              className="border-green-600 text-green-600 hover:bg-green-50 !text-2xs"
+              size="small"
+            >
+              Return
             </Button>
           )}
         </Box>
