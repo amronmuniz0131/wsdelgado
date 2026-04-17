@@ -12,12 +12,26 @@ $data = json_decode(file_get_contents("php://input"));
 
 if(!empty($data->id)) {
     $request->id = $data->id;
-    $request->material_id = $data->material_id ?? "";
-    $request->quantity = $data->quantity ?? "";
-    $request->engineer_id = $data->engineer_id ?? "";
-    $request->project_id = $data->project_id ?? "";
-    $request->request_date = $data->request_date ?? "";
-    $request->is_approve = $data->is_approve ?? "";
+    $request->readOne(); // Fetch existing data first
+
+    if (property_exists($data, 'material_id')) {
+        $request->material_id = $data->material_id;
+    }
+    if (property_exists($data, 'quantity')) {
+        $request->quantity = $data->quantity;
+    }
+    if (property_exists($data, 'engineer_id')) {
+        $request->engineer_id = $data->engineer_id;
+    }
+    if (property_exists($data, 'project_id')) {
+        $request->project_id = $data->project_id;
+    }
+    if (property_exists($data, 'request_date')) {
+        $request->request_date = $data->request_date;
+    }
+    if (property_exists($data, 'is_approve')) {
+        $request->is_approve = $data->is_approve;
+    }
 
     if($request->update()) {
         http_response_code(200);

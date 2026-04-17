@@ -523,17 +523,27 @@ export function MaterialsTable(props) {
                           />
                         </TableCell>
                         <TableCell align="center">
-                          {req.is_approve === "pending" && props.user === "admin" && (
+                          {req.is_approve === "Pending" && localStorage.getItem('user') === "admin" && (
                             <Box className="flex gap-1 justify-center">
-                              <Button
-                                size="small"
-                                variant="contained"
-                                color="success"
-                                className="bg-green-600 !text-3xs"
-                                onClick={() => handleApproveRequest({ ...req, engineer_id: req.id })}
-                              >
-                                Approve
-                              </Button>
+                                {(() => {
+                                  let isInsufficient = false;
+                                  const currentMat = materials.find(m => m.id === req.material_id);
+                                  if (currentMat) {
+                                    isInsufficient = parseInt(currentMat.quantity) < parseInt(req.quantity);
+                                  }
+                                  return (
+                                    <Button
+                                      size="small"
+                                      variant="contained"
+                                      color="success"
+                                      className={`${isInsufficient ? "bg-gray-400" : "bg-green-600"} !text-3xs`}
+                                      onClick={() => handleApproveRequest({ ...req, engineer_id: req.engineer_id })}
+                                      disabled={isInsufficient}
+                                    >
+                                      Approve
+                                    </Button>
+                                  );
+                                })()}
                               <Button
                                 size="small"
                                 variant="contained"

@@ -47,6 +47,7 @@ export function EmployeesTable() {
       const data = await response.json();
       setEmployees(data.records || []);
       setCount(data.records.length)
+      setNewEmployee((prev) => ({ ...prev, employeeId: "EMP-" + (data.records.length + 1) }));
     } catch (error) {
       console.error("Error fetching employees:", error);
     } finally {
