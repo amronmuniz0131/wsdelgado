@@ -301,6 +301,7 @@ export function EquipmentsTable(props) {
               onClick={() => handleMaintenance(params.row.id)}
               className="border-red-600 text-red-600 hover:bg-red-50 !text-2xs"
               size="small"
+              disabled={params.row.status === "In Use"}
             >
               Maint.
             </Button>
