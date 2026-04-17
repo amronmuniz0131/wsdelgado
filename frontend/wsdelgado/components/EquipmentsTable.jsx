@@ -270,13 +270,13 @@ export function EquipmentsTable(props) {
       filterOperators: filteredOperators,
       valueGetter: (value, row) => row.projectName || "N/A"
     },
-    {
-      field: "operator",
-      headerName: "Operator",
-      flex: 1,
-      minWidth: 150,
-      filterOperators: filteredOperators
-    },
+    // {
+    //   field: "operator",
+    //   headerName: "Operator",
+    //   flex: 1,
+    //   minWidth: 150,
+    //   filterOperators: filteredOperators
+    // },
     {
       field: "actions",
       headerName: "Actions",
@@ -407,9 +407,9 @@ export function EquipmentsTable(props) {
                 }}
               >
                 <option value="Available">Available</option>
-                <option value="In Use">In Use</option>
+                {/* <option value="In Use">In Use</option>
                 <option value="Maintenance">Maintenance</option>
-                <option value="Requested">Requested</option>
+                <option value="Requested">Requested</option> */}
               </TextField>
             )}
             <TextField
@@ -422,7 +422,7 @@ export function EquipmentsTable(props) {
               value={equipmentRequest.estimatedHours}
               onChange={handleInputChange}
             />
-            <TextField
+            {/* <TextField
               margin="dense"
               name="operator"
               label="Assigned Operator"
@@ -431,7 +431,7 @@ export function EquipmentsTable(props) {
               variant="outlined"
               value={equipmentRequest.operator}
               onChange={handleInputChange}
-            />
+            /> */}
             <TextField
               margin="dense"
               name="borrowDate"
