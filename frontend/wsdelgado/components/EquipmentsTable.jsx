@@ -184,6 +184,29 @@ export function EquipmentsTable(props) {
     }
   };
 
+  const handleEndMaintenance = async (id) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/equipments/update.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          status: "Available",
+          is_approved: 1
+        }),
+      });
+
+      if (response.ok) {
+        fetchEquipments();
+      } else {
+        const error = await response.json();
+        alert(error.message || "Failed to end maintenance status");
+      }
+    } catch (error) {
+      console.error("Error ending maintenance:", error);
+    }
+  };
+
   const handleApprove = async () => {
     const today = new Date();
     // Assuming 8 working hours per day for estimation
@@ -280,6 +303,16 @@ export function EquipmentsTable(props) {
               size="small"
             >
               Maint.
+            </Button>
+          )}
+          {params.row.status === "Maintenance" && props.user === "admin" && (
+            <Button
+              variant="outlined"
+              onClick={() => handleEndMaintenance(params.row.id)}
+              className="border-green-600 text-green-600 hover:bg-green-50 !text-2xs"
+              size="small"
+            >
+              End Maint.
             </Button>
           )}
         </Box>
