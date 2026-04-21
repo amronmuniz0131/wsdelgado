@@ -38,6 +38,7 @@ class Project {
         $stmt->bindParam(":engineer_id", $this->engineer_id);
 
         if($stmt->execute()) {
+            $this->id = $this->conn->lastInsertId();
             return true;
         }
         return false;

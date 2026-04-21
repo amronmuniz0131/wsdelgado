@@ -237,7 +237,43 @@ export function ProjectsTable(props) {
         body: JSON.stringify(newProject),
       });
       if (response.ok) {
+        const result = await response.json();
+        const projectId = result.id;
+
+        // Update Foreman
+        if (newProject.foremanId) {
+          const foreman = employees.find((e) => e.id === newProject.foremanId);
+          if (foreman) {
+            await fetch(`${API_BASE_URL}/employees/update.php`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ...foreman,
+                assignedProjectId: projectId,
+                status: "assigned",
+              }),
+            });
+          }
+        }
+
+        // Update Engineer
+        if (newProject.engineerId) {
+          const engineer = engineers.find((e) => e.id === newProject.engineerId);
+          if (engineer) {
+            await fetch(`${API_BASE_URL}/employees/update.php`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ...engineer,
+                assignedProjectId: projectId,
+                status: "assigned",
+              }),
+            });
+          }
+        }
+
         fetchProjects();
+        fetchEmployees(); // Refresh employee list to reflect assignment
         handleClose();
       } else {
         const error = await response.json();

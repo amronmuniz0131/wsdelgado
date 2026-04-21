@@ -21,7 +21,7 @@ if(!empty($data->name)){
 
     if($project->create()){
         http_response_code(201);
-        echo json_encode(array("message" => "Project was created."));
+        echo json_encode(array("message" => "Project was created.", "id" => $project->id));
     } else {
         http_response_code(503);
         echo json_encode(array("message" => "Unable to create project."));
