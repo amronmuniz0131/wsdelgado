@@ -532,7 +532,7 @@ export function EmployeesTable() {
               onChange={handleInputChange}
             >
               {positions.map((position) => (
-                position.position != "admin" && position.position != "engineer" && (
+                position.position.toLowerCase() !== "admin" && position.position.toLowerCase() !== "engineer" && (
                   <MenuItem key={position.id} value={position.position}>
                     {position.position}
                   </MenuItem>
@@ -638,7 +638,7 @@ export function EmployeesTable() {
                 value={editingEmployee.name}
                 onChange={handleEditInputChange}
               />
-              {editingEmployee.position != "admin" && editingEmployee.position != "engineer" && (
+              {editingEmployee.position.toLowerCase() !== "admin" && editingEmployee.position.toLowerCase() !== "engineer" && (
                 <TextField
                   margin="dense"
                   name="position"
@@ -650,7 +650,7 @@ export function EmployeesTable() {
                   onChange={handleEditInputChange}
                 >
                   {positions.map((position) => (
-                    position.position != "admin" && position.position != "engineer" && (
+                    position.position.toLowerCase() !== "admin" && position.position.toLowerCase() !== "engineer" && (
                       <MenuItem key={position.id} value={position.position}>
                         {position.position}
                       </MenuItem>
@@ -658,7 +658,7 @@ export function EmployeesTable() {
                   ))}
                 </TextField>
               )}
-              {editingEmployee.position != "admin" && (
+              {editingEmployee.position.toLowerCase() !== "admin" && (
                 <TextField
                   margin="dense"
                   name="assignedProjectId"
