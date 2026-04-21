@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { API_BASE_URL } from "@/lib/api";
 import {
   Paper,
@@ -41,7 +41,9 @@ const getStatusColor = (status) => {
 
 export function MaterialsTable(props) {
   const [materials, setMaterials] = useState([]);
+  const [currentMaterial, setCurrentMaterial] = useState(null);
   const [open, setOpen] = useState(false);
+  const [requests, setRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [materialRequest, setMaterialRequest] = useState({
     id: null,
@@ -68,8 +70,28 @@ export function MaterialsTable(props) {
     }
   };
 
+  const [requestCount, setCount] = useState({})
+
+  useEffect(() => {
+    if (props.user === "admin") {
+      let obj = {}
+      materials.map((data) => {
+        let count = 0;
+        requests.map((req) => {
+          if (req.material_id === data.id && req.is_approve === "Pending") {
+            count++;
+          }
+        })
+        obj = { ...obj, [data.name]: count }
+      })
+      setCount(obj)
+      console.log(obj)
+    }
+  }, [materials, requests])
+
   React.useEffect(() => {
     fetchMaterials();
+    fetchRequests();
   }, []);
 
   const handleOpen = (material) => {
@@ -116,7 +138,6 @@ export function MaterialsTable(props) {
     });
   };
 
-  const [currentMaterial, setCurrentMaterial] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -159,7 +180,6 @@ export function MaterialsTable(props) {
   };
 
   const [table, openTable] = useState(false);
-  const [requests, setRequests] = useState([]);
 
   const fetchRequests = async () => {
     try {
@@ -292,10 +312,13 @@ export function MaterialsTable(props) {
             variant="contained"
             onClick={() => { openTable(true); setCurrentMaterial(params.row.id) }}
             disabled={props.user === "engineer"}
-            className="bg-blue-600 !text-2xs hover:bg-blue-700"
+            className="relative bg-blue-600 !text-2xs hover:bg-blue-700"
             size="small"
           >
             View More
+            {props.user === "admin" && requestCount[params.row.name] !== 0 &&
+              <span className="absolute -top-1 -right-2 h-4 w-4 text-xs animate-bounce rounded-full bg-red-400">{requestCount[params.row.name]}</span>
+            }
           </Button>
           <Button
             variant="contained"
@@ -525,25 +548,25 @@ export function MaterialsTable(props) {
                         <TableCell align="center">
                           {req.is_approve === "Pending" && localStorage.getItem('user') === "admin" && (
                             <Box className="flex gap-1 justify-center">
-                                {(() => {
-                                  let isInsufficient = false;
-                                  const currentMat = materials.find(m => m.id === req.material_id);
-                                  if (currentMat) {
-                                    isInsufficient = parseInt(currentMat.quantity) < parseInt(req.quantity);
-                                  }
-                                  return (
-                                    <Button
-                                      size="small"
-                                      variant="contained"
-                                      color="success"
-                                      className={`${isInsufficient ? "bg-gray-400" : "bg-green-600"} !text-3xs`}
-                                      onClick={() => handleApproveRequest({ ...req, engineer_id: req.engineer_id })}
-                                      disabled={isInsufficient}
-                                    >
-                                      Approve
-                                    </Button>
-                                  );
-                                })()}
+                              {(() => {
+                                let isInsufficient = false;
+                                const currentMat = materials.find(m => m.id === req.material_id);
+                                if (currentMat) {
+                                  isInsufficient = parseInt(currentMat.quantity) < parseInt(req.quantity);
+                                }
+                                return (
+                                  <Button
+                                    size="small"
+                                    variant="contained"
+                                    color="success"
+                                    className={`${isInsufficient ? "bg-gray-400" : "bg-green-600"} !text-3xs`}
+                                    onClick={() => handleApproveRequest({ ...req, engineer_id: req.engineer_id })}
+                                    disabled={isInsufficient}
+                                  >
+                                    Approve
+                                  </Button>
+                                );
+                              })()}
                               <Button
                                 size="small"
                                 variant="contained"
