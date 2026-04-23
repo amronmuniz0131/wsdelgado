@@ -1,7 +1,7 @@
 "use client";
 
 import { Placeholder } from "@/components/Placeholder";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { API_BASE_URL } from "@/lib/api";
 
 export default function ContactPage() {
@@ -12,7 +12,13 @@ export default function ContactPage() {
     message: "",
   });
   const [status, setStatus] = useState("");
-  const [sentAmount, setSentAmount] = useState(localStorage.getItem('sent_amount') || 0);
+  const [sentAmount, setSentAmount] = useState(0);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('sent_amount');
+    if (stored) setSentAmount(parseInt(stored));
+  }, []);
+
   const handleSubmit = async (e) => {
     setSentAmount(parseInt(sentAmount) + 1);
     localStorage.setItem('sent_amount', parseInt(sentAmount) + 1);

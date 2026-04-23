@@ -546,7 +546,7 @@ export function MaterialsTable(props) {
                           />
                         </TableCell>
                         <TableCell align="center">
-                          {req.is_approve === "Pending" && localStorage.getItem('user') === "admin" && (
+                          {req.is_approve === "Pending" && props.user === "admin" && (
                             <Box className="flex gap-1 justify-center">
                               {(() => {
                                 let isInsufficient = false;

@@ -9,10 +9,12 @@ import { useRouter } from "next/navigation";
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState("");
   const router = useRouter();
 
   useEffect(() => {
     setIsAuthenticated(!!localStorage.getItem("isAuthenticated"));
+    setUserRole(localStorage.getItem("user") || "");
   }, []);
 
   return (
@@ -75,7 +77,7 @@ export default function Header() {
               Employees
             </Link>
           )}
-          {isAuthenticated && localStorage.getItem("user") === "admin" && (
+          {isAuthenticated && userRole === "admin" && (
             <Link
               href="/accounts"
               className="text-sm font-medium text-gray-600 hover:text-gray-900"
@@ -168,7 +170,7 @@ export default function Header() {
               Employees
             </Link>
           )}
-          {isAuthenticated && localStorage.getItem("user") === "admin" && (
+          {isAuthenticated && userRole === "admin" && (
             <Link
               href="/accounts"
               className="block py-2 text-gray-600"
