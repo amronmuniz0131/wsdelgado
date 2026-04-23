@@ -1,5 +1,6 @@
 <?php
-class Employee {
+class Employee
+{
     private $conn;
     private $table_name = "employees";
 
@@ -16,17 +17,19 @@ class Employee {
     public $created_at;
     public $updated_at;
 
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->conn = $db;
     }
 
     // CREATE
-    public function create() {
+    public function create()
+    {
         $query = "INSERT INTO " . $this->table_name . " 
                 SET employee_id=:employee_id, name=:name, position=:position, 
                     assigned_project_id=:assigned_project_id, date_of_employment=:date_of_employment, 
                     email=:email, phone=:phone, address=:address, notes=:notes";
-        
+
         $stmt = $this->conn->prepare($query);
 
         $this->sanitize();
@@ -36,7 +39,7 @@ class Employee {
         $stmt->bindParam(":position", $this->position);
         $stmt->bindParam(":assigned_project_id", $this->assigned_project_id);
 
-        if(empty($this->date_of_employment)) {
+        if (empty($this->date_of_employment)) {
             $this->date_of_employment = date('Y-m-d');
         }
 
@@ -46,14 +49,15 @@ class Employee {
         $stmt->bindParam(":address", $this->address);
         $stmt->bindParam(":notes", $this->notes);
 
-        if($stmt->execute()) {
+        if ($stmt->execute()) {
             return true;
         }
         return false;
     }
 
     // READ ALL
-    public function read() {
+    public function read()
+    {
         $query = "SELECT e.*, p.name as project_name 
                 FROM " . $this->table_name . " e
                 LEFT JOIN projects p ON e.assigned_project_id = p.id
@@ -64,7 +68,8 @@ class Employee {
     }
 
     // READ ONE
-    public function readOne() {
+    public function readOne()
+    {
         $query = "SELECT e.*, p.name as project_name 
                 FROM " . $this->table_name . " e
                 LEFT JOIN projects p ON e.assigned_project_id = p.id
@@ -74,8 +79,8 @@ class Employee {
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if($row) {
-            foreach($row as $key => $value) {
+        if ($row) {
+            foreach ($row as $key => $value) {
                 $this->$key = $value;
             }
             return true;
@@ -84,12 +89,13 @@ class Employee {
     }
 
     // UPDATE
-    public function update() {
+    public function update()
+    {
         $query = "UPDATE " . $this->table_name . " 
                 SET employee_id=:employee_id, name=:name, position=:position, 
                     assigned_project_id=:assigned_project_id, date_of_employment=:date_of_employment, email=:email, phone=:phone, address=:address, notes=:notes 
                 WHERE id = :id";
-        
+
         $stmt = $this->conn->prepare($query);
 
         $this->sanitize();
@@ -106,26 +112,28 @@ class Employee {
         $stmt->bindParam(":notes", $this->notes);
         $stmt->bindParam(":id", $this->id);
 
-        if($stmt->execute()) {
+        if ($stmt->execute()) {
             return true;
         }
         return false;
     }
 
     // DELETE
-    public function delete() {
+    public function delete()
+    {
         $query = "DELETE FROM " . $this->table_name . " WHERE id = ?";
         $stmt = $this->conn->prepare($query);
         $this->id = htmlspecialchars(strip_tags($this->id));
         $stmt->bindParam(1, $this->id);
 
-        if($stmt->execute()) {
+        if ($stmt->execute()) {
             return true;
         }
         return false;
     }
 
-    private function sanitize() {
+    private function sanitize()
+    {
         $this->employee_id = htmlspecialchars(strip_tags($this->employee_id));
         $this->name = htmlspecialchars(strip_tags($this->name));
         $this->position = htmlspecialchars(strip_tags($this->position));

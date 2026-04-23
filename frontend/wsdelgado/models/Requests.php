@@ -1,5 +1,6 @@
 <?php
-class Requests {
+class Requests
+{
     private $conn;
     private $table_name = "requests";
 
@@ -10,18 +11,23 @@ class Requests {
     public $project_id;
     public $request_date;
     public $is_approve;
+    public $material_name;
+    public $engineer_name;
+    public $project_name;
 
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->conn = $db;
     }
 
     // CREATE
-    public function create() {
+    public function create()
+    {
         $query = "INSERT INTO " . $this->table_name . " 
                 SET material_id=:material_id, quantity=:quantity, engineer_id=:engineer_id, 
                     project_id=:project_id, request_date=:request_date, 
                     is_approve=:is_approve";
-        
+
         $stmt = $this->conn->prepare($query);
 
         $this->sanitize();
@@ -33,18 +39,20 @@ class Requests {
         $stmt->bindParam(":request_date", $this->request_date);
         $stmt->bindParam(":is_approve", $this->is_approve);
 
-        if($stmt->execute()) {
+        if ($stmt->execute()) {
             return true;
         }
         return false;
     }
 
     // READ ALL
-    public function read() {
-        $query = "SELECT m.*, e.name as engineer_name, p.name as project_name 
+    public function read()
+    {
+        $query = "SELECT m.*, e.name as engineer_name, p.name as project_name, q.name as material_name 
                 FROM " . $this->table_name . " m
                 LEFT JOIN employees e ON m.engineer_id = e.id
                 LEFT JOIN projects p ON m.project_id = p.id
+                LEFT JOIN materials q ON m.material_id = q.id
                 ORDER BY m.request_date DESC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -52,17 +60,21 @@ class Requests {
     }
 
     // READ ONE
-    public function readOne() {
-        $query = "SELECT m.* 
+    public function readOne()
+    {
+        $query = "SELECT m.*, e.name as engineer_name, p.name as project_name, q.name as material_name 
                 FROM " . $this->table_name . " m
+                LEFT JOIN employees e ON m.engineer_id = e.id
+                LEFT JOIN projects p ON m.project_id = p.id
+                LEFT JOIN materials q ON m.material_id = q.id
                 WHERE m.id = ? LIMIT 0,1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $this->id);
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if($row) {
-            foreach($row as $key => $value) {
+        if ($row) {
+            foreach ($row as $key => $value) {
                 $this->$key = $value;
             }
             return true;
@@ -71,13 +83,14 @@ class Requests {
     }
 
     // UPDATE
-    public function update() {
+    public function update()
+    {
         $query = "UPDATE " . $this->table_name . " 
                 SET material_id=:material_id, quantity=:quantity, engineer_id=:engineer_id, 
                     project_id=:project_id, request_date=:request_date, 
                     is_approve=:is_approve
                 WHERE id = :id";
-        
+
         $stmt = $this->conn->prepare($query);
 
         $this->sanitize();
@@ -91,26 +104,28 @@ class Requests {
         $stmt->bindParam(":is_approve", $this->is_approve);
         $stmt->bindParam(":id", $this->id);
 
-        if($stmt->execute()) {
+        if ($stmt->execute()) {
             return true;
         }
         return false;
     }
 
     // DELETE
-    public function delete() {
+    public function delete()
+    {
         $query = "DELETE FROM " . $this->table_name . " WHERE id = ?";
         $stmt = $this->conn->prepare($query);
         $this->id = htmlspecialchars(strip_tags($this->id));
         $stmt->bindParam(1, $this->id);
 
-        if($stmt->execute()) {
+        if ($stmt->execute()) {
             return true;
         }
         return false;
     }
 
-    private function sanitize() {
+    private function sanitize()
+    {
         $this->material_id = htmlspecialchars(strip_tags($this->material_id));
         $this->quantity = htmlspecialchars(strip_tags($this->quantity));
         $this->engineer_id = htmlspecialchars(strip_tags($this->engineer_id));

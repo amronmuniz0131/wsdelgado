@@ -11,18 +11,21 @@ $request = new Requests($db);
 $stmt = $request->read();
 $num = $stmt->rowCount();
 
-if($num > 0){
+if ($num > 0) {
     $requests_arr = array();
     $requests_arr["records"] = array();
 
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         extract($row);
         $request_item = array(
             "id" => $id,
             "material_id" => $material_id,
+            "material_name" => $material_name,
             "quantity" => $quantity,
             "engineer_id" => $engineer_id,
+            "engineer_name" => $engineer_name,
             "project_id" => $project_id,
+            "project_name" => $project_name,
             "request_date" => $request_date,
             "is_approve" => $is_approve
         );

@@ -73,6 +73,17 @@ export default function ProjectDetailsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userRole, setUserRole] = useState("");
   const [team, setTeam] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [taskData, setTaskData] = useState({
+    name: "",
+    status: "Pending",
+    severity: "Low",
+    start_date: "",
+    end_date: "",
+    quantity: ""
+  });
 
   const fetchProjectDetails = async () => {
     setIsLoading(true);
@@ -132,6 +143,21 @@ export default function ProjectDetailsPage() {
     }
   };
 
+  const fetchTasks = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/tasks/read.php`);
+      if (response.ok) {
+        const data = await response.json();
+        const projectTasks = (data.records || []).filter(
+          task => String(task.project_id) === String(id)
+        );
+        setTasks(projectTasks);
+      }
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  };
+
   useEffect(() => {
     setUserRole(localStorage.getItem("user")); // Use 'user' key as defined in login/page.jsx
     if (id) {
@@ -139,8 +165,25 @@ export default function ProjectDetailsPage() {
       fetchMaterials();
       fetchEquipments();
       fetchTeam();
+      fetchTasks();
+      fetchRequests();
     }
   }, [id]);
+
+  const fetchRequests = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/request/read.php`);
+      if (response.ok) {
+        const data = await response.json();
+        const projectRequests = (data.records || []).filter(
+          req => String(req.project_id) === String(id)
+        );
+        setRequests(projectRequests);
+      }
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+    }
+  };
 
   const handleOpenUpload = () => setIsUploadModalOpen(true);
   const handleCloseUpload = () => {
@@ -213,6 +256,56 @@ export default function ProjectDetailsPage() {
     }
   };
 
+  const handleOpenTask = () => setIsTaskModalOpen(true);
+  const handleCloseTask = () => {
+    setIsTaskModalOpen(false);
+    setTaskData({
+      name: "",
+      status: "Pending",
+      severity: "Low",
+      start_date: "",
+      end_date: "",
+      quantity: ""
+    });
+  };
+
+  const handleTaskSubmit = async () => {
+    if (!taskData.name || !taskData.quantity) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        ...taskData,
+        project_id: project.id
+      };
+
+      const response = await fetch(`${API_BASE_URL}/tasks/create.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        alert("Task created successfully!");
+        handleCloseTask();
+        fetchTasks();
+      } else {
+        const error = await response.json();
+        alert(`Failed to create task: ${error.message}`);
+      }
+    } catch (error) {
+      console.error("Error creating task:", error);
+      alert("An error occurred while creating the task.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleRequestSubmit = async () => {
     if (!requestData.material_id || !requestData.quantity) {
       alert("Please fill in all fields");
@@ -241,6 +334,7 @@ export default function ProjectDetailsPage() {
       if (response.ok) {
         alert("Material request submitted successfully!");
         handleCloseRequest();
+        fetchRequests();
       } else {
         const error = await response.json();
         alert(`Failed to submit request: ${error.message}`);
@@ -430,6 +524,152 @@ export default function ProjectDetailsPage() {
                   )}
                 </tbody>
               </table>
+            </Card>
+
+            {/* Tasks Table */}
+            <Card className="shadow-sm border border-gray-100 rounded-2xl overflow-hidden mt-6">
+              <Box className="bg-gray-50/50 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <Typography variant="subtitle1" className="font-bold text-gray-800 flex items-center gap-2">
+                  <CheckCircle2 size={18} className="text-blue-600" />
+                  Tasks
+                </Typography>
+                <Box className="flex items-center gap-2">
+                  <Chip label={`${tasks.length} Total`} size="small" variant="outlined" className="text-[10px] font-bold mr-2" />
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<Plus size={14} />}
+                    onClick={handleOpenTask}
+                    className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-xs py-1"
+                  >
+                    Add Task
+                  </Button>
+                </Box>
+              </Box>
+              <Box className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="bg-gray-50/30 border-b border-gray-100">
+                      <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase">Task Name</th>
+                      <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase">Dates</th>
+                      <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase text-center">Severity</th>
+                      <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase text-right">Status</th>
+                      <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase text-right">Workers</th>
+                      <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {tasks.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="px-6 py-8 text-center text-gray-300 text-sm">No tasks created</td>
+                      </tr>
+                    ) : (
+                      tasks.map((task) => (
+                        <tr key={task.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-6 py-3">
+                            <Typography variant="body2" className="font-bold text-gray-700 text-xs">{task.name}</Typography>
+                            <Typography className="text-[10px] text-gray-400">Qty: {task.quantity}</Typography>
+                          </td>
+                          <td className="px-6 py-3">
+                            <Typography className="text-[11px] font-medium text-gray-600">Start: {task.start_date}</Typography>
+                            <Typography className="text-[11px] font-medium text-gray-600">End: {task.end_date}</Typography>
+                          </td>
+                          <td className="px-6 py-3 text-center">
+                            <Chip
+                              label={task.severity}
+                              size="small"
+                              className={`h-5 text-[9px] font-black uppercase ${task.severity === "High" ? "bg-red-100 text-red-700" : task.severity === "Medium" ? "bg-orange-100 text-orange-700" : "bg-green-100 text-green-700"}`}
+                            />
+                          </td>
+                          <td className="px-6 py-3 text-right">
+                            <Chip
+                              label={task.status}
+                              size="small"
+                              className={`h-5 text-[9px] font-black uppercase ${task.status === "Completed" ? "bg-green-100 text-green-700" : task.status === "In Progress" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"}`}
+                            />
+                          </td>
+                          <td className="px-6 py-3 text-right">
+                          </td>
+                          <td className="px-6 py-3 text-right">
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              onClick={() => handleTaskAssign(task.id)}
+                              className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-xs py-1"
+                            >
+                              Assign
+                            </Button>
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              onClick={() => handleDeleteTask(task.id)}
+                              className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-xs py-1"
+                            >
+                              Delete
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </Box>
+            </Card>
+
+            {/* Material Requests Table */}
+            <Card className="shadow-sm border border-gray-100 rounded-2xl overflow-hidden mt-6">
+              <Box className="bg-gray-50/50 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <Typography variant="subtitle1" className="font-bold text-gray-800 flex items-center gap-2">
+                  <Package size={18} className="text-blue-600" />
+                  Material Requests
+                </Typography>
+                <Chip label={`${requests.length} Requests`} size="small" variant="outlined" className="text-[10px] font-bold" />
+              </Box>
+              <Box className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="bg-gray-50/30 border-b border-gray-100">
+                      <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase">Material</th>
+                      <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase text-center">Quantity</th>
+                      <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase text-center">Date</th>
+                      <th className="px-6 py-3 text-[10px] font-black text-gray-400 uppercase text-right">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {requests.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="px-6 py-8 text-center text-gray-300 text-sm">No requests found</td>
+                      </tr>
+                    ) : (
+                      requests.map((req) => (
+                        <tr key={req.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-6 py-3">
+                            <Typography variant="body2" className="font-bold text-gray-700 text-xs">{req.material_name}</Typography>
+                            <Typography className="text-[10px] text-gray-400">Requested by: {req.engineer_name}</Typography>
+                          </td>
+                          <td className="px-6 py-3 text-center">
+                            <Typography variant="body2" className="font-bold text-gray-700 text-xs">{req.quantity}</Typography>
+                          </td>
+                          <td className="px-6 py-3 text-center">
+                            <Typography className="text-[11px] font-medium text-gray-600">{new Date(req.request_date).toLocaleDateString()}</Typography>
+                          </td>
+                          <td className="px-6 py-3 text-right">
+                            <Chip
+                              label={req.is_approve}
+                              size="small"
+                              className={`h-5 text-[9px] font-black uppercase ${
+                                req.is_approve === "Approved" ? "bg-green-100 text-green-700" : 
+                                req.is_approve === "Rejected" ? "bg-red-100 text-red-700" : 
+                                "bg-orange-100 text-orange-700"
+                              }`}
+                            />
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </Box>
             </Card>
           </Grid>
 
@@ -670,6 +910,100 @@ export default function ProjectDetailsPage() {
             disabled={isSubmitting || !equipmentRequestData.equipment_id || !equipmentRequestData.estimated_hours}
           >
             {isSubmitting ? <CircularProgress size={24} /> : "Submit Request"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Create Task Modal */}
+      <Dialog
+        open={isTaskModalOpen}
+        onClose={handleCloseTask}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ className: "rounded-2xl" }}
+      >
+        <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 pb-4">
+          Create New Task
+        </DialogTitle>
+        <DialogContent className="pt-6 space-y-4">
+          <TextField
+            label="Task Name"
+            fullWidth
+            variant="outlined"
+            value={taskData.name}
+            onChange={(e) => setTaskData({ ...taskData, name: e.target.value })}
+          />
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <FormControl fullWidth variant="outlined">
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={taskData.status}
+                  onChange={(e) => setTaskData({ ...taskData, status: e.target.value })}
+                  label="Status"
+                >
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="In Progress">In Progress</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={6}>
+              <FormControl fullWidth variant="outlined">
+                <InputLabel>Severity</InputLabel>
+                <Select
+                  value={taskData.severity}
+                  onChange={(e) => setTaskData({ ...taskData, severity: e.target.value })}
+                  label="Severity"
+                >
+                  <MenuItem value={1}>Low</MenuItem>
+                  <MenuItem value={2}>Medium</MenuItem>
+                  <MenuItem value={3}>High</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                label="Start Date"
+                type="date"
+                fullWidth
+                variant="outlined"
+                InputLabelProps={{ shrink: true }}
+                value={taskData.start_date}
+                onChange={(e) => setTaskData({ ...taskData, start_date: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                label="End Date"
+                type="date"
+                fullWidth
+                variant="outlined"
+                InputLabelProps={{ shrink: true }}
+                value={taskData.end_date}
+                onChange={(e) => setTaskData({ ...taskData, end_date: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Quantity / Details"
+                fullWidth
+                variant="outlined"
+                value={taskData.quantity}
+                onChange={(e) => setTaskData({ ...taskData, quantity: e.target.value })}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions className="p-4 border-t border-gray-100">
+          <Button onClick={handleCloseTask} color="inherit">Cancel</Button>
+          <Button
+            onClick={handleTaskSubmit}
+            variant="contained"
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-none"
+            disabled={isSubmitting || !taskData.name}
+          >
+            {isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Create Task"}
           </Button>
         </DialogActions>
       </Dialog>

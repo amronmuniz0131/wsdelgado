@@ -514,7 +514,7 @@ export function MaterialsTable(props) {
                 <TableRow>
                   <TableCell className="font-bold">Project</TableCell>
                   <TableCell className="font-bold">Engineer</TableCell>
-                  <TableCell className="font-bold">Material ID</TableCell>
+                  <TableCell className="font-bold">Material</TableCell>
                   <TableCell className="font-bold text-right">Qty</TableCell>
                   <TableCell className="font-bold">Date</TableCell>
                   <TableCell className="font-bold">Status</TableCell>
@@ -535,7 +535,7 @@ export function MaterialsTable(props) {
                       <TableRow key={req.id} hover>
                         <TableCell>{req.project_name || req.project_id}</TableCell>
                         <TableCell>{req.engineer_name || req.engineer_id}</TableCell>
-                        <TableCell>{req.material_id}</TableCell>
+                        <TableCell>{req.material_name || req.material_id}</TableCell>
                         <TableCell align="right">{req.quantity}</TableCell>
                         <TableCell>{new Date(req.request_date).toLocaleDateString()}</TableCell>
                         <TableCell>
