@@ -1,10 +1,10 @@
 <?php
 class Database
 {
-    private $host = "deeppink-cormorant-307805.hostingersite.com";
-    private $db_name = "u312009988_api_db"; // You might need to change this or create this DB
-    private $username = "u312009988_wsdelgado";
-    private $password = "Admin123!";
+    private $host = "localhost";
+    private $db_name = "api_db"; // You might need to change this or create this DB
+    private $username = "root";
+    private $password = "";
     public $conn;
 
     public function getConnection()

@@ -289,12 +289,13 @@ export function ProjectsTable(props) {
     if (!userData) return [];
 
     return projects.filter((project) => {
+      console.log(project, userData.id)
       if (props.user === "engineer") {
         const engineerName = project.engineerName || project.engineer;
         return engineerName === userData.name;
       }
       if (props.user === "user") {
-        return project.client === userData.name;
+        return project.clientName === userData.name;
       }
       return false;
     });

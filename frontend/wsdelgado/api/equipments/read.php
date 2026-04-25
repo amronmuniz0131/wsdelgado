@@ -6,6 +6,12 @@ include_once '../../models/Equipment.php';
 $database = new Database();
 $db = $database->getConnection();
 
+if ($db === null) {
+    http_response_code(500);
+    echo json_encode(array("message" => "Database connection failed."));
+    exit;
+}
+
 $equipment = new Equipment($db);
 
 $stmt = $equipment->read();

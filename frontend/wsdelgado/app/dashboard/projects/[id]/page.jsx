@@ -262,7 +262,7 @@ export default function ProjectDetailsPage() {
     setTaskData({
       name: "",
       status: "Pending",
-      severity: "Low",
+      severity: 1,
       start_date: "",
       end_date: "",
       quantity: ""
@@ -657,11 +657,10 @@ export default function ProjectDetailsPage() {
                             <Chip
                               label={req.is_approve}
                               size="small"
-                              className={`h-5 text-[9px] font-black uppercase ${
-                                req.is_approve === "Approved" ? "bg-green-100 text-green-700" : 
-                                req.is_approve === "Rejected" ? "bg-red-100 text-red-700" : 
-                                "bg-orange-100 text-orange-700"
-                              }`}
+                              className={`h-5 text-[9px] font-black uppercase ${req.is_approve === "Approved" ? "bg-green-100 text-green-700" :
+                                req.is_approve === "Rejected" ? "bg-red-100 text-red-700" :
+                                  "bg-orange-100 text-orange-700"
+                                }`}
                             />
                           </td>
                         </tr>
@@ -700,13 +699,13 @@ export default function ProjectDetailsPage() {
                 </Box>
               )}
 
-              <Box className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-2xl text-white shadow-xl shadow-blue-100">
+              {/* <Box className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-2xl text-white shadow-xl shadow-blue-100">
                 <Typography variant="h6" className="font-bold mb-1 leading-tight">Daily Status</Typography>
                 <Typography variant="body2" className="opacity-70 text-xs mb-4">On track with adjusted timelines for Q2 delivery.</Typography>
                 <Button fullWidth className="bg-white/10 hover:bg-white/20 text-white border-white/20 border text-xs py-2 rounded-lg normal-case font-bold">
                   View Latest Audit
                 </Button>
-              </Box>
+              </Box> */}
             </Box>
           </Grid>
         </Grid>

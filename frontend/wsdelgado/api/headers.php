@@ -1,10 +1,13 @@
 <?php
-// Note: CORS headers are now handled by .htaccess for better reliability
-// header("Access-Control-Allow-Origin: ..."); // Handled by .htaccess
+// CORS headers
+header("Access-Control-Allow-Origin: http://localhost:3000");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
+header("Access-Control-Allow-Credentials: true");
 
 header("Content-Type: application/json; charset=UTF-8");
 
-// Handle preflight OPTIONS request if it reaches here
+// Handle preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit();

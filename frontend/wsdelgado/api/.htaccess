@@ -1,11 +1,7 @@
-<IfModule mod_headers.c>
-    Header always set Access-Control-Allow-Origin "http://localhost:3000"
-    Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS, PUT, DELETE"
-    Header always set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-    Header always set Access-Control-Allow-Credentials "true"
+# CORS headers are now handled by PHP (api/headers.php) for better reliability
+# across different server environments.
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # If you need any specific rewrite rules, add them here
 </IfModule>
-
-RewriteEngine On
-RewriteCond %{REQUEST_METHOD} OPTIONS
-RewriteRule ^(.*)$ $0 [R=200,L]
-
