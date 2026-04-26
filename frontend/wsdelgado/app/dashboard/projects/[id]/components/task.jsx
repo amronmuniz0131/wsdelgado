@@ -99,7 +99,10 @@ export function TaskModal(props) {
                         }
                     >
                         {employees
-                            .filter(emp => String(emp.assignedProjectId) === String(props.selectedTask?.project_id))
+                            .filter(emp =>
+                                String(emp.assignedProjectId) === String(props.selectedTask?.project_id) &&
+                                emp.position?.toLowerCase() !== "engineer"
+                            )
                             .map((employee, index) => (
                                 <MenuItem key={index + '-employee'} value={employee.id}>
                                     {employee.name} ({employee.position})
@@ -109,7 +112,7 @@ export function TaskModal(props) {
                 </FormControl>
             </DialogContent>
             <DialogActions className="p-4 border-t border-gray-100">
-                <button onClick={() => { handleSubmit() }}>Submit</button>
+                <Button variant="outlined" onClick={() => { handleSubmit() }}>Submit</Button>
             </DialogActions>
         </Dialog>
     )

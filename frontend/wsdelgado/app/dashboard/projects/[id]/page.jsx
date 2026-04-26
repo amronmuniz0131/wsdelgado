@@ -90,7 +90,7 @@ export default function ProjectDetailsPage() {
   const [taskData, setTaskData] = useState({
     name: "",
     status: "Pending",
-    severity: "Low",
+    severity: 1,
     start_date: "",
     end_date: "",
     quantity: ""
@@ -777,7 +777,7 @@ export default function ProjectDetailsPage() {
                     <Grid container spacing={2}>
                       <Grid item xs={6}>
                         <Typography variant="caption" className="text-gray-400 text-[9px] uppercase font-bold block">Start</Typography>
-                        <Typography variant="body2" className="font-bold text-gray-700">{project.start_date || (project.created_at ? new Date(project.created_at).toLocaleDateString() : "N/A")}</Typography>
+                        <Typography variant="body2" className="font-bold text-gray-700">{project.start_date || "N/A"}</Typography>
                       </Grid>
                       <Grid item xs={6}>
                         <Typography variant="caption" className="text-gray-400 text-[9px] uppercase font-bold block">Target</Typography>

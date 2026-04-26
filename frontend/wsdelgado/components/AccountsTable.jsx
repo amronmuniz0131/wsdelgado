@@ -118,7 +118,7 @@ export function AccountsTable() {
   const handleUpdateAccount = async () => {
     try {
       // Remove password if empty to not update it
-      const payload = { ...editingAccount };
+      const payload = { ...editingAccount, is_admin_update: true };
       if (!payload.password) delete payload.password;
 
       const response = await fetch(`${API_BASE_URL}/update.php`, {

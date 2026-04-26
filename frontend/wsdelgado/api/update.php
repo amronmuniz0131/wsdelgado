@@ -23,11 +23,13 @@ if(!empty($data->id)) {
         
         // Handle password separately (User model hashes it if set)
         if(!empty($data->password)) {
-            // Check if current_password matches the stored hash
-            if(empty($data->current_password) || !password_verify($data->current_password, $user->password)) {
-                http_response_code(401);
-                echo json_encode(array("message" => "Current password is incorrect."));
-                exit;
+            // Check if current_password matches the stored hash (unless it's an admin update)
+            if(empty($data->is_admin_update)) {
+                if(empty($data->current_password) || !password_verify($data->current_password, $user->password)) {
+                    http_response_code(401);
+                    echo json_encode(array("message" => "Current password is incorrect."));
+                    exit;
+                }
             }
             $user->password = $data->password;
         } else {

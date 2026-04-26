@@ -27,7 +27,7 @@ export default function CreateTask(props) {
             <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 pb-4">
                 Create New Task
             </DialogTitle>
-            <DialogContent className="pt-6 space-y-4">
+            <DialogContent className="pt-6 my-4">
                 <TextField
                     label="Task Name"
                     fullWidth
@@ -35,22 +35,8 @@ export default function CreateTask(props) {
                     value={props.taskData.name}
                     onChange={(e) => props.setTaskData({ ...props.taskData, name: e.target.value })}
                 />
-                <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                        <FormControl fullWidth variant="outlined">
-                            <InputLabel>Status</InputLabel>
-                            <Select
-                                value={props.taskData.status}
-                                onChange={(e) => props.setTaskData({ ...props.taskData, status: e.target.value })}
-                                label="Status"
-                            >
-                                <MenuItem value="Pending">Pending</MenuItem>
-                                <MenuItem value="In Progress">In Progress</MenuItem>
-                                <MenuItem value="Completed">Completed</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                    <Grid item xs={6}>
+                <div className="my-2 flex gap-2">
+                    <div className="w-1/2">
                         <FormControl fullWidth variant="outlined">
                             <InputLabel>Severity</InputLabel>
                             <Select
@@ -63,30 +49,8 @@ export default function CreateTask(props) {
                                 <MenuItem value={3}>High</MenuItem>
                             </Select>
                         </FormControl>
-                    </Grid>
-                    <Grid item xs={6}>
-                        <TextField
-                            label="Start Date"
-                            type="date"
-                            fullWidth
-                            variant="outlined"
-                            InputLabelProps={{ shrink: true }}
-                            value={props.taskData.start_date}
-                            onChange={(e) => props.setTaskData({ ...props.taskData, start_date: e.target.value })}
-                        />
-                    </Grid>
-                    <Grid item xs={6}>
-                        <TextField
-                            label="End Date"
-                            type="date"
-                            fullWidth
-                            variant="outlined"
-                            InputLabelProps={{ shrink: true }}
-                            value={props.taskData.end_date}
-                            onChange={(e) => props.setTaskData({ ...props.taskData, end_date: e.target.value })}
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
+                    </div>
+                    <div className="w-1/2">
                         <TextField
                             label="Quantity / Details"
                             fullWidth
@@ -94,8 +58,8 @@ export default function CreateTask(props) {
                             value={props.taskData.quantity}
                             onChange={(e) => props.setTaskData({ ...props.taskData, quantity: e.target.value })}
                         />
-                    </Grid>
-                </Grid>
+                    </div>
+                </div>
             </DialogContent>
             <DialogActions className="p-4 border-t border-gray-100">
                 <Button onClick={props.handleCloseTask} color="inherit">Cancel</Button>

@@ -39,6 +39,7 @@ export default function StartProject({ project, setProject }) {
 
             if (response.ok) {
                 alert("Project started successfully!");
+                window.location.reload();
                 // fetchProject();
             } else {
                 const error = await response.json();
@@ -53,7 +54,7 @@ export default function StartProject({ project, setProject }) {
     const user = localStorage.getItem('user')
     return (
         <div>
-            {user.role === "engineer" && (
+            {user === "engineer" && (
                 <Button variant="contained" onClick={() => setOpen(true)}>Start Project</Button>
             )}
             <Dialog

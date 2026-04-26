@@ -10,12 +10,21 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState("");
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     setIsAuthenticated(!!localStorage.getItem("isAuthenticated"));
     setUserRole(localStorage.getItem("user") || "");
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userData");
+    localStorage.removeItem("sent_amount")
+    window.location.href = "/login";
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
@@ -99,11 +108,7 @@ export default function Header() {
           {isAuthenticated ? (
             <button
               className="px-4 py-2 text-gray-900 text-sm font-medium border border-black hover:border-gray-900 hover:cursor-pointer rounded-lg hover:bg-gray-50 transition-colors"
-              onClick={() => {
-                window.location.href = "/";
-                localStorage.removeItem("isAuthenticated");
-                localStorage.removeItem("user");
-              }}
+              onClick={() => setShowLogoutDialog(true)}
               aria-label="Log out of your account"
             >
               Log out
@@ -188,11 +193,63 @@ export default function Header() {
             </Link>
           )}
           <div className="flex flex-col gap-2 pt-2 border-t border-gray-100">
-            <button onClick={() => {
-              window.location.href = "/login";
-            }} className="w-full px-4 py-2 text-sm font-medium border text-gray-900 border-gray-300 rounded-lg">
-              Log in
-            </button>
+            {isAuthenticated ? (
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  setShowLogoutDialog(true);
+                }}
+                className="w-full px-4 py-2 text-sm font-medium border text-red-600 border-red-200 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+              >
+                Log out
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  router.push("/login");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full px-4 py-2 text-sm font-medium border text-gray-900 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Log in
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Logout Confirmation Dialog */}
+      {showLogoutDialog && (
+        <div className="fixed inset-0 z-[100] h-screen flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-red-100 rounded-full text-red-600">
+                <X size={20} />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900">Log out</h3>
+            </div>
+
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to log out? You will need to log back in to access your dashboard.
+            </p>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowLogoutDialog(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="cursor-pointer px-6 py-2 text-sm font-medium text-white bg-black hover:bg-gray-800 rounded-lg transition-all active:scale-95"
+              >
+                Log out
+              </button>
+            </div>
           </div>
         </div>
       )}
