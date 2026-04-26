@@ -13,6 +13,8 @@ class Project {
     public $engineer_id;
     public $created_at;
     public $updated_at;
+    public $start_date;
+    public $end_date;
 
     public function __construct($db) {
         $this->conn = $db;
@@ -23,7 +25,8 @@ class Project {
         $query = "INSERT INTO " . $this->table_name . " 
                 SET name=:name, location=:location, client=:client, 
                     address=:address, progress=:progress, 
-                    foreman_id=:foreman_id, engineer_id=:engineer_id";
+                    foreman_id=:foreman_id, engineer_id=:engineer_id,
+                    start_date=:start_date, end_date=:end_date";
         
         $stmt = $this->conn->prepare($query);
 
@@ -36,6 +39,8 @@ class Project {
         $stmt->bindParam(":progress", $this->progress);
         $stmt->bindParam(":foreman_id", $this->foreman_id);
         $stmt->bindParam(":engineer_id", $this->engineer_id);
+        $stmt->bindParam(":start_date", $this->start_date);
+        $stmt->bindParam(":end_date", $this->end_date);
 
         if($stmt->execute()) {
             $this->id = $this->conn->lastInsertId();
@@ -84,7 +89,8 @@ class Project {
         $query = "UPDATE " . $this->table_name . " 
                 SET name=:name, location=:location, client=:client, 
                     address=:address, progress=:progress, 
-                    foreman_id=:foreman_id, engineer_id=:engineer_id 
+                    foreman_id=:foreman_id, engineer_id=:engineer_id,
+                    start_date=:start_date, end_date=:end_date 
                 WHERE id = :id";
         
         $stmt = $this->conn->prepare($query);
@@ -99,6 +105,8 @@ class Project {
         $stmt->bindParam(":progress", $this->progress);
         $stmt->bindParam(":foreman_id", $this->foreman_id);
         $stmt->bindParam(":engineer_id", $this->engineer_id);
+        $stmt->bindParam(":start_date", $this->start_date);
+        $stmt->bindParam(":end_date", $this->end_date);
         $stmt->bindParam(":id", $this->id);
 
         if($stmt->execute()) {
@@ -128,6 +136,8 @@ class Project {
         $this->progress = htmlspecialchars(strip_tags($this->progress));
         $this->foreman_id = $this->foreman_id ? htmlspecialchars(strip_tags($this->foreman_id)) : null;
         $this->engineer_id = $this->engineer_id ? htmlspecialchars(strip_tags($this->engineer_id)) : null;
+        $this->start_date = $this->start_date ? htmlspecialchars(strip_tags($this->start_date)) : null;
+        $this->end_date = $this->end_date ? htmlspecialchars(strip_tags($this->end_date)) : null;
     }
 }
 ?>

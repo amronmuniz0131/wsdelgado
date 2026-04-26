@@ -29,6 +29,7 @@ import {
   Select,
 } from "@mui/material";
 import { Plus, Eye, Pencil, UserRound, Mail, Shield, ShieldCheck, UserCheck, Key, Trash2 } from "lucide-react";
+import { DataGrid } from "@mui/x-data-grid";
 
 export function AccountsTable() {
   const [accounts, setAccounts] = useState([]);
@@ -36,7 +37,7 @@ export function AccountsTable() {
   const [openEditModal, setOpenEditModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const [newAccount, setNewAccount] = useState({
     name: "",
     email: "",
@@ -139,7 +140,7 @@ export function AccountsTable() {
 
   const handleDeleteAccount = async (id) => {
     if (!window.confirm("Are you sure you want to delete this account? This action cannot be undone.")) return;
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/delete.php`, {
         method: "POST",
@@ -179,9 +180,106 @@ export function AccountsTable() {
       case "user":
         return <UserCheck size={14} className="mr-1" />;
       default:
-        return null;
+        return <UserRound size={14} className="mr-1" />;
     }
   };
+
+  const columns = [
+    {
+      field: "name",
+      headerName: "USER",
+      flex: 1,
+      minWidth: 200,
+      renderCell: (params) => (
+        <Box className="flex items-center gap-3 h-full">
+          <Avatar className="bg-gradient-to-br from-slate-700 to-slate-900 shadow-md">
+            {params.row.name?.charAt(0)}
+          </Avatar>
+          <Box>
+            <Typography className="font-bold text-gray-800 text-sm leading-tight">
+              {params.row.name}
+            </Typography>
+            <Typography variant="caption" className="text-gray-400 block">
+              ID: #{params.row.id}
+            </Typography>
+          </Box>
+        </Box>
+      ),
+    },
+    {
+      field: "email",
+      headerName: "EMAIL",
+      flex: 1,
+      minWidth: 200,
+      renderCell: (params) => (
+        <Box className="flex items-center gap-2 text-gray-600 h-full">
+          <Mail size={14} className="text-gray-400" />
+          <Typography variant="body2" className="font-medium">
+            {params.row.email}
+          </Typography>
+        </Box>
+      ),
+    },
+    {
+      field: "role",
+      headerName: "ROLE",
+      width: 150,
+      align: "left",
+      headerAlign: "left",
+      renderCell: (params) => (
+        <Box className="flex items-center justify-start h-full">
+          <Chip
+            icon={getRoleIcon(params.row.role)}
+            label={params.row.role?.toUpperCase() || "USER"}
+            color={getRoleColor(params.row.role)}
+            size="small"
+            className="font-bold text-[10px] tracking-widest px-2 py-1"
+          />
+        </Box>
+      ),
+    },
+    {
+      field: "created_at",
+      headerName: "CREATED AT",
+      width: 180,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Box className="flex items-center justify-center h-full font-medium text-gray-500 text-sm">
+          {params.row.created_at ? new Date(params.row.created_at).toLocaleDateString() : 'N/A'}
+        </Box>
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "ACTION",
+      width: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Box className="flex items-center justify-center gap-1 h-full">
+          <Tooltip title="Edit Account">
+            <IconButton
+              size="small"
+              className="text-amber-500 hover:bg-amber-100 transition-colors"
+              onClick={() => handleOpenEdit(params.row)}
+            >
+              <Pencil size={18} />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete Account">
+            <IconButton
+              size="small"
+              className="text-rose-500 hover:bg-rose-100 transition-colors"
+              onClick={() => handleDeleteAccount(params.row.id)}
+            >
+              <Trash2 size={18} />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      ),
+    },
+  ];
 
   return (
     <Box className="w-full">
@@ -209,103 +307,40 @@ export function AccountsTable() {
       </Box>
 
       {/* Main Table Section */}
-      <TableContainer
-        component={Paper}
-        className="rounded-2xl overflow-hidden shadow-2xl border border-gray-100"
-      >
-        <Table sx={{ minWidth: 650 }} aria-label="accounts table">
-          <TableHead className="bg-gray-50">
-            <TableRow>
-              <TableCell className="font-bold text-gray-700 py-4">USER</TableCell>
-              <TableCell className="font-bold text-gray-700 py-4">EMAIL</TableCell>
-              <TableCell className="font-bold text-gray-700 py-4">ROLE</TableCell>
-              <TableCell className="font-bold text-gray-700 py-4">CREATED AT</TableCell>
-              <TableCell className="font-bold text-gray-700 py-4 text-center">ACTION</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {accounts.map((row) => (
-              <TableRow
-                key={row.id}
-                className="hover:bg-blue-50/30 transition-all group"
-              >
-                <TableCell className="py-4">
-                  <Box className="flex items-center gap-3">
-                    <Avatar className="bg-gradient-to-br from-slate-700 to-slate-900 shadow-md">
-                      {row.name.charAt(0)}
-                    </Avatar>
-                    <Box>
-                      <Typography className="font-bold text-gray-800 group-hover:text-blue-700 transition-colors">
-                        {row.name}
-                      </Typography>
-                      <Typography variant="caption" className="text-gray-400">
-                        ID: #{row.id}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </TableCell>
-                <TableCell className="py-4">
-                  <Box className="flex items-center gap-2 text-gray-600">
-                    <Mail size={14} className="text-gray-400" />
-                    <Typography variant="body2" className="font-medium">
-                      {row.email}
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell className="py-4">
-                  <Chip
-                    icon={getRoleIcon(row.role)}
-                    label={row.role?.toUpperCase() || "USER"}
-                    color={getRoleColor(row.role)}
-                    size="small"
-                    className="font-bold text-[10px] tracking-widest px-1"
-                  />
-                </TableCell>
-                <TableCell className="py-4 font-medium text-gray-500 text-sm">
-                  {row.created_at ? new Date(row.created_at).toLocaleDateString() : 'N/A'}
-                </TableCell>
-                <TableCell className="py-4 text-center">
-                  <Box className="flex justify-center gap-1">
-                    <Tooltip title="Edit Account">
-                      <IconButton 
-                        size="small" 
-                        className="text-amber-500 hover:bg-amber-100 transition-colors"
-                        onClick={() => handleOpenEdit(row)}
-                      >
-                        <Pencil size={18} />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete Account">
-                      <IconButton 
-                        size="small" 
-                        className="text-rose-500 hover:bg-rose-100 transition-colors"
-                        onClick={() => handleDeleteAccount(row.id)}
-                      >
-                        <Trash2 size={18} />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ))}
-            {!isLoading && accounts.length === 0 && (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  align="center"
-                  className="py-16 text-gray-500"
-                >
-                  <Box className="flex flex-col items-center gap-2 opacity-60">
-                    <UserRound size={48} className="text-gray-300" />
-                    <Typography variant="h6">No Accounts Found</Typography>
-                    <Typography variant="body2">Start by creating your first system account.</Typography>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <Box className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden" sx={{ height: 600, width: '100%' }}>
+        <DataGrid
+          rows={accounts}
+          columns={columns}
+          loading={isLoading}
+          pageSizeOptions={[10, 25, 50]}
+          initialState={{
+            pagination: { paginationModel: { pageSize: 10 } },
+          }}
+          disableRowSelectionOnClick
+          sx={{
+            border: 'none',
+            '& .MuiDataGrid-columnHeaders': {
+              backgroundColor: '#f9fafb',
+              borderBottom: '1px solid #f3f4f6',
+            },
+            '& .MuiDataGrid-cell:focus': {
+              outline: 'none',
+            },
+            '& .MuiDataGrid-row:hover': {
+              backgroundColor: '#eff6ff33',
+            },
+          }}
+          slots={{
+            noRowsOverlay: () => (
+              <Box className="flex flex-col items-center justify-center h-full gap-2 opacity-60">
+                <UserRound size={48} className="text-gray-300" />
+                <Typography variant="h6">No Accounts Found</Typography>
+                <Typography variant="body2">Start by creating your first system account.</Typography>
+              </Box>
+            ),
+          }}
+        />
+      </Box>
 
       {/* Add Account Modal */}
       <Dialog open={openAddModal} onClose={handleCloseAdd} maxWidth="sm" fullWidth PaperProps={{ className: "rounded-3xl" }}>

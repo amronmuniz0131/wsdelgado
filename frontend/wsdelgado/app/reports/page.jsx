@@ -1,5 +1,6 @@
 "use client";
 
+import { DataGrid } from "@mui/x-data-grid";
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -152,12 +153,24 @@ const ProjectComparisonChart = ({ projects }) => {
   );
 };
 
+import RoleProtectedRoute from "@/components/RoleProtectedRoute";
+
 export default function ReportsPage() {
+  return (
+    <RoleProtectedRoute allowedRoles={["admin"]}>
+      <ReportsContent />
+    </RoleProtectedRoute>
+  );
+}
+
+function ReportsContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [projects, setProjects] = useState([]);
   const [equipments, setEquipments] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [employees, setEmployees] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -173,30 +186,107 @@ export default function ReportsPage() {
   const fetchAllData = async () => {
     setIsLoading(true);
     try {
-      const [projRes, equipRes, matRes, empRes] = await Promise.all([
+      const [projRes, equipRes, matRes, empRes, assignRes, reqRes] = await Promise.all([
         fetch(`${API_BASE_URL}/projects/read.php`),
         fetch(`${API_BASE_URL}/equipments/read.php`),
         fetch(`${API_BASE_URL}/materials/read.php`),
         fetch(`${API_BASE_URL}/employees/read.php`),
+        fetch(`${API_BASE_URL}/assign/read.php`),
+        fetch(`${API_BASE_URL}/request/read.php`),
       ]);
 
-      const [projData, equipData, matData, empData] = await Promise.all([
+      const [projData, equipData, matData, empData, assignData, reqData] = await Promise.all([
         projRes.json(),
         equipRes.json(),
         matRes.json(),
         empRes.json(),
+        assignRes.json(),
+        reqRes.json(),
       ]);
 
       setProjects(projData.records || []);
       setEquipments(equipData.records || []);
       setMaterials(matData.records || []);
       setEmployees(empData.records || []);
+      setAssignments(assignData?.records || []);
+      setRequests(reqData.records || []);
     } catch (error) {
       console.error("Error fetching report data:", error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const equipmentColumns = [
+    { field: "name", headerName: "Machine", flex: 1, minWidth: 150 },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 130,
+      renderCell: (params) => (
+        <Box className="flex items-center h-full">
+          <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${params.value === 'In Use' ? 'bg-blue-100 text-blue-700' : params.value === 'Available' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+            {params.value}
+          </span>
+        </Box>
+      )
+    },
+    { field: "type", headerName: "Type", flex: 1 }
+  ];
+
+  const materialColumns = [
+    { field: "name", headerName: "Item", flex: 1, minWidth: 150 },
+    { field: "quantity", headerName: "Qty", width: 120, valueGetter: (value, row) => `${row.quantity} ${row.unit}` },
+    {
+      field: "stock_status",
+      headerName: "Stock",
+      width: 130,
+      renderCell: (params) => {
+        const row = params.row;
+        const ratio = row.quantity / row.max_stock;
+        return (
+          <Box className="flex items-center h-full">
+            <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${ratio >= 0.2 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+              {ratio >= 0.2 ? 'In Stock' : ratio == 0 ? 'Out of Stock' : 'Low Stock'}
+            </span>
+          </Box>
+        );
+      }
+    }
+  ];
+
+  const projectAssignColumns = [
+    { field: "project_name", headerName: "Project", flex: 1, minWidth: 180, renderCell: (params) => <Typography className="font-medium text-blue-600 h-full flex items-center text-xs">{params.value || "N/A"}</Typography> },
+    { field: "task_name", headerName: "Task", flex: 1, minWidth: 150, renderCell: (params) => <Typography className="h-full flex items-center text-xs">{params.value}</Typography> },
+    { field: "employee_name", headerName: "Assigned To", flex: 1, minWidth: 150, renderCell: (params) => <Typography className="h-full flex items-center text-xs">{params.value}</Typography> },
+    { field: "created_at", headerName: "Date", width: 120, renderCell: (params) => <Typography className="text-gray-400 text-[10px] h-full flex items-center">{new Date(params.value).toLocaleDateString()}</Typography> }
+  ];
+
+  const employeeAssignColumns = [
+    { field: "employee_name", headerName: "Employee", flex: 1, minWidth: 150, renderCell: (params) => <Typography className="font-bold h-full flex items-center text-xs">{params.value}</Typography> },
+    { field: "project_name", headerName: "Project", flex: 1, minWidth: 180, renderCell: (params) => <Typography className="text-gray-600 h-full flex items-center text-xs">{params.value || "N/A"}</Typography> },
+    { field: "task_name", headerName: "Task Assigned", flex: 1, minWidth: 150, renderCell: (params) => <Typography className="text-blue-600 font-medium h-full flex items-center text-xs">{params.value}</Typography> }
+  ];
+
+  const requestColumns = [
+    { field: "project_name", headerName: "Project Site", flex: 1, minWidth: 180, renderCell: (params) => <Typography className="font-bold text-gray-800 h-full flex items-center text-xs">{params.value}</Typography> },
+    { field: "material_name", headerName: "Material Item", flex: 1, minWidth: 150, renderCell: (params) => <Typography className="h-full flex items-center text-xs">{params.value}</Typography> },
+    { field: "quantity", headerName: "Qty", width: 80, align: 'center', headerAlign: 'center', renderCell: (params) => <Typography className="font-bold text-blue-600 h-full flex items-center justify-center text-xs">{params.value}</Typography> },
+    { field: "engineer_name", headerName: "Requested By", flex: 1, minWidth: 150, renderCell: (params) => <Typography className="text-gray-600 text-[10px] h-full flex items-center">{params.value}</Typography> },
+    {
+      field: "is_approve",
+      headerName: "Status",
+      width: 120,
+      renderCell: (params) => (
+        <Box className="flex items-center h-full">
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${params.value === 'Approve' ? 'bg-green-100 text-green-700' : params.value === 'Reject' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
+            {params.value || "Pending"}
+          </span>
+        </Box>
+      )
+    },
+    { field: "request_date", headerName: "Date", width: 120, renderCell: (params) => <Typography className="text-gray-400 text-[10px] h-full flex items-center">{new Date(params.value).toLocaleDateString()}</Typography> }
+  ];
 
   const downloadTableAsCSV = (data, filename) => {
     if (!data || !data.length) return;
@@ -300,7 +390,7 @@ export default function ReportsPage() {
         {/* Charts Section */}
         <Grid container spacing={3} className="mb-8 w-full">
           {/* Project Progress Chart (Custom SVG/CSS) */}
-          <Grid item xs={12} lg={4}>
+          {/* <Grid item xs={12} lg={4}>
             <Paper className="p-6 rounded-2xl shadow-sm border border-gray-100 h-full">
               <Box className="flex items-center justify-between mb-8">
                 <Typography variant="h6" className="font-bold text-gray-800 flex items-center gap-2">
@@ -326,7 +416,7 @@ export default function ReportsPage() {
                 ))}
               </Box>
             </Paper>
-          </Grid>
+          </Grid> */}
           {/* Employee Efficiency Chart (Custom SVG/CSS) */}
           <Grid item xs={12} lg={4}>
             <Paper className="p-6 rounded-2xl shadow-sm border border-gray-100 h-full">
@@ -442,30 +532,21 @@ export default function ReportsPage() {
                   Download
                 </Button>
               </Box>
-              <TableContainer>
-                <Table size="small">
-                  <TableHead className="bg-gray-50">
-                    <TableRow>
-                      <TableCell className="font-bold text-gray-600 py-4">Machine</TableCell>
-                      <TableCell className="font-bold text-gray-600">Status</TableCell>
-                      <TableCell className="font-bold text-gray-600">Operator</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {equipments.map((row) => (
-                      <TableRow key={row.id}>
-                        <TableCell className="py-4 font-medium">{row.name}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${row.status === 'In Use' ? 'bg-blue-100 text-blue-700' : row.status === 'Available' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                            {row.status}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-gray-600">{row.type}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <Box className="p-4" sx={{ height: 400, width: '100%' }}>
+                <DataGrid
+                  rows={equipments}
+                  columns={equipmentColumns}
+                  pageSizeOptions={[5, 10, 20]}
+                  initialState={{
+                    pagination: { paginationModel: { pageSize: 5 } },
+                  }}
+                  disableRowSelectionOnClick
+                  sx={{
+                    border: 'none',
+                    '& .MuiDataGrid-cell:focus': { outline: 'none' },
+                  }}
+                />
+              </Box>
             </Card>
           </Grid>
 
@@ -483,31 +564,96 @@ export default function ReportsPage() {
                   Download
                 </Button>
               </Box>
-              <TableContainer>
-                <Table size="small">
-                  <TableHead className="bg-gray-50">
-                    <TableRow>
-                      <TableCell className="font-bold text-gray-600 py-4">Item</TableCell>
-                      <TableCell className="font-bold text-gray-600">Qty</TableCell>
-                      <TableCell className="font-bold text-gray-600">Stock</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {materials.map((row) => (
-                      <TableRow key={row.id}>
-                        <TableCell className="py-4 font-medium">{row.name}</TableCell>
-                        <TableCell className="text-gray-600">{row.quantity} {row.unit}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${(row.quantity / row.max_stock) >= 0.2 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
-                            {(row.quantity / row.max_stock) >= 0.2 ? 'In Stock' : (row.quantity / row.max_stock) == 0 ? 'Out of Stock' : 'Low Stock'}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <Box className="p-4" sx={{ height: 400, width: '100%' }}>
+                <DataGrid
+                  rows={materials}
+                  columns={materialColumns}
+                  pageSizeOptions={[5, 10, 20]}
+                  initialState={{
+                    pagination: { paginationModel: { pageSize: 5 } },
+                  }}
+                  disableRowSelectionOnClick
+                  sx={{
+                    border: 'none',
+                    '& .MuiDataGrid-cell:focus': { outline: 'none' },
+                  }}
+                />
+              </Box>
             </Card>
+          </Grid>
+        </Grid>
+
+        {/* Operations Analytics Section */}
+        <Typography variant="h5" className="font-bold text-gray-900 mb-6 flex items-center gap-2 mt-12">
+          <HardHat className="text-orange-600" size={28} />
+          Workforce & Operations Analytics
+        </Typography>
+
+        <Grid container spacing={3} className="w-full">
+          {/* Assignments by Project */}
+          <Grid item xs={12} lg={6}>
+            <Paper className="p-6 rounded-2xl shadow-sm border border-gray-100 h-full">
+              <Typography variant="h6" className="font-bold text-gray-800 mb-4">Task Assignments by Project</Typography>
+              <Box className="p-4" sx={{ height: 400, width: '100%' }}>
+                <DataGrid
+                  rows={assignments}
+                  columns={projectAssignColumns}
+                  pageSizeOptions={[5, 10, 20]}
+                  initialState={{
+                    pagination: { paginationModel: { pageSize: 5 } },
+                  }}
+                  disableRowSelectionOnClick
+                  sx={{
+                    border: 'none',
+                    '& .MuiDataGrid-cell:focus': { outline: 'none' },
+                  }}
+                />
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* Assignments by Employee */}
+          <Grid item xs={12} lg={6}>
+            <Paper className="p-6 rounded-2xl shadow-sm border border-gray-100 h-full">
+              <Typography variant="h6" className="font-bold text-gray-800 mb-4">Workload by Employee</Typography>
+              <Box className="p-4" sx={{ height: 400, width: '100%' }}>
+                <DataGrid
+                  rows={[...assignments].sort((a, b) => (a.employee_name || "").localeCompare(b.employee_name || ""))}
+                  columns={employeeAssignColumns}
+                  pageSizeOptions={[5, 10, 20]}
+                  initialState={{
+                    pagination: { paginationModel: { pageSize: 5 } },
+                  }}
+                  disableRowSelectionOnClick
+                  sx={{
+                    border: 'none',
+                    '& .MuiDataGrid-cell:focus': { outline: 'none' },
+                  }}
+                />
+              </Box>
+            </Paper>
+          </Grid>
+
+          {/* Material Requests by Project */}
+          <Grid item xs={12}>
+            <Paper className="p-6 rounded-2xl shadow-sm border border-gray-100 mt-6">
+              <Typography variant="h6" className="font-bold text-gray-800 mb-4">Material Requests by Project Site</Typography>
+              <Box className="p-4" sx={{ height: 500, width: '100%' }}>
+                <DataGrid
+                  rows={requests}
+                  columns={requestColumns}
+                  pageSizeOptions={[10, 20, 50]}
+                  initialState={{
+                    pagination: { paginationModel: { pageSize: 10 } },
+                  }}
+                  disableRowSelectionOnClick
+                  sx={{
+                    border: 'none',
+                    '& .MuiDataGrid-cell:focus': { outline: 'none' },
+                  }}
+                />
+              </Box>
+            </Paper>
           </Grid>
         </Grid>
       </Box>

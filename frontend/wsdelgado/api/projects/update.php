@@ -23,6 +23,8 @@ if(!empty($data->id)) {
         if(property_exists($data, 'progress')) $project->progress = $data->progress;
         if(property_exists($data, 'foreman_id')) $project->foreman_id = $data->foreman_id;
         if(property_exists($data, 'engineer_id')) $project->engineer_id = $data->engineer_id;
+        if(property_exists($data, 'start_date')) $project->start_date = $data->start_date;
+        if(property_exists($data, 'end_date')) $project->end_date = $data->end_date;
 
         if($project->update()){
             http_response_code(200);

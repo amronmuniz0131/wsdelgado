@@ -35,6 +35,9 @@ if(!empty($data->id)) {
     if (property_exists($data, 'quantity')) {
         $task->quantity = $data->quantity;
     }
+    if (property_exists($data, 'finished')) {
+        $task->finished = $data->finished;
+    }
 
     if($task->update()) {
         http_response_code(200);

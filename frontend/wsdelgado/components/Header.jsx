@@ -61,7 +61,7 @@ export default function Header() {
               Contact
             </Link>
           )}
-          {isAuthenticated && (
+          {isAuthenticated && userRole === "admin" && (
             <Link
               href="/reports"
               className="text-sm font-medium text-gray-600 hover:text-gray-900"
@@ -70,6 +70,14 @@ export default function Header() {
             </Link>
           )}
           {isAuthenticated && (
+            <Link
+              href="/profile"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+            >
+              Profile
+            </Link>
+          )}
+          {isAuthenticated && (userRole === "admin" || userRole === "engineer") && (
             <Link
               href="/employees"
               className="text-sm font-medium text-gray-600 hover:text-gray-900"
@@ -152,7 +160,7 @@ export default function Header() {
               Contact
             </Link>
           )}
-          {isAuthenticated && (
+          {isAuthenticated && userRole === "admin" && (
             <Link
               href="/reports"
               className="block py-2 text-gray-600"
@@ -161,7 +169,7 @@ export default function Header() {
               Reports
             </Link>
           )}
-          {isAuthenticated && (
+          {isAuthenticated && userRole === "admin" && (
             <Link
               href="/employees"
               className="block py-2 text-gray-600"

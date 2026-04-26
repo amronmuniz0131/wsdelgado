@@ -61,7 +61,11 @@ export function EquipmentsTable(props) {
     try {
       const response = await fetch(`${API_BASE_URL}/equipments/read.php`);
       const data = await response.json();
-      setEquipments(data.records || []);
+      let records = data.records || [];
+      if (props.projectId) {
+        records = data.records.filter(e => String(e.projectId) === String(props.projectId));
+      }
+      setEquipments(records);
     } catch (error) {
       console.error("Error fetching equipments:", error);
     } finally {
@@ -71,7 +75,7 @@ export function EquipmentsTable(props) {
 
   React.useEffect(() => {
     fetchEquipments();
-  }, []);
+  }, [props.projectId]);
   const handleOpen = (equipment) => {
     if (equipment && equipment.id) {
       setEquipmentRequest({
@@ -240,7 +244,7 @@ export function EquipmentsTable(props) {
     const today = new Date();
     // Assuming 8 working hours per day for estimation
     const hours = parseFloat(equipmentRequest.estimatedHours || 0);
-    const daysToAdd = hours > 0 ? Math.ceil(hours / 8) : 0;
+    const daysToAdd = hours > 0 ? Math.ceil(hours / 24) : 0;
 
     const returnDay = new Date(today);
     returnDay.setDate(today.getDate() + daysToAdd);
@@ -317,7 +321,7 @@ export function EquipmentsTable(props) {
     //   minWidth: 150,
     //   filterOperators: filteredOperators
     // },
-    {
+    ...(!props.projectId ? [{
       field: "actions",
       headerName: "Actions",
       flex: 1,
@@ -368,7 +372,7 @@ export function EquipmentsTable(props) {
           )}
         </Box>
       ),
-    },
+    }] : []),
   ];
 
   return (
@@ -383,7 +387,7 @@ export function EquipmentsTable(props) {
             Construction Equipments
           </Typography>
         </Box>
-        {props.user === "admin" && (
+        {props.user === "admin" && !props.projectId && (
           <Button
             variant="contained"
             color="primary"

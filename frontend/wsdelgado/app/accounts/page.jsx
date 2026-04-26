@@ -1,4 +1,5 @@
 import { AccountsTable } from "@/components/AccountsTable";
+import RoleProtectedRoute from "@/components/RoleProtectedRoute";
 
 export const metadata = {
   title: "Account Management | WSDelgado",
@@ -7,8 +8,10 @@ export const metadata = {
 
 export default function AccountsPage() {
   return (
-    <div className="p-4 md:p-12 min-h-screen bg-white">
-      <AccountsTable />
-    </div>
+    <RoleProtectedRoute allowedRoles={["admin"]}>
+      <div className="p-4 md:p-12 min-h-screen bg-white">
+        <AccountsTable />
+      </div>
+    </RoleProtectedRoute>
   );
 }

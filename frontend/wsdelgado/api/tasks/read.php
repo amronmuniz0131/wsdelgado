@@ -26,7 +26,8 @@ if ($num > 0) {
             "project_name" => $project_name,
             "start_date" => $start_date,
             "end_date" => $end_date,
-            "quantity" => $quantity
+            "quantity" => $quantity,
+            "finished" => $finished
         );
         array_push($tasks_arr["records"], $task_item);
     }

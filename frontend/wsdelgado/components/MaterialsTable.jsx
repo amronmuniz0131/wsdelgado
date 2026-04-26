@@ -145,9 +145,21 @@ export function MaterialsTable(props) {
   };
 
   const submitMaterial = async (overrideData = {}) => {
-    const payload = { ...materialRequest, ...overrideData };
+    let payload = { ...materialRequest, ...overrideData };
     if (!payload.status) {
       payload.status = "In Stock";
+    }
+
+    // Check if the material already exists based on name (case-insensitive)
+    if (!payload.id) {
+      const existingMaterial = materials.find(
+        (m) => m.name && payload.name && m.name.toLowerCase().trim() === payload.name.toLowerCase().trim()
+      );
+
+      if (existingMaterial) {
+        payload.id = existingMaterial.id;
+        payload.quantity = (parseInt(existingMaterial.quantity || 0) + parseInt(payload.quantity || 0)).toString();
+      }
     }
 
     const endpoint = payload.id ? `${API_BASE_URL}/materials/update.php` : `${API_BASE_URL}/materials/create.php`;
@@ -416,7 +428,7 @@ export function MaterialsTable(props) {
               value={materialRequest.max_stock}
               onChange={handleInputChange}
             />
-            <TextField
+            {/* <TextField
               select
               margin="dense"
               name="status"
@@ -443,7 +455,7 @@ export function MaterialsTable(props) {
               variant="outlined"
               value={materialRequest.price}
               onChange={handleInputChange}
-            />
+            /> */}
           </Box>
         </DialogContent>
         <DialogActions className="p-4 border-t border-gray-100 flex justify-between">

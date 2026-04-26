@@ -95,8 +95,6 @@ export function ProjectsTable(props) {
 
   useEffect(() => {
     if (props.userData) {
-      console.log(props.userData)
-      console.log(users)
       users.map((d) => {
         if (props.userData.email === d.email) {
           setNewProject((prev) => ({ ...prev, client: d.id }));
@@ -289,7 +287,6 @@ export function ProjectsTable(props) {
     if (!userData) return [];
 
     return projects.filter((project) => {
-      console.log(project, userData.id)
       if (props.user === "engineer") {
         const engineerName = project.engineerName || project.engineer;
         return engineerName === userData.name;

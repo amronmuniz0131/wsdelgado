@@ -25,6 +25,7 @@ import {
   Tooltip,
   Divider,
 } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
 import { Plus, Eye, Pencil, Briefcase, Calendar, MapPin, Phone, Mail, UserRound, ArrowRight } from "lucide-react";
 
 export function EmployeesTable() {
@@ -39,6 +40,7 @@ export function EmployeesTable() {
   const [count, setCount] = useState(0)
   const [positions, setPositions] = useState([]);
   const [prevProject, setPrevProject] = useState(null);
+  const user = localStorage.getItem("user")
 
   const fetchEmployees = async () => {
     setIsLoading(true);
@@ -198,6 +200,24 @@ export function EmployeesTable() {
           // 2. Assign to new project
           if (editingEmployee.assignedProjectId) {
             try {
+              const targetProject = projects.find(p => String(p.id) === String(editingEmployee.assignedProjectId));
+              // If the project already has an engineer, unassign the old one
+              const oldEngineer = employees.find((d) => {
+                return d.assignedProjectId === targetProject.id && d.position === "engineer"
+              });
+              console.log(oldEngineer)
+              if (oldEngineer) {
+                await fetch(`${API_BASE_URL}/employees/update.php`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    ...oldEngineer,
+                    assignedProjectId: null,
+                    assigned_project_id: null,
+                  }),
+                });
+              }
+
               const projectUpdatePayload = { id: editingEmployee.assignedProjectId };
               if (pos === "engineer") projectUpdatePayload.engineer_id = editingEmployee.id;
               if (pos === "foreman") projectUpdatePayload.foreman_id = editingEmployee.id;
@@ -223,6 +243,105 @@ export function EmployeesTable() {
       console.error("Error updating employee:", error);
     }
   };
+
+  const columns = [
+    {
+      field: "name",
+      headerName: "EMPLOYEE",
+      flex: 1,
+      minWidth: 120,
+      align: "start",
+      headerAlign: "start",
+      renderCell: (params) => (
+        <Box className="flex items-center justify-start w-full gap-3 h-full">
+          <Avatar className="bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md">
+            {params.row.name.charAt(0)}
+          </Avatar>
+          <Box>
+            <Typography className="font-bold text-gray-800 text-sm leading-tight">
+              {params.row.name}
+            </Typography>
+            <Typography variant="caption" className="text-gray-400 block">
+              {params.row.employeeId}
+            </Typography>
+          </Box>
+        </Box>
+      ),
+    },
+    {
+      field: "position",
+      headerName: "POSITION",
+      width: 150,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "assignedProject",
+      headerName: "ASSIGNED PROJECT",
+      width: 200,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "dateOfEmployment",
+      headerName: "EMPLOYMENT DATE",
+      width: 180,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "status",
+      headerName: "STATUS",
+      width: 130,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Box className="flex items-center justify-center h-full">
+          <Chip
+            label={getStatusLabel(!params.row.assignedProject ? "available" : "ongoing")}
+            color={getStatusColor(!params.row.assignedProject ? "available" : "ongoing")}
+            size="small"
+            className="font-bold text-[11px] uppercase tracking-wider"
+          />
+        </Box>
+      ),
+    },
+    ...(user === "admin" ? [{
+      field: "actions",
+      headerName: "ACTION",
+      width: 120,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Box className="flex items-center h-full justify-center w-full gap-1">
+          <Tooltip title="View Profile">
+            <IconButton
+              size="small"
+              className="text-blue-500 hover:bg-blue-100 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenView(params.row);
+              }}
+            >
+              <Eye size={18} />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Edit Information">
+            <IconButton
+              size="small"
+              className="text-amber-500 hover:bg-amber-100 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenEdit(params.row);
+              }}
+            >
+              <Pencil size={18} />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      ),
+    }] : [])
+  ];
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -276,112 +395,31 @@ export function EmployeesTable() {
       </Box>
 
       {/* Main Table Section */}
-      <TableContainer
-        component={Paper}
-        className="rounded-2xl overflow-hidden shadow-xl border border-gray-100"
-      >
-        <Table sx={{ minWidth: 650 }} aria-label="employees table">
-          <TableHead className="bg-gray-50">
-            <TableRow>
-              <TableCell className="font-bold text-gray-700 py-4">EMPLOYEE</TableCell>
-              <TableCell className="font-bold text-gray-700 py-4">POSITION</TableCell>
-              <TableCell className="font-bold text-gray-700 py-4">ASSIGNED PROJECT</TableCell>
-              <TableCell className="font-bold text-gray-700 py-4">EMPLOYMENT DATE</TableCell>
-              <TableCell className="font-bold text-gray-700 py-4">STATUS</TableCell>
-              <TableCell className="font-bold text-gray-700 py-4 text-center">ACTION</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {employees.map((row) => (
-              <TableRow
-                key={row.id}
-                className="hover:bg-blue-50/30 transition-all cursor-pointer group"
-                onClick={() => handleOpenView(row)}
-              >
-                <TableCell className="py-4">
-                  <Box className="flex items-center gap-3">
-                    <Avatar className="bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md">
-                      {row.name.charAt(0)}
-                    </Avatar>
-                    <Box>
-                      <Typography className="font-bold text-gray-800 group-hover:text-blue-700 transition-colors">
-                        {row.name}
-                      </Typography>
-                      <Typography variant="caption" className="text-gray-400">
-                        {row.employeeId}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </TableCell>
-                <TableCell className="py-4">
-                  <Typography variant="body2" className="text-gray-600 font-medium">
-                    {row.position}
-                  </Typography>
-                </TableCell>
-                <TableCell className="py-4">
-                  <Typography variant="body2" className="text-gray-600 font-medium">
-                    {row.assignedProject}
-                  </Typography>
-                </TableCell>
-                <TableCell className="py-4 font-medium text-gray-600">
-                  {row.dateOfEmployment}
-                </TableCell>
-                <TableCell className="py-4">
-                  <Chip
-                    label={getStatusLabel(!row.assignedProject ? "available" : "ongoing")}
-                    color={getStatusColor(!row.assignedProject ? "available" : "ongoing")}
-                    size="small"
-                    className="font-bold text-[11px] uppercase tracking-wider"
-                  />
-                </TableCell>
-                <TableCell className="py-4 text-center">
-                  <Box className="flex justify-center gap-1">
-                    <Tooltip title="View Profile">
-                      <IconButton
-                        size="small"
-                        className="text-blue-500 hover:bg-blue-100 transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenView(row);
-                        }}
-                      >
-                        <Eye size={18} />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Edit Information">
-                      <IconButton
-                        size="small"
-                        className="text-amber-500 hover:bg-amber-100 transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenEdit(row);
-                        }}
-                      >
-                        <Pencil size={18} />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ))}
-            {employees.length === 0 && (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  align="center"
-                  className="py-16 text-gray-500"
-                >
-                  <Box className="flex flex-col items-center gap-2 opacity-60">
-                    <UserRound size={48} className="text-gray-300" />
-                    <Typography variant="h6">No Employees Records</Typography>
-                    <Typography variant="body2">Get started by adding your first employee to the database.</Typography>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <Box className="rounded-2xl overflow-hidden shadow-xl border border-gray-100 bg-white h-[600px]">
+        <DataGrid
+          rows={employees}
+          columns={columns}
+          pageSize={10}
+          rowsPerPageOptions={[10, 25, 50]}
+          disableSelectionOnClick
+          rowHeight={70}
+          className="border-none"
+          sx={{
+            '& .MuiDataGrid-cell:focus': { outline: 'none' },
+            '& .MuiDataGrid-columnHeader:focus': { outline: 'none' },
+            '& .MuiDataGrid-row:hover': { backgroundColor: '#f0f7ff' },
+          }}
+          components={{
+            NoRowsOverlay: () => (
+              <Box className="flex flex-col items-center justify-center h-full gap-2 opacity-60">
+                <UserRound size={48} className="text-gray-300" />
+                <Typography variant="h6">No Employees Records</Typography>
+                <Typography variant="body2">Get started by adding your first employee to the database.</Typography>
+              </Box>
+            )
+          }}
+        />
+      </Box>
 
       {/* View Employee Details Modal */}
       <Dialog

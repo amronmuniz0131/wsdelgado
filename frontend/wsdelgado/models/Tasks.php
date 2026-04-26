@@ -12,6 +12,7 @@ class Task
     public $start_date;
     public $end_date;
     public $quantity;
+    public $finished;
 
     public function __construct($db)
     {
@@ -22,7 +23,7 @@ class Task
     {
         $query = "INSERT INTO " . $this->table_name . " 
                 SET name=:name, status=:status, severity=:severity, project_id=:project_id, 
-                    start_date=:start_date, end_date=:end_date, quantity=:quantity";
+                    start_date=:start_date, end_date=:end_date, quantity=:quantity, finished=:finished";
 
         $stmt = $this->conn->prepare($query);
 
@@ -35,6 +36,7 @@ class Task
         $stmt->bindParam(":start_date", $this->start_date);
         $stmt->bindParam(":end_date", $this->end_date);
         $stmt->bindParam(":quantity", $this->quantity);
+        $stmt->bindParam(":finished", $this->finished);
 
         if ($stmt->execute()) {
             return true;
@@ -80,7 +82,7 @@ class Task
     {
         $query = "UPDATE " . $this->table_name . " 
                 SET name=:name, status=:status, severity=:severity, project_id=:project_id, 
-                    start_date=:start_date, end_date=:end_date, quantity=:quantity
+                    start_date=:start_date, end_date=:end_date, quantity=:quantity, finished=:finished
                 WHERE id = :id";
 
         $stmt = $this->conn->prepare($query);
@@ -94,6 +96,7 @@ class Task
         $stmt->bindParam(":start_date", $this->start_date);
         $stmt->bindParam(":end_date", $this->end_date);
         $stmt->bindParam(":quantity", $this->quantity);
+        $stmt->bindParam(":finished", $this->finished);
         $stmt->bindParam(":id", $this->id);
 
         if ($stmt->execute()) {
@@ -125,6 +128,7 @@ class Task
         $this->start_date = htmlspecialchars(strip_tags($this->start_date));
         $this->end_date = htmlspecialchars(strip_tags($this->end_date));
         $this->quantity = htmlspecialchars(strip_tags($this->quantity));
+        $this->finished = htmlspecialchars(strip_tags($this->finished));
     }
 }
 ?>

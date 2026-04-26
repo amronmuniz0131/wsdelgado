@@ -23,17 +23,23 @@ import { MaterialsTable } from "@/components/MaterialsTable";
 import { EquipmentsTable } from "@/components/EquipmentsTable";
 import { InquiriesList } from "@/components/InquiriesList";
 
+import RoleProtectedRoute from "@/components/RoleProtectedRoute";
+
 export default function DashboardPage() {
+  return (
+    <RoleProtectedRoute allowedRoles={["admin", "engineer", "user"]}>
+      <DashboardContent />
+    </RoleProtectedRoute>
+  );
+}
+
+function DashboardContent() {
   const bottomRef = useRef(null);
   const [user, setUser] = useState("");
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [openModal, setOpenModal] = useState(false);
   useEffect(() => {
     setUser(localStorage.getItem("user"));
-    const isAuthenticated = localStorage.getItem("isAuthenticated");
-    if (!isAuthenticated) {
-      window.location.href = "/login";
-    }
   }, []);
 
   const ScrollToBottom = () => {
@@ -87,7 +93,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col p-6 space-y-8">
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-3xl font-bold text-gray-900 capitalize">{user} Dashboard</h1>
-        {user === "admin" && (
+        {(user === "admin" || user === "engineer") && (
           <div onClick={ScrollToBottom} className="flex cursor-pointer items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-100">
             <span className="text-sm font-medium text-gray-700">Messages:</span>
             <Badge badgeContent={unreadMessages} color="error" max={99}>
@@ -101,15 +107,19 @@ export default function DashboardPage() {
         <ProjectsTable user={user} openModal={openModal} setOpenModal={setOpenModal} userData={newAccount} />
       </section>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <MaterialsTable user={user} />
-        </section>
+      {(user === "admin" || user === "engineer") &&
+        <div>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+              <MaterialsTable user={user} />
+            </section>
 
-        <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <EquipmentsTable user={user} />
-        </section>
-      </div>
+            <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+              <EquipmentsTable user={user} />
+            </section>
+          </div>
+        </div>
+      }
 
       {user === "admin" && (
         <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 mt-8" ref={bottomRef}>
