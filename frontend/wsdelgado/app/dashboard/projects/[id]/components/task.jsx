@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "@/lib/api";
+import { SuccessToast, DangerToast } from "@/components/useToast";
 
 import {
     Button,
@@ -51,10 +52,10 @@ export function TaskModal(props) {
             });
             const result = await response.json();
             if (response.ok) {
-                alert("Employees assigned successfully!");
+                SuccessToast("Employees assigned successfully!");
                 props.handleClose();
             } else {
-                alert(`Error: ${result.message}`);
+                DangerToast(`Error: ${result.message}`);
             }
             const res = await fetch(`${API_BASE_URL}/tasks/update.php`, {
                 method: "POST",
@@ -67,6 +68,7 @@ export function TaskModal(props) {
                     start_date: new Date().toISOString().slice(0, 19).replace('T', ' '),
                 }),
             });
+            window.location.reload();
         } catch (error) {
             console.error("Error creating task:", error);
         }
@@ -100,13 +102,17 @@ export function TaskModal(props) {
                     >
                         {employees
                             .filter(emp =>
-                                String(emp.assignedProjectId) === String(props.selectedTask?.project_id) &&
-                                emp.position?.toLowerCase() !== "engineer"
+                                (emp.position?.toLowerCase() !== "engineer" && emp.position?.toLowerCase() !== "foreman" && emp.position?.toLowerCase() !== "admin" && emp.project_id_task === null) ||
+                                emp.is_finished !== 0
                             )
                             .map((employee, index) => (
-                                <MenuItem key={index + '-employee'} value={employee.id}>
-                                    {employee.name} ({employee.position})
-                                </MenuItem>
+                                employee.position.toLowerCase() !== 'engineer' &&
+                                employee.position.toLowerCase() !== 'foreman' &&
+                                employee.position.toLowerCase() !== 'admin' && (
+                                    <MenuItem key={index + '-employee'} value={employee.id}>
+                                        {employee.name} ({employee.position})
+                                    </MenuItem>
+                                )
                             ))}
                     </Select>
                 </FormControl>

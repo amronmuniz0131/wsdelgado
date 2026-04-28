@@ -12,6 +12,7 @@ import {
   Avatar,
 } from "@mui/material";
 import { API_BASE_URL } from "@/lib/api";
+import { SuccessToast, DangerToast } from "@/components/useToast";
 
 export default function AddMembers({ isOpen, handleClose, projectId, onUpdate }) {
   const [employees, setEmployees] = useState([]);
@@ -64,9 +65,10 @@ export default function AddMembers({ isOpen, handleClose, projectId, onUpdate })
         onUpdate();
         handleClose();
         setSelectedEmployeeId("");
+        SuccessToast("Member added successfully");
       } else {
         const error = await response.json();
-        alert(`Error: ${error.message}`);
+        DangerToast(`Error: ${error.message}`);
       }
     } catch (error) {
       console.error("Error adding member:", error);
@@ -97,6 +99,7 @@ export default function AddMembers({ isOpen, handleClose, projectId, onUpdate })
             <MenuItem disabled>No available employees found</MenuItem>
           ) : (
             employees.map((emp) => (
+              emp.position.toLowerCase() !== 'engineer' && emp.position.toLowerCase() !== 'foreman' && emp.position.toLowerCase() !== 'admin' &&
               <MenuItem key={emp.id} value={emp.id} className="py-3 px-4">
                 <Box className="flex items-center gap-4">
                   <Avatar className="bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm text-sm w-9 h-9">
@@ -108,6 +111,7 @@ export default function AddMembers({ isOpen, handleClose, projectId, onUpdate })
                   </Box>
                 </Box>
               </MenuItem>
+
             ))
           )}
         </TextField>
@@ -123,6 +127,6 @@ export default function AddMembers({ isOpen, handleClose, projectId, onUpdate })
           {isLoading ? "Adding..." : "Add to Team"}
         </Button>
       </DialogActions>
-    </Dialog>
+    </Dialog >
   );
 }

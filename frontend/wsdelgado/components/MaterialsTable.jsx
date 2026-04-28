@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { SuccessToast, DangerToast } from "@/components/useToast";
 import { API_BASE_URL } from "@/lib/api";
 import {
   Paper,
@@ -174,9 +175,10 @@ export function MaterialsTable(props) {
       if (response.ok) {
         fetchMaterials();
         handleClose();
+        SuccessToast("Material added successfully");
       } else {
         const error = await response.json();
-        alert(error.message || "Operation failed.");
+        DangerToast(error.message || "Operation failed.");
       }
     } catch (error) {
       console.error("Error submitting material:", error);
@@ -236,7 +238,7 @@ export function MaterialsTable(props) {
           });
 
           if (updateMatResponse.ok) {
-            alert("Request approved and inventory updated!");
+            SuccessToast("Request approved and inventory updated!");
           } else {
             console.error("Failed to update material quantity");
           }
@@ -261,7 +263,7 @@ export function MaterialsTable(props) {
       });
 
       if (response.ok) {
-        alert("Request rejected.");
+        DangerToast("Request rejected.");
         fetchRequests();
       }
     } catch (error) {

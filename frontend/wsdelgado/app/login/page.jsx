@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SuccessToast, DangerToast } from "@/components/useToast";
 import Link from "next/link";
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -32,13 +33,18 @@ export default function LoginPage() {
         localStorage.setItem("user", result.role || "user");
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("userData", JSON.stringify(result));
-        window.location.href = "/dashboard";
+        
+        if (String(result.first_login) === "0") {
+          window.location.href = "/change-password";
+        } else {
+          window.location.href = "/dashboard";
+        }
       } else {
-        alert(result.message || "Login failed");
+        DangerToast(result.message || "Login failed");
       }
     } catch (error) {
       console.error("Login error:", error);
-      alert("An error occurred during login. Please try again.");
+      DangerToast("An error occurred during login. Please try again.");
     } finally {
       setIsLoading(false);
     }

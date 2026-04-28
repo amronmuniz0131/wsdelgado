@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { API_BASE_URL } from "@/lib/api";
+import { SuccessToast, DangerToast } from "@/components/useToast";
 import {
   Paper,
   Button,
@@ -41,29 +42,6 @@ export default function ProjectDetailsPage() {
   const [isAssignTaskModalOpen, setAssignTaskModalOpen] = useState(false);
   const [isStatusModalOpen, setStatusModalOpen] = useState(false);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
-  const [images, setImages] = useState([
-    {
-      id: "1",
-      title: "Foundation Work",
-      description: "Main foundation structure completed for the commercial base.",
-      url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzkRI8CW3pdN2wvKWLLAu1gzt5WNkobLV3sw&s",
-      date: "2024-03-10"
-    },
-    {
-      id: "2",
-      title: "Site Overview",
-      description: "Aerial view of the construction progress and surrounding logistics.",
-      url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgYaxGtkJWf7GaKYX829P0fdWXgewYbUxZCw&s",
-      date: "2024-03-15"
-    },
-    {
-      id: "3",
-      title: "Steel Framing",
-      description: "Initial framing phase for the second floor.",
-      url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfJtvxuAmXeskOkS1bMyzx7kQ4ybdNzF0L8A&s",
-      date: "2024-03-22"
-    }
-  ]);
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [newImage, setNewImage] = useState({ title: "", description: "", url: "" });
@@ -93,7 +71,7 @@ export default function ProjectDetailsPage() {
     severity: 1,
     start_date: "",
     end_date: "",
-    quantity: ""
+    quantity: 1
   });
 
   const materialRequestColumns = [
@@ -194,7 +172,6 @@ export default function ProjectDetailsPage() {
       renderCell: (params) => (
         <Box className="flex flex-col justify-center h-full">
           <Typography variant="body2" className="font-bold text-gray-700 text-xs">{params.row.name}</Typography>
-          <Typography className="text-[10px] text-gray-400">Qty: {params.row.quantity}</Typography>
         </Box>
       )
     },
@@ -205,7 +182,7 @@ export default function ProjectDetailsPage() {
       minWidth: 180,
       renderCell: (params) => (
         <Box className="flex items-center h-full gap-2">
-          {params.row.employees?.map((d, i) => {
+          {params.row.assigned_employees?.split(',').map((d, i) => {
             return (
               <Typography key={d + '-' + i} variant="body2" className="py-1 px-3 font-bold text-white text-xs bg-green-700 rounded-full">{d}</Typography>
             )
@@ -220,7 +197,7 @@ export default function ProjectDetailsPage() {
       renderCell: (params) => (
         <Box className="flex flex-col justify-center h-full">
           <Typography className="text-[11px] font-medium text-gray-600">Start: {params.row.start_date}</Typography>
-          <Typography className="text-[11px] font-medium text-gray-600">End: {params.row.end_date}</Typography>
+          {params.row.end_date !== "0000-00-00" && <Typography className="text-[11px] font-medium text-gray-600">End: {params.row.end_date}</Typography>}
         </Box>
       )
     },
@@ -252,7 +229,7 @@ export default function ProjectDetailsPage() {
         />
       )
     },
-    ...(userRole === "engineer" ? [{
+    ...(userRole === "engineer" && project?.completion_date === null ? [{
       field: "actions",
       headerName: "Actions",
       width: 180,
@@ -331,7 +308,7 @@ export default function ProjectDetailsPage() {
         const data = await response.json();
         // Filter employees assigned to this project
         const assignedEmployees = (data.records || []).filter(
-          emp => String(emp.project_id_task) === String(id) || emp.is_finished === 0
+          emp => String(emp.project_id_task) === String(id) && emp.is_finished === 0
         );
         setTeam(assignedEmployees);
       }
@@ -416,6 +393,58 @@ export default function ProjectDetailsPage() {
     }
   }, [id]);
 
+  const handleCompleteProject = async () => {
+    try {
+      setIsSubmitting(true);
+
+      // 1. Update project end_date
+      const projectResponse = await fetch(`${API_BASE_URL}/projects/update.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: id,
+          completion_date: new Date().toISOString().split('T')[0]
+        }),
+      });
+
+      if (!projectResponse.ok) throw new Error("Failed to update project");
+
+      // 2. Unassign foreman if exists
+      if (project.foreman_id) {
+        await fetch(`${API_BASE_URL}/employees/update.php`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: project.foreman_id,
+            assignedProjectId: null
+          }),
+        });
+      }
+
+      // 3. Unassign engineer if exists
+      if (project.engineer_id) {
+        await fetch(`${API_BASE_URL}/employees/update.php`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: project.engineer_id,
+            assignedProjectId: null
+          }),
+        });
+      }
+      handleCloseFinishProject();
+
+      await fetchProjectDetails();
+      await fetchTeam();
+      SuccessToast("Project marked as completed and team unassigned successfully.");
+    } catch (error) {
+      console.error("Error completing project:", error);
+      DangerToast("Failed to complete project. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const fetchRequests = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/request/read.php`);
@@ -430,25 +459,7 @@ export default function ProjectDetailsPage() {
       console.error("Error fetching requests:", error);
     }
   };
-
-  const handleOpenUpload = () => setIsUploadModalOpen(true);
-  const handleCloseUpload = () => {
-    setIsUploadModalOpen(false);
-    setNewImage({ title: "", description: "", url: "" });
-  };
-
-  const handleUploadImage = () => {
-    if (newImage.title && newImage.url) {
-      const img = {
-        id: Math.random().toString(36).substr(2, 9),
-        ...newImage,
-        date: new Date().toISOString().split('T')[0]
-      };
-      setImages([img, ...images]);
-      handleCloseUpload();
-    }
-  };
-
+  const [finishProjectModal, setFinishProjectModal] = useState(false);
   const handleOpenRequest = () => setIsRequestModalOpen(true);
   const handleCloseRequest = () => {
     setIsRequestModalOpen(false);
@@ -460,10 +471,13 @@ export default function ProjectDetailsPage() {
     setIsEquipmentModalOpen(false);
     setEquipmentRequestData({ equipment_id: "", estimated_hours: "" });
   };
+  const handleCloseFinishProject = () => {
+    setFinishProjectModal(false);
+  };
 
   const handleEquipmentRequestSubmit = async () => {
     if (!equipmentRequestData.equipment_id || !equipmentRequestData.estimated_hours) {
-      alert("Please fill in all fields");
+      DangerToast("Please fill in all fields");
       return;
     }
 
@@ -487,16 +501,16 @@ export default function ProjectDetailsPage() {
       });
 
       if (response.ok) {
-        alert("Equipment request submitted successfully!");
+        SuccessToast("Equipment request submitted successfully!");
         handleCloseEquipmentRequest();
         fetchEquipments(); // Refresh list
       } else {
         const error = await response.json();
-        alert(`Failed to submit request: ${error.message}`);
+        DangerToast(`Failed to submit request: ${error.message}`);
       }
     } catch (error) {
       console.error("Error submitting equipment request:", error);
-      alert("An error occurred while submitting the request.");
+      DangerToast("An error occurred while submitting the request.");
     } finally {
       setIsSubmitting(false);
     }
@@ -511,14 +525,14 @@ export default function ProjectDetailsPage() {
       severity: 1,
       start_date: "",
       end_date: "",
-      quantity: ""
+      quantity: 1
     });
   };
 
 
   const handleTaskSubmit = async () => {
     if (!taskData.name || !taskData.quantity) {
-      alert("Please fill in all required fields");
+      DangerToast("Please fill in all required fields");
       return;
     }
 
@@ -538,16 +552,16 @@ export default function ProjectDetailsPage() {
       });
 
       if (response.ok) {
-        alert("Task created successfully!");
+        SuccessToast("Task created successfully!");
         handleCloseTask();
         fetchTasks();
       } else {
         const error = await response.json();
-        alert(`Failed to create task: ${error.message}`);
+        DangerToast(`Failed to create task: ${error.message}`);
       }
     } catch (error) {
       console.error("Error creating task:", error);
-      alert("An error occurred while creating the task.");
+      DangerToast("An error occurred while creating the task.");
     } finally {
       setIsSubmitting(false);
     }
@@ -555,7 +569,7 @@ export default function ProjectDetailsPage() {
 
   const handleRequestSubmit = async () => {
     if (!requestData.material_id || !requestData.quantity) {
-      alert("Please fill in all fields");
+      DangerToast("Please fill in all fields");
       return;
     }
 
@@ -579,16 +593,16 @@ export default function ProjectDetailsPage() {
       });
 
       if (response.ok) {
-        alert("Material request submitted successfully!");
+        SuccessToast("Material request submitted successfully!");
         handleCloseRequest();
         fetchRequests();
       } else {
         const error = await response.json();
-        alert(`Failed to submit request: ${error.message}`);
+        DangerToast(`Failed to submit request: ${error.message}`);
       }
     } catch (error) {
       console.error("Error submitting request:", error);
-      alert("An error occurred while submitting the request.");
+      DangerToast("An error occurred while submitting the request.");
     } finally {
       setIsSubmitting(false);
     }
@@ -617,7 +631,7 @@ export default function ProjectDetailsPage() {
 
   if (isLoading) {
     return (
-      <Box className="flex items-center justify-center min-h-screen">
+      <Box className="flex items-center justify-center min-h-screen bg-white">
         <CircularProgress />
       </Box>
     );
@@ -705,6 +719,17 @@ export default function ProjectDetailsPage() {
               project.start_date === null &&
               <StartProject project={project} setProject={setProject} />
             }
+            {
+              progress === 100 && project?.completion_date === null &&
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setFinishProjectModal(true)}
+              // disabled={isSubmitting || (project && project.end_date !== null && project.end_date !== "0000-00-00")}
+              >
+                {project && project.end_date !== null && project.end_date !== "0000-00-00" ? "Project Completed" : "Complete Project"}
+              </Button>
+            }
           </Box>
         </Box>
         <div className="grid grid-cols-12 gap-6">
@@ -779,6 +804,12 @@ export default function ProjectDetailsPage() {
                         <Typography variant="caption" className="text-gray-400 text-[9px] uppercase font-bold block">Target</Typography>
                         <Typography variant="body2" className="font-bold text-blue-600">{project.end_date || "TBA"}</Typography>
                       </Grid>
+                      {project?.completion_date &&
+                        <Grid item xs={6}>
+                          <Typography variant="caption" className="text-gray-400 text-[9px] uppercase font-bold block">Completed</Typography>
+                          <Typography variant="body2" className="font-bold text-blue-600">{project?.completion_date || "TBA"}</Typography>
+                        </Grid>
+                      }
                     </Grid>
                   </Box>
                 </Box>
@@ -823,7 +854,7 @@ export default function ProjectDetailsPage() {
                 </Typography>
                 <Box className="flex items-center gap-2">
                   <Chip label={`${tasks.length} Total`} size="small" variant="outlined" className="text-[10px] font-bold mr-2" />
-                  {userRole === "engineer" && (
+                  {userRole === "engineer" && project?.completion_date === null && (
                     <Button
                       variant="outlined"
                       size="small"
@@ -863,7 +894,7 @@ export default function ProjectDetailsPage() {
                 </Typography>
                 <div className="flex items-center gap-2">
                   <Chip label={`${requests.length} Requests`} size="small" variant="outlined" className="text-[10px] font-bold" />
-                  {userRole === "engineer" && (
+                  {userRole === "engineer" && project?.completion_date === null && (
                     <Button
                       variant="outlined"
                       startIcon={<Package size={16} />}
@@ -897,7 +928,7 @@ export default function ProjectDetailsPage() {
             <Card className="shadow-sm border border-gray-100 rounded-2xl overflow-hidden mt-6">
               <Box className="p-6">
                 <div className="flex gap-2 justify-end w-full items-center">
-                  {userRole === "engineer" && (
+                  {userRole === "engineer" && project?.completion_date === null && (
                     <Button
                       variant="outlined"
                       startIcon={<Briefcase size={16} />}
@@ -915,7 +946,7 @@ export default function ProjectDetailsPage() {
         </div>
 
         {/* Gallery - Now at the bottom with full width/grid transition */}
-        <Box className="mt-8">
+        {/* <Box className="mt-8">
           <Box className="flex justify-between items-center mb-6">
             <Typography variant="h5" className="font-black text-gray-900 flex items-center gap-2">
               <ImageIcon size={22} className="text-blue-600" />
@@ -945,58 +976,8 @@ export default function ProjectDetailsPage() {
               </Grid>
             ))}
           </Grid>
-        </Box>
+        </Box> */}
       </Box>
-
-      {/* Upload Image Modal */}
-      <Dialog
-        open={isUploadModalOpen}
-        onClose={handleCloseUpload}
-        maxWidth="xs"
-        fullWidth
-        PaperProps={{ className: "rounded-2xl" }}
-      >
-        <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 pb-4">
-          Upload Progress Photo
-        </DialogTitle>
-        <DialogContent className="pt-6 space-y-4">
-          <TextField
-            label="Image URL"
-            placeholder="https://example.com/image.jpg"
-            fullWidth
-            variant="outlined"
-            value={newImage.url}
-            onChange={(e) => setNewImage({ ...newImage, url: e.target.value })}
-          />
-          <TextField
-            label="Image Title"
-            fullWidth
-            variant="outlined"
-            value={newImage.title}
-            onChange={(e) => setNewImage({ ...newImage, title: e.target.value })}
-          />
-          <TextField
-            label="Description"
-            multiline
-            rows={3}
-            fullWidth
-            variant="outlined"
-            value={newImage.description}
-            onChange={(e) => setNewImage({ ...newImage, description: e.target.value })}
-          />
-        </DialogContent>
-        <DialogActions className="p-4 border-t border-gray-100">
-          <Button onClick={handleCloseUpload} color="inherit">Cancel</Button>
-          <Button
-            onClick={handleUploadImage}
-            variant="contained"
-            className="bg-blue-600 hover:bg-blue-700"
-            disabled={!newImage.url || !newImage.title}
-          >
-            Add to Gallery
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* Request Material Modal */}
 
@@ -1113,6 +1094,32 @@ export default function ProjectDetailsPage() {
             disabled={isSubmitting || !equipmentRequestData.equipment_id || !equipmentRequestData.estimated_hours}
           >
             {isSubmitting ? <CircularProgress size={24} /> : "Submit Request"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={finishProjectModal}
+        onClose={handleCloseFinishProject}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ className: "rounded-2xl" }}
+      >
+        <DialogTitle>
+          <Typography>Finish Project</Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to finish this project?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseFinishProject} color="inherit">Cancel</Button>
+          <Button
+            onClick={handleCompleteProject}
+            variant="contained"
+            className="bg-blue-500 hover:bg-blue-600 text-white"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? <CircularProgress size={24} /> : "Finish"}
           </Button>
         </DialogActions>
       </Dialog>

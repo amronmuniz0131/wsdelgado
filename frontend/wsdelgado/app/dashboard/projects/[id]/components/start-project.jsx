@@ -18,6 +18,7 @@ import {
     IconButton,
 } from "@mui/material";
 import { API_BASE_URL } from "@/lib/api";
+import { SuccessToast, DangerToast } from "@/components/useToast";
 
 
 export default function StartProject({ project, setProject }) {
@@ -38,16 +39,16 @@ export default function StartProject({ project, setProject }) {
             });
 
             if (response.ok) {
-                alert("Project started successfully!");
+                SuccessToast("Project started successfully!");
                 window.location.reload();
                 // fetchProject();
             } else {
                 const error = await response.json();
-                alert(`Failed to start project: ${error.message}`);
+                DangerToast(`Failed to start project: ${error.message}`);
             }
         } catch (error) {
             console.error("Error starting project:", error);
-            alert("An error occurred while starting the project.");
+            DangerToast("An error occurred while starting the project.");
         }
     }
     const [isOpen, setOpen] = useState(false)

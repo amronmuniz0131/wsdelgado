@@ -29,7 +29,7 @@ if($num > 0){
             "email" => $email,
             "password" => $password,
             "role" => $role,
-            "created_at" => $created_at
+            "created_at" => $created_at,
         );
         array_push($users_arr["records"], $user_item);
     }

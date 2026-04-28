@@ -30,6 +30,7 @@ import {
 } from "@mui/material";
 import { Plus, Eye, Pencil, UserRound, Mail, Shield, ShieldCheck, UserCheck, Key, Trash2 } from "lucide-react";
 import { DataGrid } from "@mui/x-data-grid";
+import { SuccessToast, DangerToast } from "@/components/useToast";
 
 export function AccountsTable() {
   const [accounts, setAccounts] = useState([]);
@@ -106,9 +107,10 @@ export function AccountsTable() {
       if (response.ok) {
         fetchAccounts();
         handleCloseAdd();
+        SuccessToast("Account added successfully");
       } else {
         const error = await response.json();
-        alert(error.message || "Failed to add account");
+        DangerToast(error.message || "Failed to add account");
       }
     } catch (error) {
       console.error("Error adding account:", error);
@@ -129,9 +131,10 @@ export function AccountsTable() {
       if (response.ok) {
         fetchAccounts();
         handleCloseEdit();
+        SuccessToast("Account updated successfully");
       } else {
         const error = await response.json();
-        alert(error.message || "Failed to update account");
+        DangerToast(error.message || "Failed to update account");
       }
     } catch (error) {
       console.error("Error updating account:", error);
@@ -149,9 +152,10 @@ export function AccountsTable() {
       });
       if (response.ok) {
         fetchAccounts();
+        SuccessToast("Account deleted successfully");
       } else {
         const error = await response.json();
-        alert(error.message || "Failed to delete account");
+        DangerToast(error.message || "Failed to delete account");
       }
     } catch (error) {
       console.error("Error deleting account:", error);

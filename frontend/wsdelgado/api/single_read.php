@@ -16,7 +16,8 @@ if($user->readOne()){
         "id" => $user->id,
         "name" => $user->name,
         "email" => $user->email,
-        "created_at" => $user->created_at
+        "created_at" => $user->created_at,
+        "first_login" => $user->first_login
     );
     http_response_code(200);
     echo json_encode($user_arr);

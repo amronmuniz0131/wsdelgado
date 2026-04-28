@@ -26,7 +26,8 @@ if($project->readOne()){
         "created_at" => $project->created_at,
         "updated_at" => $project->updated_at,
         "start_date" => $project->start_date,
-        "end_date" => $project->end_date
+        "end_date" => $project->end_date,
+        "completion_date" => $project->completion_date
     );
     http_response_code(200);
     echo json_encode($project_arr);

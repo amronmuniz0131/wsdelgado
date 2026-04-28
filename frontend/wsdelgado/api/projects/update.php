@@ -25,6 +25,7 @@ if(!empty($data->id)) {
         if(property_exists($data, 'engineer_id')) $project->engineer_id = $data->engineer_id;
         if(property_exists($data, 'start_date')) $project->start_date = $data->start_date;
         if(property_exists($data, 'end_date')) $project->end_date = $data->end_date;
+        if(property_exists($data, 'completion_date')) $project->completion_date = $data->completion_date;
 
         if($project->update()){
             http_response_code(200);

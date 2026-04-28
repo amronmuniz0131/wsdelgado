@@ -15,6 +15,7 @@ class Project {
     public $updated_at;
     public $start_date;
     public $end_date;
+    public $completion_date;
 
     public function __construct($db) {
         $this->conn = $db;
@@ -90,7 +91,8 @@ class Project {
                 SET name=:name, location=:location, client=:client, 
                     address=:address, progress=:progress, 
                     foreman_id=:foreman_id, engineer_id=:engineer_id,
-                    start_date=:start_date, end_date=:end_date 
+                    start_date=:start_date, end_date=:end_date,
+                    completion_date=:completion_date 
                 WHERE id = :id";
         
         $stmt = $this->conn->prepare($query);
@@ -107,6 +109,7 @@ class Project {
         $stmt->bindParam(":engineer_id", $this->engineer_id);
         $stmt->bindParam(":start_date", $this->start_date);
         $stmt->bindParam(":end_date", $this->end_date);
+        $stmt->bindParam(":completion_date", $this->completion_date);
         $stmt->bindParam(":id", $this->id);
 
         if($stmt->execute()) {
@@ -138,6 +141,7 @@ class Project {
         $this->engineer_id = $this->engineer_id ? htmlspecialchars(strip_tags($this->engineer_id)) : null;
         $this->start_date = $this->start_date ? htmlspecialchars(strip_tags($this->start_date)) : null;
         $this->end_date = $this->end_date ? htmlspecialchars(strip_tags($this->end_date)) : null;
+        $this->completion_date = $this->completion_date ? htmlspecialchars(strip_tags($this->completion_date)) : null;
     }
 }
 ?>

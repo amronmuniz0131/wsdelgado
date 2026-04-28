@@ -59,8 +59,9 @@ class Employee
     // READ ALL
     public function read()
     {
-        $query = "SELECT e.*, p.name as project_name, p.id as project_id_task, t.name as task_name, t.finished as is_finished
+        $query = "SELECT e.*, COALESCE(ap.name, p.name) as project_name, p.id as project_id_task, t.name as task_name, t.finished as is_finished
                 FROM " . $this->table_name . " e
+                LEFT JOIN projects ap ON e.assigned_project_id = ap.id
                 LEFT JOIN task_history th ON th.id = (
                     SELECT id FROM task_history 
                     WHERE employee_id = e.id 

@@ -19,7 +19,8 @@ if(!empty($data->email) && !empty($data->password)){
             "id" => $user->id,
             "name" => $user->name,
             "email" => $user->email,
-            "role" => $user->role
+            "role" => $user->role,
+            "first_login" => $user->first_login
         ));
     } else {
         http_response_code(401);

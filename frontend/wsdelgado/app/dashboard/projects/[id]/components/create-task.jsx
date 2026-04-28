@@ -36,7 +36,7 @@ export default function CreateTask(props) {
                     onChange={(e) => props.setTaskData({ ...props.taskData, name: e.target.value })}
                 />
                 <div className="my-2 flex gap-2">
-                    <div className="w-1/2">
+                    <div className="w-full">
                         <FormControl fullWidth variant="outlined">
                             <InputLabel>Severity</InputLabel>
                             <Select
@@ -49,15 +49,6 @@ export default function CreateTask(props) {
                                 <MenuItem value={3}>High</MenuItem>
                             </Select>
                         </FormControl>
-                    </div>
-                    <div className="w-1/2">
-                        <TextField
-                            label="Quantity / Details"
-                            fullWidth
-                            variant="outlined"
-                            value={props.taskData.quantity}
-                            onChange={(e) => props.setTaskData({ ...props.taskData, quantity: e.target.value })}
-                        />
                     </div>
                 </div>
             </DialogContent>

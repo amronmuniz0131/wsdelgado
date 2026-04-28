@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL } from "@/lib/api";
+import { SuccessToast, DangerToast } from "@/components/useToast";
 import {
   Paper,
   Button,
@@ -17,7 +18,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import { DataGrid, getGridStringOperators } from "@mui/x-data-grid";
-import { Plus } from "lucide-react";
+import { Plus, Check } from "lucide-react";
 
 export function ProjectsTable(props) {
   const router = useRouter();
@@ -157,36 +158,63 @@ export function ProjectsTable(props) {
     {
       field: "progress",
       headerName: "Progress",
-      minWidth: 20,
+      minWidth: 100,
       type: 'number',
-      renderCell: (params) => (
-        <Box sx={{ position: "relative", display: "inline-flex" }}>
-          <CircularProgress
-            variant="determinate"
-            value={params.value || 0}
-          />
-          <Box
-            sx={{
-              top: 0,
-              left: 0,
-              bottom: 0,
-              right: 0,
-              position: "absolute",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Typography
-              variant="caption"
-              component="div"
-              sx={{ color: "text.secondary", fontSize: "0.65rem" }}
-            >
-              {`${params.value || 0}%`}
-            </Typography>
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => {
+        if (params.row.completion_date && params.row.completion_date !== "0000-00-00") {
+          return (
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", width: "100%" }}>
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  backgroundColor: "#47B04C",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#fff",
+                  boxShadow: "0 2px 4px rgba(71, 176, 76, 0.3)",
+                }}
+              >
+                <Check size={18} />
+              </Box>
+            </Box>
+          );
+        }
+        return (
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", width: "100%" }}>
+            <Box sx={{ position: "relative", display: "inline-flex" }}>
+              <CircularProgress
+                variant="determinate"
+                value={params.value || 0}
+              />
+              <Box
+                sx={{
+                  top: 0,
+                  left: 0,
+                  bottom: 0,
+                  right: 0,
+                  position: "absolute",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  component="div"
+                  sx={{ color: "text.secondary", fontSize: "0.65rem" }}
+                >
+                  {`${params.value || 0}%`}
+                </Typography>
+              </Box>
+            </Box>
           </Box>
-        </Box>
-      ),
+        );
+      },
     },
     {
       field: "actions",
@@ -272,10 +300,11 @@ export function ProjectsTable(props) {
 
         fetchProjects();
         fetchEmployees(); // Refresh employee list to reflect assignment
+        SuccessToast("Project added successfully");
         handleClose();
       } else {
         const error = await response.json();
-        alert(error.message || "Failed to create project");
+        DangerToast(error.message || "Failed to create project");
       }
     } catch (error) {
       console.error("Error creating project:", error);

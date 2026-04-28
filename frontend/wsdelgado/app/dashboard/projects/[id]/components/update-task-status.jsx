@@ -10,6 +10,7 @@ import {
   Box,
 } from "@mui/material";
 import { API_BASE_URL } from "@/lib/api";
+import { SuccessToast, DangerToast } from "@/components/useToast";
 
 export default function UpdateTaskStatus({ isOpen, handleClose, task, onUpdate }) {
   const [finished, setFinished] = useState(0);
@@ -25,7 +26,7 @@ export default function UpdateTaskStatus({ isOpen, handleClose, task, onUpdate }
       return; // Handled by UI feedback, but adding a guard here too
     }
 
-    const newTotal = Number(task.finished || 0) + Number(finished);
+    const newTotal = 1
 
     try {
       const payload = {
@@ -46,12 +47,14 @@ export default function UpdateTaskStatus({ isOpen, handleClose, task, onUpdate }
       });
 
       if (response.ok) {
-        alert("Task progress updated successfully!");
+        SuccessToast("Task progress updated successfully!");
         onUpdate();
         handleClose();
+        window.location.reload();
+
       } else {
         const error = await response.json();
-        alert(`Error: ${error.message}`);
+        DangerToast(`Error: ${error.message}`);
       }
     } catch (error) {
       console.error("Error updating task:", error);
@@ -68,9 +71,9 @@ export default function UpdateTaskStatus({ isOpen, handleClose, task, onUpdate }
       </DialogTitle>
       <DialogContent className="pt-6 space-y-4">
         <Typography variant="body2" className="text-gray-600 !mb-4">
-          Enter the quantity finished for: <span className="font-bold text-blue-600">{task?.name}</span>
+          Complete task for: <span className="font-bold text-blue-600">{task?.name}</span>
         </Typography>
-        <TextField
+        {/* <TextField
           label="Finished Quantity"
           type="number"
           fullWidth
@@ -81,7 +84,7 @@ export default function UpdateTaskStatus({ isOpen, handleClose, task, onUpdate }
           helperText={isError ? `Cannot exceed remaining quantity (${remaining})` : `Remaining to finish: ${remaining}`}
           variant="outlined"
           className="mt-4"
-        />
+        /> */}
       </DialogContent>
       <DialogActions className="p-4 border-t border-gray-100">
         <Button onClick={handleClose} className="text-gray-500 font-bold">Cancel</Button>
@@ -91,7 +94,7 @@ export default function UpdateTaskStatus({ isOpen, handleClose, task, onUpdate }
           disabled={isError}
           className={`${isError ? 'bg-gray-300' : 'bg-blue-600 hover:bg-blue-700'} rounded-lg px-6`}
         >
-          Update Progress
+          Complete Task
         </Button>
       </DialogActions>
     </Dialog>

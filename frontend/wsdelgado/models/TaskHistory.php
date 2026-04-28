@@ -36,7 +36,6 @@ class TaskHistory {
                 FROM " . $this->table_name . " th
                 LEFT JOIN employees e ON th.employee_id = e.id
                 LEFT JOIN tasks t ON th.task_id = t.id
-                AND th.created_at = (SELECT MAX(created_at) FROM task_history WHERE task_id = t.id)
                 LEFT JOIN projects p ON t.project_id = p.id
                 ORDER BY th.created_at DESC";
         $stmt = $this->conn->prepare($query);
@@ -50,7 +49,6 @@ class TaskHistory {
                 FROM " . $this->table_name . " th
                 LEFT JOIN employees e ON th.employee_id = e.id
                 LEFT JOIN tasks t ON th.task_id = t.id
-                AND th.created_at = (SELECT MAX(created_at) FROM task_history WHERE task_id = t.id)
                 LEFT JOIN projects p ON t.project_id = p.id
                 WHERE th.task_id = ?
                 ORDER BY th.created_at DESC";

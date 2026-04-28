@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { API_BASE_URL } from "@/lib/api";
+import { SuccessToast, DangerToast } from "@/components/useToast";
 import {
   Paper,
   Button,
@@ -157,9 +158,10 @@ export function EquipmentsTable(props) {
       if (response.ok) {
         fetchEquipments();
         handleClose();
+        SuccessToast("Equipment added successfully");
       } else {
         const error = await response.json();
-        alert(error.message || "Operation failed.");
+        DangerToast(error.message || "Operation failed.");
       }
     } catch (error) {
       console.error("Error submitting equipment:", error);
@@ -180,9 +182,10 @@ export function EquipmentsTable(props) {
 
       if (response.ok) {
         fetchEquipments();
+        SuccessToast("Equipment set to maintenance");
       } else {
         const error = await response.json();
-        alert(error.message || "Failed to set maintenance status");
+        DangerToast(error.message || "Failed to set maintenance status");
       }
     } catch (error) {
       console.error("Error setting maintenance:", error);
@@ -203,9 +206,10 @@ export function EquipmentsTable(props) {
 
       if (response.ok) {
         fetchEquipments();
+        SuccessToast("Equipment set to available");
       } else {
         const error = await response.json();
-        alert(error.message || "Failed to end maintenance status");
+        DangerToast(error.message || "Failed to end maintenance status");
       }
     } catch (error) {
       console.error("Error ending maintenance:", error);
@@ -231,9 +235,10 @@ export function EquipmentsTable(props) {
 
       if (response.ok) {
         fetchEquipments();
+        SuccessToast("Equipment set to available");
       } else {
         const error = await response.json();
-        alert(error.message || "Failed to return equipment");
+        DangerToast(error.message || "Failed to return equipment");
       }
     } catch (error) {
       console.error("Error returning equipment:", error);

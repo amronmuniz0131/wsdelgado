@@ -9,6 +9,7 @@ class User {
     public $password;
     public $role;
     public $created_at;
+    public $first_login;
 
     public function __construct($db) {
         $this->conn = $db;
@@ -24,7 +25,7 @@ class User {
 
     // CREATE
     public function create() {
-        $query = "INSERT INTO " . $this->table_name . " SET name=:name, email=:email, password=:password, role=:role";
+        $query = "INSERT INTO " . $this->table_name . " SET name=:name, email=:email, password=:password, role=:role, first_login=0";
         $stmt = $this->conn->prepare($query);
 
         $this->name = htmlspecialchars(strip_tags($this->name));
@@ -75,7 +76,7 @@ class User {
 
     // READ SINGLE
     public function readOne() {
-        $query = "SELECT id, name, email, password, role, created_at FROM " . $this->table_name . " WHERE id = ? LIMIT 0,1";
+        $query = "SELECT id, name, email, password, role, created_at, first_login FROM " . $this->table_name . " WHERE id = ? LIMIT 0,1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $this->id);
         $stmt->execute();
@@ -87,6 +88,7 @@ class User {
             $this->password = $row['password'];
             $this->role = $row['role'];
             $this->created_at = $row['created_at'];
+            $this->first_login = $row['first_login'];
             return true;
         }
         return false;
@@ -98,7 +100,8 @@ class User {
         $query = "UPDATE " . $this->table_name . " 
                   SET name = :name, 
                       email = :email, 
-                      role = :role" . 
+                      role = :role,
+                      first_login = :first_login" . 
                   ($password_set ? ", password = :password" : "") . " 
                   WHERE id = :id";
         
@@ -108,11 +111,13 @@ class User {
         $this->email = htmlspecialchars(strip_tags($this->email));
         $this->role = htmlspecialchars(strip_tags($this->role));
         $this->id = htmlspecialchars(strip_tags($this->id));
+        $this->first_login = htmlspecialchars(strip_tags($this->first_login));
 
         $stmt->bindParam(':name', $this->name);
         $stmt->bindParam(':email', $this->email);
         $stmt->bindParam(':role', $this->role);
         $stmt->bindParam(':id', $this->id);
+        $stmt->bindParam(':first_login', $this->first_login);
 
         if($password_set) {
             $this->password = password_hash($this->password, PASSWORD_BCRYPT);
@@ -160,7 +165,7 @@ class User {
 
     // LOGIN
     public function login($email, $password) {
-        $query = "SELECT id, name, email, password, role FROM " . $this->table_name . " WHERE email = ? LIMIT 0,1";
+        $query = "SELECT id, name, email, password, role, first_login FROM " . $this->table_name . " WHERE email = ? LIMIT 0,1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $email);
         $stmt->execute();
@@ -171,6 +176,20 @@ class User {
             $this->name = $row['name'];
             $this->email = $row['email'];
             $this->role = $row['role'];
+            $this->first_login = $row['first_login'];
+            return true;
+        }
+        return false;
+    }
+
+    public function update_first_login() {
+        $query = "UPDATE " . $this->table_name . " SET first_login = ? WHERE id = ?";
+        $stmt = $this->conn->prepare($query);
+        $this->first_login = htmlspecialchars(strip_tags($this->first_login));
+        $this->id = htmlspecialchars(strip_tags($this->id));
+        $stmt->bindParam(1, $this->first_login);
+        $stmt->bindParam(2, $this->id);
+        if($stmt->execute()) {
             return true;
         }
         return false;

@@ -28,7 +28,8 @@ if($num > 0){
             "engineerId" => $engineer_id,
             "foremanName" => $foreman_name,
             "engineerName" => $engineer_name,
-            "clientName" => $client_name
+            "clientName" => $client_name,
+            "completion_date" => $completion_date
         );
         array_push($projects_arr["records"], $project_item);
     }

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { API_BASE_URL } from "@/lib/api";
+import { SuccessToast, DangerToast } from "@/components/useToast";
 import {
   Table,
   TableBody,
@@ -160,9 +161,10 @@ export function EmployeesTable() {
       if (response.ok) {
         fetchEmployees();
         handleCloseAdd();
+        SuccessToast("Employee added successfully");
       } else {
         const error = await response.json();
-        alert(error.message || "Failed to add employee");
+        DangerToast(error.message || "Failed to add employee");
       }
     } catch (error) {
       console.error("Error adding employee:", error);
@@ -235,9 +237,10 @@ export function EmployeesTable() {
 
         fetchEmployees();
         handleCloseEdit();
+        SuccessToast("Employee updated successfully");
       } else {
         const error = await response.json();
-        alert(error.message || "Failed to update employee");
+        DangerToast(error.message || "Failed to update employee");
       }
     } catch (error) {
       console.error("Error updating employee:", error);
@@ -281,6 +284,19 @@ export function EmployeesTable() {
       width: 200,
       align: "center",
       headerAlign: "center",
+      renderCell: (params) => {
+        return (
+          <Typography className="h-full flex items-center justify-center">
+            {params.row.position.toLowerCase() === 'engineer' || params.row.position.toLowerCase() === 'foreman'
+              ? params.row.assignedProject
+              : params.row.tasks && params.row.is_finished
+                ? ''
+                : params.row.assignedProject
+            }
+          </Typography>
+        );
+
+      }
     },
     {
       field: "dateOfEmployment",
@@ -298,8 +314,21 @@ export function EmployeesTable() {
       renderCell: (params) => (
         <Box className="flex items-center justify-center h-full">
           <Chip
-            label={getStatusLabel(!params.row.tasks || params.row.is_finished ? "available" : "assigned")}
-            color={getStatusColor(!params.row.tasks || params.row.is_finished ? "available" : "assigned")}
+            label={getStatusLabel(params.row.position.toLowerCase() === 'engineer' || params.row.position.toLowerCase() === 'foreman'
+              ? params.row.assignedProjectId === null
+                ? "available"
+                : 'assigned'
+              : (params.row.tasks && params.row.is_finished)
+                ? "available"
+                : "assigned")}
+            color={getStatusColor(params.row.position.toLowerCase() === 'engineer' || params.row.position.toLowerCase() === 'foreman'
+              ? params.row.assignedProjectId === null
+                ? "available"
+                : 'assigned'
+              : (params.row.tasks && params.row.is_finished)
+                ? "available"
+                : "assigned"
+            )}
             size="small"
             className="font-bold text-[11px] uppercase tracking-wider"
           />
@@ -471,10 +500,12 @@ export function EmployeesTable() {
                   <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Current Position</Typography>
                   <Typography className="text-gray-800 font-bold">{selectedEmployee.position}</Typography>
                 </Box>
-                <Box>
-                  <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Assigned Project</Typography>
-                  <Typography className="text-gray-800 font-bold text-blue-600 italic underline decoration-blue-200 decoration-4 underline-offset-4">{selectedEmployee.assignedProject}</Typography>
-                </Box>
+                {userRole.toLowerCase() === "admin" && (
+                  <Box>
+                    <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Assigned Project</Typography>
+                    <Typography className="text-gray-800 font-bold text-blue-600 italic underline decoration-blue-200 decoration-4 underline-offset-4" disabled={selectedEmployee.position.toLowerCase() !== "engineer"}>{selectedEmployee.assignedProject}</Typography>
+                  </Box>
+                )}
                 <Box>
                   <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Employment Date</Typography>
                   <Box className="flex items-center gap-2">
@@ -577,22 +608,24 @@ export function EmployeesTable() {
                 )
               ))}
             </TextField>
-            <TextField
-              margin="dense"
-              name="assignedProject"
-              label="Assigned Project"
-              fullWidth
-              select
-              variant="outlined"
-              value={newEmployee.assignedProject}
-              onChange={handleInputChange}
-            >
-              {projects.map((project) => (
-                <MenuItem key={project.id} value={project.name}>
-                  {project.name}
-                </MenuItem>
-              ))}
-            </TextField>
+            {newEmployee.position === 'engineer' || newEmployee.position === 'foreman' && (
+              <TextField
+                margin="dense"
+                name="assignedProject"
+                label="Assigned Project"
+                fullWidth
+                select
+                variant="outlined"
+                value={newEmployee.assignedProject}
+                onChange={handleInputChange}
+              >
+                {projects.map((project) => (
+                  <MenuItem key={project.id} value={project.name}>
+                    {project.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
             <TextField
               margin="dense"
               name="dateOfEmployment"
@@ -676,27 +709,25 @@ export function EmployeesTable() {
                 value={editingEmployee.name}
                 onChange={handleEditInputChange}
               />
-              {editingEmployee.position.toLowerCase() !== "admin" && editingEmployee.position.toLowerCase() !== "engineer" && (
-                <TextField
-                  margin="dense"
-                  name="position"
-                  label="Position"
-                  fullWidth
-                  select
-                  variant="outlined"
-                  value={editingEmployee.position}
-                  onChange={handleEditInputChange}
-                >
-                  {positions.map((position) => (
-                    position.position.toLowerCase() !== "admin" && position.position.toLowerCase() !== "engineer" && (
-                      <MenuItem key={position.id} value={position.position}>
-                        {position.position}
-                      </MenuItem>
-                    )
-                  ))}
-                </TextField>
-              )}
-              {editingEmployee.position.toLowerCase() !== "admin" && (
+              <TextField
+                margin="dense"
+                name="position"
+                label="Position"
+                fullWidth
+                select
+                variant="outlined"
+                value={editingEmployee.position}
+                onChange={handleEditInputChange}
+              >
+                {positions.map((position) => (
+                  position.position.toLowerCase() !== "admin" && position.position.toLowerCase() !== "engineer" && (
+                    <MenuItem key={position.id} value={position.position}>
+                      {position.position}
+                    </MenuItem>
+                  )
+                ))}
+              </TextField>
+              {(editingEmployee.position.toLowerCase() === "engineer" || editingEmployee.position.toLowerCase() === "foreman") && (
                 <TextField
                   margin="dense"
                   name="assignedProjectId"
