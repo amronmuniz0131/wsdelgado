@@ -11,11 +11,14 @@ export default function Header() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState("");
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [userData, setUserData] = useState("")
   const router = useRouter();
 
   useEffect(() => {
     setIsAuthenticated(!!localStorage.getItem("isAuthenticated"));
     setUserRole(localStorage.getItem("user") || "");
+    setUserData(JSON.parse(localStorage.getItem("userData")) || "")
+    console.log(JSON.parse(localStorage.getItem("userData")))
   }, []);
 
   const handleLogout = () => {
@@ -49,8 +52,12 @@ export default function Header() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8" aria-label="Main Navigation">
           <Link
-            href={isAuthenticated ? "/dashboard" : "/"}
-            className="text-sm font-medium text-gray-600 hover:text-gray-900"
+            href={isAuthenticated ? (userData?.first_login === 0 ? "#" : "/dashboard") : "/"}
+            className={`text-sm font-medium transition-colors ${
+              isAuthenticated && userData?.first_login === 0
+                ? "text-gray-400 cursor-not-allowed pointer-events-none"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
           >
             Home
           </Link>
@@ -73,7 +80,11 @@ export default function Header() {
           {isAuthenticated && userRole === "admin" && (
             <Link
               href="/reports"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              className={`text-sm font-medium transition-colors ${
+                userData?.first_login === 0
+                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
             >
               Reports
             </Link>
@@ -81,7 +92,11 @@ export default function Header() {
           {isAuthenticated && (
             <Link
               href="/profile"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              className={`text-sm font-medium transition-colors ${
+                userData?.first_login === 0
+                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
             >
               Profile
             </Link>
@@ -89,7 +104,11 @@ export default function Header() {
           {isAuthenticated && (userRole === "admin" || userRole === "engineer") && (
             <Link
               href="/employees"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              className={`text-sm font-medium transition-colors ${
+                userData?.first_login === 0
+                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
             >
               Employees
             </Link>
@@ -97,7 +116,11 @@ export default function Header() {
           {isAuthenticated && userRole === "admin" && (
             <Link
               href="/accounts"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              className={`text-sm font-medium transition-colors ${
+                userData?.first_login === 0
+                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
             >
               Accounts
             </Link>
@@ -168,7 +191,11 @@ export default function Header() {
           {isAuthenticated && userRole === "admin" && (
             <Link
               href="/reports"
-              className="block py-2 text-gray-600"
+              className={`block py-2 transition-colors ${
+                userData?.first_login === 0
+                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
+                  : "text-gray-600"
+              }`}
               onClick={() => setIsMenuOpen(false)}
             >
               Reports
@@ -177,7 +204,11 @@ export default function Header() {
           {isAuthenticated && userRole === "admin" && (
             <Link
               href="/employees"
-              className="block py-2 text-gray-600"
+              className={`block py-2 transition-colors ${
+                userData?.first_login === 0
+                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
+                  : "text-gray-600"
+              }`}
               onClick={() => setIsMenuOpen(false)}
             >
               Employees
@@ -186,7 +217,11 @@ export default function Header() {
           {isAuthenticated && userRole === "admin" && (
             <Link
               href="/accounts"
-              className="block py-2 text-gray-600"
+              className={`block py-2 transition-colors ${
+                userData?.first_login === 0
+                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
+                  : "text-gray-600"
+              }`}
               onClick={() => setIsMenuOpen(false)}
             >
               Accounts
