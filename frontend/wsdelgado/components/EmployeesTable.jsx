@@ -298,8 +298,8 @@ export function EmployeesTable() {
       renderCell: (params) => (
         <Box className="flex items-center justify-center h-full">
           <Chip
-            label={getStatusLabel(!params.row.assignedProject ? "available" : "ongoing")}
-            color={getStatusColor(!params.row.assignedProject ? "available" : "ongoing")}
+            label={getStatusLabel(!params.row.tasks || params.row.is_finished ? "available" : "assigned")}
+            color={getStatusColor(!params.row.tasks || params.row.is_finished ? "available" : "assigned")}
             size="small"
             className="font-bold text-[11px] uppercase tracking-wider"
           />
@@ -347,7 +347,7 @@ export function EmployeesTable() {
     switch (status) {
       case "available":
         return "success";
-      case "ongoing":
+      case "assigned":
         return "primary";
       case "on leave":
         return "warning";
@@ -360,8 +360,8 @@ export function EmployeesTable() {
     switch (status) {
       case "available":
         return "Available";
-      case "ongoing":
-        return "Ongoing";
+      case "assigned":
+        return "Assigned";
       case "on leave":
         return "On Leave";
       default:

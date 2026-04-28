@@ -27,7 +27,8 @@ if ($num > 0) {
             "start_date" => $start_date,
             "end_date" => $end_date,
             "quantity" => $quantity,
-            "finished" => $finished
+            "finished" => $finished,
+            "assigned_employees" => isset($assigned_employees) ? $assigned_employees : null
         );
         array_push($tasks_arr["records"], $task_item);
     }

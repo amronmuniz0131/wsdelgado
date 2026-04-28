@@ -59,9 +59,16 @@ class Employee
     // READ ALL
     public function read()
     {
-        $query = "SELECT e.*, p.name as project_name 
+        $query = "SELECT e.*, p.name as project_name, p.id as project_id_task, t.name as task_name, t.finished as is_finished
                 FROM " . $this->table_name . " e
-                LEFT JOIN projects p ON e.assigned_project_id = p.id
+                LEFT JOIN task_history th ON th.id = (
+                    SELECT id FROM task_history 
+                    WHERE employee_id = e.id 
+                    ORDER BY created_at DESC, id DESC 
+                    LIMIT 1
+                )
+                LEFT JOIN tasks t ON th.task_id = t.id
+                LEFT JOIN projects p ON t.project_id = p.id
                 ORDER BY e.created_at DESC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();

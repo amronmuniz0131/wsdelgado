@@ -174,17 +174,13 @@ export default function ProjectDetailsPage() {
       )
     },
     {
-      field: "status",
-      headerName: "Status",
+      field: "tasks",
+      headerName: "Tasks",
       width: 120,
       align: 'right',
       headerAlign: 'right',
       renderCell: (params) => (
-        <Chip
-          label={params.row.status}
-          size="small"
-          className={`h-5 text-[9px] font-black uppercase ${params.row.status === "Available" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}
-        />
+        <Typography variant="body2" className="font-bold text-gray-700 text-xs">{params.row.tasks}</Typography>
       )
     }
   ];
@@ -335,7 +331,7 @@ export default function ProjectDetailsPage() {
         const data = await response.json();
         // Filter employees assigned to this project
         const assignedEmployees = (data.records || []).filter(
-          emp => String(emp.assignedProjectId) === String(id)
+          emp => String(emp.project_id_task) === String(id) || emp.is_finished === 0
         );
         setTeam(assignedEmployees);
       }
@@ -798,16 +794,6 @@ export default function ProjectDetailsPage() {
                 </Typography>
                 <div className="flex items-center gap-2">
                   <Chip label={`${team.length} Active`} size="small" variant="outlined" className="text-[10px] font-bold" />
-                  {userRole === "engineer" && (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => setIsAddMemberModalOpen(true)}
-                      className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-xs py-1"
-                    >
-                      Add Member
-                    </Button>
-                  )}
                 </div>
               </Box>
               <Box className="p-4" sx={{ height: 350, width: '100%' }}>

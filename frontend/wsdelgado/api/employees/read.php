@@ -29,7 +29,11 @@ if($num > 0){
             "email" => $email,
             "phone" => $phone,
             "address" => $address,
-            "notes" => $notes
+            "notes" => $notes,
+            "tasks" => $task_name,
+            "is_finished" => $is_finished,
+            "project_id_task" => $project_id_task,
+            
         );
         array_push($employees_arr["records"], $employee_item);
     }

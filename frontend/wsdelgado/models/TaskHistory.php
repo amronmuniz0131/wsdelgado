@@ -32,10 +32,11 @@ class TaskHistory {
 
     // READ
     public function read() {
-        $query = "SELECT th.*, e.name as employee_name, t.name as task_name, p.name as project_name 
+        $query = "SELECT th.*, e.name as employee_name, t.name as task_name, p.name as project_name, p.id as project_id 
                 FROM " . $this->table_name . " th
                 LEFT JOIN employees e ON th.employee_id = e.id
                 LEFT JOIN tasks t ON th.task_id = t.id
+                AND th.created_at = (SELECT MAX(created_at) FROM task_history WHERE task_id = t.id)
                 LEFT JOIN projects p ON t.project_id = p.id
                 ORDER BY th.created_at DESC";
         $stmt = $this->conn->prepare($query);
@@ -45,9 +46,12 @@ class TaskHistory {
 
     // READ BY TASK
     public function readByTask() {
-        $query = "SELECT th.*, e.name as employee_name 
+        $query = "SELECT th.*, e.name as employee_name, t.name as task_name, p.name as project_name, p.id as project_id
                 FROM " . $this->table_name . " th
                 LEFT JOIN employees e ON th.employee_id = e.id
+                LEFT JOIN tasks t ON th.task_id = t.id
+                AND th.created_at = (SELECT MAX(created_at) FROM task_history WHERE task_id = t.id)
+                LEFT JOIN projects p ON t.project_id = p.id
                 WHERE th.task_id = ?
                 ORDER BY th.created_at DESC";
         $stmt = $this->conn->prepare($query);

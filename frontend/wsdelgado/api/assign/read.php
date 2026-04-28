@@ -30,6 +30,7 @@ if($num > 0) {
             "employee_id" => $employee_id,
             "employee_name" => isset($employee_name) ? $employee_name : null,
             "task_name" => isset($task_name) ? $task_name : null,
+            "project_id" => $project_id,
             "project_name" => isset($project_name) ? $project_name : null,
             "created_at" => $created_at
         );

@@ -47,9 +47,13 @@ class Task
     // READ ALL
     public function read()
     {
-        $query = "SELECT t.*, p.name as project_name
+        $query = "SELECT t.*, p.name as project_name, GROUP_CONCAT(e.name SEPARATOR ', ') as assigned_employees
                 FROM " . $this->table_name . " t
                 LEFT JOIN projects p ON t.project_id = p.id
+                LEFT JOIN task_history th ON th.task_id = t.id 
+                    AND th.created_at = (SELECT MAX(created_at) FROM task_history WHERE task_id = t.id)
+                LEFT JOIN employees e ON th.employee_id = e.id
+                GROUP BY t.id
                 ORDER BY t.end_date ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -59,10 +63,14 @@ class Task
     // READ ONE
     public function readOne()
     {
-        $query = "SELECT t.*, p.name as project_name
+        $query = "SELECT t.*, p.name as project_name, GROUP_CONCAT(e.name SEPARATOR ', ') as assigned_employees
                 FROM " . $this->table_name . " t
                 LEFT JOIN projects p ON t.project_id = p.id
-                WHERE t.id = :id";
+                LEFT JOIN task_history th ON th.task_id = t.id 
+                    AND th.created_at = (SELECT MAX(created_at) FROM task_history WHERE task_id = t.id)
+                LEFT JOIN employees e ON th.employee_id = e.id
+                WHERE t.id = :id
+                GROUP BY t.id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id", $this->id);
         $stmt->execute();
