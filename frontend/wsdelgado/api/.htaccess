@@ -1,8 +1,3 @@
-# Disable Passenger for this directory so PHP handles the requests
-<IfModule mod_passenger.c>
-    PassengerEnabled off
-</IfModule>
-
 # CORS headers are now handled by PHP (api/headers.php) for better reliability
 # across different server environments.
 
@@ -10,4 +5,3 @@
     RewriteEngine On
     # If you need any specific rewrite rules, add them here
 </IfModule>
-
