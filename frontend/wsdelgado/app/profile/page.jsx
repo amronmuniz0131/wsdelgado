@@ -51,7 +51,7 @@ export default function ProfilePage() {
                 ...(newPassword && { password: newPassword }),
                 ...(currentPassword && { current_password: currentPassword })
             };
-            const response = await fetch(`${API_BASE_URL}/update.php`, {
+            const response = await fetch(`${API_BASE_URL}/update`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)

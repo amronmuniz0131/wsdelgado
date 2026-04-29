@@ -38,7 +38,7 @@ export default function UpdateTaskStatus({ isOpen, handleClose, task, onUpdate }
         payload.end_date = new Date().toISOString().split('T')[0];
       }
 
-      const response = await fetch(`${API_BASE_URL}/tasks/update.php`, {
+      const response = await fetch(`${API_BASE_URL}/tasks/update`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -39,7 +39,7 @@ export default function ChangePasswordPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (passwords.newPassword !== passwords.confirmPassword) {
       DangerToast("Passwords do not match");
       return;
@@ -53,7 +53,7 @@ export default function ChangePasswordPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/update.php`, {
+      const response = await fetch(`${API_BASE_URL}/update`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -69,11 +69,11 @@ export default function ChangePasswordPage() {
 
       if (response.ok) {
         SuccessToast("Password updated successfully!");
-        
+
         // Update local storage data
         const updatedUserData = { ...userData, first_login: 1 };
         localStorage.setItem("userData", JSON.stringify(updatedUserData));
-        
+
         setTimeout(() => {
           window.location.href = "/dashboard";
         }, 1500);
@@ -203,7 +203,7 @@ export default function ChangePasswordPage() {
             </div>
           </form>
         </div>
-        
+
         <p className="mt-8 text-center text-xs text-gray-400 uppercase tracking-[0.2em]">
           WSDelgado Builders Management System
         </p>

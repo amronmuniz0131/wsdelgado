@@ -70,7 +70,7 @@ function DashboardContent() {
 
   const handleAddAccount = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/create.php`, {
+      const response = await fetch(`${API_BASE_URL}/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newAccount),

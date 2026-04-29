@@ -19,7 +19,7 @@ export default function LoginPage() {
     const data = Object.fromEntries(formData);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/login.php`, {
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -33,7 +33,7 @@ export default function LoginPage() {
         localStorage.setItem("user", result.role || "user");
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("userData", JSON.stringify(result));
-        
+
         if (String(result.first_login) === "0") {
           window.location.href = "/change-password";
         } else {

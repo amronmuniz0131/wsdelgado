@@ -29,7 +29,7 @@ export function TaskModal(props) {
     const [employees, setEmployees] = useState([])
     const fetchEmployees = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/employees/read.php`);
+            const response = await fetch(`${API_BASE_URL}/employees/read`);
             const data = await response.json();
             setEmployees(data.records || []);
         } catch (error) {
@@ -43,7 +43,7 @@ export function TaskModal(props) {
                 task_id: props.selectedTask?.id,
                 employee_id: taskData.employee_id
             };
-            const response = await fetch(`${API_BASE_URL}/assign/create.php`, {
+            const response = await fetch(`${API_BASE_URL}/assign/create`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -57,7 +57,7 @@ export function TaskModal(props) {
             } else {
                 DangerToast(`Error: ${result.message}`);
             }
-            const res = await fetch(`${API_BASE_URL}/tasks/update.php`, {
+            const res = await fetch(`${API_BASE_URL}/tasks/update`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

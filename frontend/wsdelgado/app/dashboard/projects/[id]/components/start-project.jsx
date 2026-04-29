@@ -26,7 +26,7 @@ export default function StartProject({ project, setProject }) {
 
     const handleStart = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/projects/update.php`, {
+            const response = await fetch(`${API_BASE_URL}/projects/update`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
