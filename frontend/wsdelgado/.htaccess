@@ -1,0 +1,83 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# | Hostinger Node.js (Next.js) + PHP API Optimization                 |
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# ----------------------------------------------------------------------
+# | 1. Phusion Passenger Configuration (Node.js)                       |
+# ----------------------------------------------------------------------
+# These directives enable the Node.js application. 
+# Keep these paths as they are specific to your Hostinger environment.
+
+PassengerAppRoot /home/u312009988/domains/deeppink-cormorant-307805.hostingersite.com/nodejs
+PassengerAppType node
+PassengerNodejs /opt/alt/alt-nodejs20/root/bin/node
+PassengerStartupFile server.js
+PassengerBaseURI /
+PassengerRestartDir /home/u312009988/domains/deeppink-cormorant-307805.hostingersite.com/nodejs/tmp
+
+# Environment Variables & Custom Config
+SetEnv NODE_OPTIONS "--require /home/u312009988/domains/deeppink-cormorant-307805.hostingersite.com/public_html/.builds/config/preload-timestamp.js"
+SetEnv LSNODE_CONSOLE_LOG console.log
+SetEnv TOKIO_WORKER_THREADS 2
+
+# ----------------------------------------------------------------------
+# | 2. Security & Global Rules                                         |
+# ----------------------------------------------------------------------
+RewriteEngine On
+
+# Block access to sensitive folders and files
+RewriteRule ^\.builds - [F,L]
+RewriteRule ^\.env - [F,L]
+RewriteRule ^\.git - [F,L]
+RewriteRule ^node_modules - [F,L]
+RewriteRule ^(package\.json|package-lock\.json|next\.config) - [F,L]
+
+# Disable directory browsing
+Options -Indexes
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Content-Type-Options "nosniff"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Force HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# ----------------------------------------------------------------------
+# | 3. Performance & Caching (LiteSpeed Optimized)                     |
+# ----------------------------------------------------------------------
+
+# Gzip Compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain text/html text/xml text/css application/xml application/xhtml+xml application/rss+xml application/javascript application/x-javascript application/json
+</IfModule>
+
+# Leverage Browser Caching for Next.js static assets
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 1 month"
+    
+    # Static Assets (Images, Fonts)
+    ExpiresByType image/x-icon "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    
+    # Code (CSS/JS)
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
+
+# ----------------------------------------------------------------------
+# | 4. API (PHP) Compatibility                                         |
+# ----------------------------------------------------------------------
+# Ensure that requests to the /api directory are NOT intercepted by 
+# the Node.js/Passenger handler.
+RewriteCond %{REQUEST_URI} ^/api/.*
+RewriteRule . - [L]
