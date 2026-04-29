@@ -29,7 +29,7 @@ export function TaskModal(props) {
     const [employees, setEmployees] = useState([])
     const fetchEmployees = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/employees/read`);
+            const response = await fetch(`${API_BASE_URL}/employees`);
             const data = await response.json();
             setEmployees(data.records || []);
         } catch (error) {

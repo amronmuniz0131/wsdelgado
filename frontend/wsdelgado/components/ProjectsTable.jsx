@@ -39,7 +39,7 @@ export function ProjectsTable(props) {
   const fetchProjects = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/projects/read`);
+      const response = await fetch(`${API_BASE_URL}/projects`);
       const data = await response.json();
       setProjects(data.records || []);
     } catch (error) {
@@ -53,7 +53,7 @@ export function ProjectsTable(props) {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/employees/read`);
+      const response = await fetch(`${API_BASE_URL}/employees`);
       const data = await response.json();
       let arr = []
       setEmployees(data.records || []);
@@ -70,7 +70,7 @@ export function ProjectsTable(props) {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/read`);
+      const response = await fetch(`${API_BASE_URL}/accounts`);
       const data = await response.json();
       setUsers(data.records || []);
     } catch (error) {
@@ -257,7 +257,7 @@ export function ProjectsTable(props) {
 
   const handleAddProject = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/projects/create`, {
+      const response = await fetch(`${API_BASE_URL}/projects`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newProject),
@@ -270,8 +270,8 @@ export function ProjectsTable(props) {
         if (newProject.foremanId) {
           const foreman = employees.find((e) => e.id === newProject.foremanId);
           if (foreman) {
-            await fetch(`${API_BASE_URL}/employees/update`, {
-              method: "POST",
+            await fetch(`${API_BASE_URL}/employees/${foreman.id}`, {
+              method: "PUT",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 ...foreman,
@@ -286,8 +286,8 @@ export function ProjectsTable(props) {
         if (newProject.engineerId) {
           const engineer = engineers.find((e) => e.id === newProject.engineerId);
           if (engineer) {
-            await fetch(`${API_BASE_URL}/employees/update`, {
-              method: "POST",
+            await fetch(`${API_BASE_URL}/employees/${engineer.id}`, {
+              method: "PUT",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 ...engineer,

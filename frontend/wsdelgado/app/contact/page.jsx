@@ -30,7 +30,7 @@ export default function ContactPage() {
         setStatus("You have sent 3 messages already. Please try again later.");
         return;
       }
-      const response = await fetch(`${API_BASE_URL}/inquiries/create`, {
+      const response = await fetch(`${API_BASE_URL}/inquiries`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

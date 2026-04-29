@@ -187,12 +187,12 @@ function ReportsContent() {
     setIsLoading(true);
     try {
       const [projRes, equipRes, matRes, empRes, assignRes, reqRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/projects/read`),
-        fetch(`${API_BASE_URL}/equipments/read`),
-        fetch(`${API_BASE_URL}/materials/read`),
-        fetch(`${API_BASE_URL}/employees/read`),
-        fetch(`${API_BASE_URL}/assign/read`),
-        fetch(`${API_BASE_URL}/request/read`),
+        fetch(`${API_BASE_URL}/projects`),
+        fetch(`${API_BASE_URL}/equipments`),
+        fetch(`${API_BASE_URL}/materials`),
+        fetch(`${API_BASE_URL}/employees`),
+        fetch(`${API_BASE_URL}/assign`),
+        fetch(`${API_BASE_URL}/requests`),
       ]);
 
       const [projData, equipData, matData, empData, assignData, reqData] = await Promise.all([

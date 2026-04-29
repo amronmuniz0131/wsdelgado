@@ -60,7 +60,7 @@ export function EquipmentsTable(props) {
   const fetchEquipments = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/equipments/read`);
+      const response = await fetch(`${API_BASE_URL}/equipments`);
       const data = await response.json();
       let records = data.records || [];
       if (props.projectId) {
@@ -146,11 +146,12 @@ export function EquipmentsTable(props) {
       payload.status = "Available";
     }
 
-    const endpoint = payload.id ? `${API_BASE_URL}/equipments/update` : `${API_BASE_URL}/equipments/create`;
+    const isUpdate = !!payload.id;
+    const endpoint = isUpdate ? `${API_BASE_URL}/equipments/${payload.id}` : `${API_BASE_URL}/equipments`;
 
     try {
       const response = await fetch(endpoint, {
-        method: "POST",
+        method: isUpdate ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
@@ -158,7 +159,7 @@ export function EquipmentsTable(props) {
       if (response.ok) {
         fetchEquipments();
         handleClose();
-        SuccessToast("Equipment added successfully");
+        SuccessToast(isUpdate ? "Equipment updated successfully" : "Equipment added successfully");
       } else {
         const error = await response.json();
         DangerToast(error.message || "Operation failed.");
@@ -170,11 +171,10 @@ export function EquipmentsTable(props) {
 
   const handleMaintenance = async (id) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/equipments/update`, {
-        method: "POST",
+      const response = await fetch(`${API_BASE_URL}/equipments/${id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id,
           status: "Maintenance",
           is_approved: 1
         }),
@@ -194,11 +194,10 @@ export function EquipmentsTable(props) {
 
   const handleEndMaintenance = async (id) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/equipments/update`, {
-        method: "POST",
+      const response = await fetch(`${API_BASE_URL}/equipments/${id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id,
           status: "Available",
           is_approved: 1
         }),
@@ -218,11 +217,10 @@ export function EquipmentsTable(props) {
 
   const handleReturn = async (id) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/equipments/update`, {
-        method: "POST",
+      const response = await fetch(`${API_BASE_URL}/equipments/${id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id,
           status: "Available",
           project_id: null,
           requested_by_id: null,

@@ -46,7 +46,7 @@ export function EmployeesTable() {
   const fetchEmployees = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/employees/read`);
+      const response = await fetch(`${API_BASE_URL}/employees`);
       const data = await response.json();
       setEmployees(data.records || []);
       setCount(data.records.length)
@@ -60,7 +60,7 @@ export function EmployeesTable() {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/projects/read`);
+      const response = await fetch(`${API_BASE_URL}/projects`);
       const data = await response.json();
       setProjects(data.records || []);
       console.log(data.records)
@@ -90,7 +90,7 @@ export function EmployeesTable() {
 
   const fetchPositions = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/positions/read`);
+      const response = await fetch(`${API_BASE_URL}/positions`);
       const data = await response.json();
       setPositions(data.records || []);
       console.log(data.records)
@@ -153,7 +153,7 @@ export function EmployeesTable() {
 
   const handleAddEmployee = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/employees/create`, {
+      const response = await fetch(`${API_BASE_URL}/employees`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newEmployee),
@@ -173,8 +173,8 @@ export function EmployeesTable() {
 
   const handleUpdateEmployee = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/employees/update`, {
-        method: "POST", // Using POST for convenience as per PHP implementation
+      const response = await fetch(`${API_BASE_URL}/employees/${editingEmployee.id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editingEmployee),
       });
@@ -189,8 +189,8 @@ export function EmployeesTable() {
               if (pos === "engineer") clearPayload.engineer_id = null;
               if (pos === "foreman") clearPayload.foreman_id = null;
 
-              await fetch(`${API_BASE_URL}/projects/update`, {
-                method: "POST",
+              await fetch(`${API_BASE_URL}/projects/${prevProject}`, {
+                method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(clearPayload),
               });
@@ -209,8 +209,8 @@ export function EmployeesTable() {
               });
               console.log(oldEngineer)
               if (oldEngineer) {
-                await fetch(`${API_BASE_URL}/employees/update`, {
-                  method: "POST",
+                await fetch(`${API_BASE_URL}/employees/${oldEngineer.id}`, {
+                  method: "PUT",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
                     ...oldEngineer,
@@ -224,8 +224,8 @@ export function EmployeesTable() {
               if (pos === "engineer") projectUpdatePayload.engineer_id = editingEmployee.id;
               if (pos === "foreman") projectUpdatePayload.foreman_id = editingEmployee.id;
 
-              await fetch(`${API_BASE_URL}/projects/update`, {
-                method: "POST",
+              await fetch(`${API_BASE_URL}/projects/${editingEmployee.assignedProjectId}`, {
+                method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(projectUpdatePayload),
               });
@@ -500,7 +500,7 @@ export function EmployeesTable() {
                   <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Current Position</Typography>
                   <Typography className="text-gray-800 font-bold">{selectedEmployee.position}</Typography>
                 </Box>
-                {userRole.toLowerCase() === "admin" && (
+                {user?.toLowerCase() === "admin" && (
                   <Box>
                     <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Assigned Project</Typography>
                     <Typography className="text-gray-800 font-bold text-blue-600 italic underline decoration-blue-200 decoration-4 underline-offset-4" disabled={selectedEmployee.position.toLowerCase() !== "engineer"}>{selectedEmployee.assignedProject}</Typography>

@@ -262,7 +262,7 @@ export default function ProjectDetailsPage() {
   const fetchProjectDetails = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/projects/single_read.php?id=${id}`);
+      const response = await fetch(`${API_BASE_URL}/projects/${id}`);
       if (response.ok) {
         const data = await response.json();
         setProject(data);
@@ -278,7 +278,7 @@ export default function ProjectDetailsPage() {
 
   const fetchMaterials = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/materials/read`);
+      const response = await fetch(`${API_BASE_URL}/materials`);
       if (response.ok) {
         const data = await response.json();
         setMaterials(data.records || []);
@@ -290,7 +290,7 @@ export default function ProjectDetailsPage() {
 
   const fetchEquipments = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/equipments/read`);
+      const response = await fetch(`${API_BASE_URL}/equipments`);
       if (response.ok) {
         const data = await response.json();
         // Only show available equipment
@@ -303,7 +303,7 @@ export default function ProjectDetailsPage() {
 
   const fetchTeam = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/employees/read`);
+      const response = await fetch(`${API_BASE_URL}/employees`);
       if (response.ok) {
         const data = await response.json();
         // Filter employees assigned to this project
@@ -319,7 +319,7 @@ export default function ProjectDetailsPage() {
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/tasks/read`);
+      const response = await fetch(`${API_BASE_URL}/tasks`);
       if (response.ok) {
         const data = await response.json();
         const projectTasks = (data.records || []).filter(
@@ -334,13 +334,12 @@ export default function ProjectDetailsPage() {
             points = points + (d.finished * d.severity)
           }
         })
-        await fetch(`${API_BASE_URL}/projects/update`, {
-          method: "POST",
+        await fetch(`${API_BASE_URL}/projects/${id}`, {
+          method: "PUT",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            id: id,
             progress: Math.round((points / total) * 10000) / 100
           })
         });
@@ -353,7 +352,7 @@ export default function ProjectDetailsPage() {
 
   const fetchAssign = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/assign/read`);
+      const response = await fetch(`${API_BASE_URL}/assign`);
       const data = await response.json();
       const assignments = data.records || [];
 
@@ -398,11 +397,10 @@ export default function ProjectDetailsPage() {
       setIsSubmitting(true);
 
       // 1. Update project end_date
-      const projectResponse = await fetch(`${API_BASE_URL}/projects/update`, {
-        method: "POST",
+      const projectResponse = await fetch(`${API_BASE_URL}/projects/${id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: id,
           completion_date: new Date().toISOString().split('T')[0]
         }),
       });
@@ -411,11 +409,10 @@ export default function ProjectDetailsPage() {
 
       // 2. Unassign foreman if exists
       if (project.foreman_id) {
-        await fetch(`${API_BASE_URL}/employees/update`, {
-          method: "POST",
+        await fetch(`${API_BASE_URL}/employees/${project.foreman_id}`, {
+          method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            id: project.foreman_id,
             assignedProjectId: null
           }),
         });
@@ -423,11 +420,10 @@ export default function ProjectDetailsPage() {
 
       // 3. Unassign engineer if exists
       if (project.engineer_id) {
-        await fetch(`${API_BASE_URL}/employees/update`, {
-          method: "POST",
+        await fetch(`${API_BASE_URL}/employees/${project.engineer_id}`, {
+          method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            id: project.engineer_id,
             assignedProjectId: null
           }),
         });
@@ -447,7 +443,7 @@ export default function ProjectDetailsPage() {
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/request/read`);
+      const response = await fetch(`${API_BASE_URL}/requests`);
       if (response.ok) {
         const data = await response.json();
         const projectRequests = (data.records || []).filter(
@@ -492,8 +488,8 @@ export default function ProjectDetailsPage() {
         is_approved: 0
       };
 
-      const response = await fetch(`${API_BASE_URL}/equipments/update`, {
-        method: "POST",
+      const response = await fetch(`${API_BASE_URL}/equipments/${equipmentRequestData.equipment_id}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -543,7 +539,7 @@ export default function ProjectDetailsPage() {
         project_id: project.id
       };
 
-      const response = await fetch(`${API_BASE_URL}/tasks/create`, {
+      const response = await fetch(`${API_BASE_URL}/tasks`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -584,7 +580,7 @@ export default function ProjectDetailsPage() {
         is_approve: "Pending"
       };
 
-      const response = await fetch(`${API_BASE_URL}/request/create`, {
+      const response = await fetch(`${API_BASE_URL}/requests`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -616,10 +612,9 @@ export default function ProjectDetailsPage() {
   const handleDeleteTask = async (taskId) => {
     if (!window.confirm("Are you sure you want to delete this task?")) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/tasks/delete`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: taskId }),
+      const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" }
       });
       if (response.ok) {
         fetchTasks();

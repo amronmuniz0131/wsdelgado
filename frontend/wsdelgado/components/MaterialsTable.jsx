@@ -61,7 +61,7 @@ export function MaterialsTable(props) {
   const fetchMaterials = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/materials/read`);
+      const response = await fetch(`${API_BASE_URL}/materials`);
       const data = await response.json();
       setMaterials(data.records || []);
     } catch (error) {
@@ -163,11 +163,12 @@ export function MaterialsTable(props) {
       }
     }
 
-    const endpoint = payload.id ? `${API_BASE_URL}/materials/update` : `${API_BASE_URL}/materials/create`;
+    const isUpdate = !!payload.id;
+    const endpoint = isUpdate ? `${API_BASE_URL}/materials/${payload.id}` : `${API_BASE_URL}/materials`;
 
     try {
       const response = await fetch(endpoint, {
-        method: "POST",
+        method: isUpdate ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
@@ -175,7 +176,7 @@ export function MaterialsTable(props) {
       if (response.ok) {
         fetchMaterials();
         handleClose();
-        SuccessToast("Material added successfully");
+        SuccessToast(isUpdate ? "Material updated successfully" : "Material added successfully");
       } else {
         const error = await response.json();
         DangerToast(error.message || "Operation failed.");
@@ -197,7 +198,7 @@ export function MaterialsTable(props) {
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/request/read`);
+      const response = await fetch(`${API_BASE_URL}/requests`);
       const data = await response.json();
       setRequests(data.records || []);
     } catch (error) {
@@ -214,8 +215,8 @@ export function MaterialsTable(props) {
   const handleApproveRequest = async (req) => {
     try {
       // 1. Update request status to "Approve"
-      const updateReqResponse = await fetch(`${API_BASE_URL}/request/update`, {
-        method: "POST",
+      const updateReqResponse = await fetch(`${API_BASE_URL}/requests/${req.id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...req,
@@ -228,8 +229,8 @@ export function MaterialsTable(props) {
         const material = materials.find(m => m.id === req.material_id);
         if (material) {
           const newQuantity = Math.max(0, parseInt(material.quantity) - parseInt(req.quantity));
-          const updateMatResponse = await fetch(`${API_BASE_URL}/materials/update`, {
-            method: "POST",
+          const updateMatResponse = await fetch(`${API_BASE_URL}/materials/${material.id}`, {
+            method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               ...material,
@@ -253,8 +254,8 @@ export function MaterialsTable(props) {
 
   const handleRejectRequest = async (req) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/request/update`, {
-        method: "POST",
+      const response = await fetch(`${API_BASE_URL}/requests/${req.id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...req,
