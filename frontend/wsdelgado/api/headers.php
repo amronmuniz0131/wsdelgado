@@ -1,6 +1,6 @@
 <?php
 // CORS headers
-header("Access-Control-Allow-Origin: http://localhost:3000");
+header("Access-Control-Allow-Origin: https://wsdelgado-tqq6-fdbbixo91-amronmuniz0131s-projects.vercel.app/");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
 header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
 header("Access-Control-Allow-Credentials: true");
