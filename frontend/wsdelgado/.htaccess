@@ -1,0 +1,47 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# | Hostinger Node.js (Next.js) + PHP API Optimization                 |
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# ----------------------------------------------------------------------
+# | 1. Phusion Passenger Configuration (Node.js)                       |
+# ----------------------------------------------------------------------
+PassengerAppRoot /home/u312009988/domains/deeppink-cormorant-307805.hostingersite.com/nodejs
+PassengerAppType node
+PassengerNodejs /opt/alt/alt-nodejs20/root/bin/node
+PassengerStartupFile server.js
+PassengerBaseURI /
+PassengerRestartDir /home/u312009988/domains/deeppink-cormorant-307805.hostingersite.com/nodejs/tmp
+
+# Environment Variables
+SetEnv NODE_OPTIONS "--require /home/u312009988/domains/deeppink-cormorant-307805.hostingersite.com/public_html/.builds/config/preload-timestamp.js"
+SetEnv LSNODE_CONSOLE_LOG console.log
+SetEnv TOKIO_WORKER_THREADS 2
+
+# ----------------------------------------------------------------------
+# | 2. Security & Global Rules                                         |
+# ----------------------------------------------------------------------
+RewriteEngine On
+
+# Allow OPTIONS requests to pass through without interference
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [L]
+
+# Block access to sensitive folders
+RewriteRule ^\.builds - [F,L]
+RewriteRule ^\.env - [F,L]
+RewriteRule ^node_modules - [F,L]
+
+# Prevent directory listing
+Options -Indexes
+
+# Force HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# ----------------------------------------------------------------------
+# | 3. API (PHP) Compatibility                                         |
+# ----------------------------------------------------------------------
+# Ensure that requests to the /api directory are NOT intercepted by 
+# the Node.js/Passenger handler.
+RewriteCond %{REQUEST_URI} ^/api/.*
+RewriteRule . - [L]
