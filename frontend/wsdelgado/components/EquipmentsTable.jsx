@@ -14,7 +14,11 @@ import {
   Typography,
   Box,
   Chip,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
+import SearchableSelect from "@/components/SearchableSelect";
+import MenuItem from "@mui/material/MenuItem";
 import { DataGrid, getGridStringOperators } from "@mui/x-data-grid";
 import { Plus } from "lucide-react";
 
@@ -451,24 +455,17 @@ export function EquipmentsTable(props) {
               onChange={handleInputChange}
             />
             {!equipmentRequest.requestedById && (
-              <TextField
-                select
-                margin="dense"
-                name="status"
-                label="Status"
-                fullWidth
-                variant="outlined"
-                value={equipmentRequest.status || "Available"}
-                onChange={handleInputChange}
-                SelectProps={{
-                  native: true,
-                }}
-              >
-                <option value="Available">Available</option>
-                {/* <option value="In Use">In Use</option>
-                <option value="Maintenance">Maintenance</option>
-                <option value="Requested">Requested</option> */}
-              </TextField>
+              <FormControl fullWidth margin="dense">
+                <InputLabel>Status</InputLabel>
+                <SearchableSelect
+                  name="status"
+                  label="Status"
+                  value={equipmentRequest.status || "Available"}
+                  onChange={handleInputChange}
+                >
+                  <MenuItem value="Available">Available</MenuItem>
+                </SearchableSelect>
+              </FormControl>
             )}
             <TextField
               margin="dense"

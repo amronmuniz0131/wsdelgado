@@ -15,6 +15,8 @@ import {
   Dialog,
   MenuItem,
   DialogTitle,
+  FormControl,
+  InputLabel,
   DialogContent,
   DialogActions,
   TextField,
@@ -28,6 +30,7 @@ import {
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { Plus, Eye, Pencil, Briefcase, Calendar, MapPin, Phone, Mail, UserRound, ArrowRight } from "lucide-react";
+import SearchableSelect from "./SearchableSelect";
 
 export function EmployeesTable() {
   const [employees, setEmployees] = useState([]);
@@ -616,41 +619,39 @@ export function EmployeesTable() {
               value={newEmployee.name}
               onChange={handleInputChange}
             />
-            <TextField
-              margin="dense"
-              name="position"
-              label="Position"
-              fullWidth
-              select
-              variant="outlined"
-              value={newEmployee.position}
-              onChange={handleInputChange}
-            >
-              {positions.map((position) => (
-                position.position?.toLowerCase() !== "admin" && position.position?.toLowerCase() !== "engineer" && (
-                  <MenuItem key={position.id} value={position.position}>
-                    {position.position}
-                  </MenuItem>
-                )
-              ))}
-            </TextField>
-            {(newEmployee.position?.toLowerCase() === 'engineer' || newEmployee.position?.toLowerCase() === 'foreman') && (
-              <TextField
-                margin="dense"
-                name="assignedProjectId"
-                label="Assigned Project"
-                fullWidth
-                select
-                variant="outlined"
-                value={newEmployee.assignedProjectId}
+            <FormControl fullWidth margin="dense">
+              <InputLabel>Position</InputLabel>
+              <SearchableSelect
+                name="position"
+                label="Position"
+                value={newEmployee.position}
                 onChange={handleInputChange}
               >
-                {projects.map((project) => (
-                  <MenuItem key={project.id} value={project.id}>
-                    {project.name}
-                  </MenuItem>
+                {positions.map((position) => (
+                  position.position?.toLowerCase() !== "admin" && position.position?.toLowerCase() !== "engineer" && (
+                    <MenuItem key={position.id} value={position.position}>
+                      {position.position}
+                    </MenuItem>
+                  )
                 ))}
-              </TextField>
+              </SearchableSelect>
+            </FormControl>
+            {(newEmployee.position?.toLowerCase() === 'engineer' || newEmployee.position?.toLowerCase() === 'foreman') && (
+              <FormControl fullWidth margin="dense">
+                <InputLabel>Assigned Project</InputLabel>
+                <SearchableSelect
+                  name="assignedProjectId"
+                  label="Assigned Project"
+                  value={newEmployee.assignedProjectId}
+                  onChange={handleInputChange}
+                >
+                  {projects.map((project) => (
+                    <MenuItem key={project.id} value={project.id}>
+                      {project.name}
+                    </MenuItem>
+                  ))}
+                </SearchableSelect>
+              </FormControl>
             )}
             <TextField
               margin="dense"
@@ -735,41 +736,39 @@ export function EmployeesTable() {
                 value={editingEmployee.name}
                 onChange={handleEditInputChange}
               />
-              <TextField
-                margin="dense"
-                name="position"
-                label="Position"
-                fullWidth
-                select
-                variant="outlined"
-                value={editingEmployee.position}
-                onChange={handleEditInputChange}
-              >
-                {positions.map((position) => (
-                  position.position?.toLowerCase() !== "admin" && (
-                    <MenuItem key={position.id} value={position.position}>
-                      {position.position}
-                    </MenuItem>
-                  )
-                ))}
-              </TextField>
-              {(editingEmployee.position?.toLowerCase() === "engineer" || editingEmployee.position?.toLowerCase() === "foreman") && (
-                <TextField
-                  margin="dense"
-                  name="assignedProjectId"
-                  label="Assigned Project"
-                  select
-                  fullWidth
-                  variant="outlined"
-                  value={editingEmployee.assignedProjectId || ""}
+              <FormControl fullWidth margin="dense">
+                <InputLabel>Position</InputLabel>
+                <SearchableSelect
+                  name="position"
+                  label="Position"
+                  value={editingEmployee.position}
                   onChange={handleEditInputChange}
                 >
-                  {projects.map((project) => (
-                    <MenuItem key={project.id} value={project.id}>
-                      {project.name}
-                    </MenuItem>
+                  {positions.map((position) => (
+                    position.position?.toLowerCase() !== "admin" && (
+                      <MenuItem key={position.id} value={position.position}>
+                        {position.position}
+                      </MenuItem>
+                    )
                   ))}
-                </TextField>
+                </SearchableSelect>
+              </FormControl>
+              {(editingEmployee.position?.toLowerCase() === "engineer" || editingEmployee.position?.toLowerCase() === "foreman") && (
+                <FormControl fullWidth margin="dense">
+                  <InputLabel>Assigned Project</InputLabel>
+                  <SearchableSelect
+                    name="assignedProjectId"
+                    label="Assigned Project"
+                    value={editingEmployee.assignedProjectId || ""}
+                    onChange={handleEditInputChange}
+                  >
+                    {projects.map((project) => (
+                      <MenuItem key={project.id} value={project.id}>
+                        {project.name}
+                      </MenuItem>
+                    ))}
+                  </SearchableSelect>
+                </FormControl>
               )}
               <TextField
                 margin="dense"

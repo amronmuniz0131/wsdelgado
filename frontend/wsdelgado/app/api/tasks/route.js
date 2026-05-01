@@ -8,7 +8,6 @@ export async function GET() {
       FROM tasks t
       LEFT JOIN projects p ON t.project_id = p.id
       LEFT JOIN task_history th ON th.task_id = t.id 
-          AND th.created_at = (SELECT MAX(created_at) FROM task_history WHERE task_id = t.id)
       LEFT JOIN employees e ON th.employee_id = e.id
       GROUP BY t.id
       ORDER BY t.end_date ASC

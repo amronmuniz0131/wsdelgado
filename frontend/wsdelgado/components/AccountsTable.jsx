@@ -31,6 +31,7 @@ import {
 import { Plus, Eye, Pencil, UserRound, Mail, Shield, ShieldCheck, UserCheck, Key, Trash2 } from "lucide-react";
 import { DataGrid } from "@mui/x-data-grid";
 import { SuccessToast, DangerToast } from "@/components/useToast";
+import SearchableSelect from "@/components/SearchableSelect";
 
 export function AccountsTable() {
   const [accounts, setAccounts] = useState([]);
@@ -384,19 +385,19 @@ export function AccountsTable() {
               value={newAccount.password}
               onChange={handleInputChange}
             />
-            <FormControl fullWidth margin="dense">
-              <InputLabel>Account Role</InputLabel>
-              <Select
-                name="role"
-                value={newAccount.role}
-                label="Account Role"
-                onChange={handleInputChange}
-              >
-                <MenuItem value="admin">Administrator</MenuItem>
-                <MenuItem value="engineer">Engineer</MenuItem>
-                <MenuItem value="user">Standard User</MenuItem>
-              </Select>
-            </FormControl>
+              <FormControl fullWidth margin="dense">
+                <InputLabel>Account Role</InputLabel>
+                <SearchableSelect
+                  name="role"
+                  value={newAccount.role}
+                  label="Account Role"
+                  onChange={handleInputChange}
+                >
+                  <MenuItem value="admin">Administrator</MenuItem>
+                  <MenuItem value="engineer">Engineer</MenuItem>
+                  <MenuItem value="user">Standard User</MenuItem>
+                </SearchableSelect>
+              </FormControl>
           </Box>
         </DialogContent>
         <DialogActions className="p-8 pt-2">
@@ -460,7 +461,7 @@ export function AccountsTable() {
               </Box>
               <FormControl fullWidth margin="dense">
                 <InputLabel>Account Role</InputLabel>
-                <Select
+                <SearchableSelect
                   name="role"
                   value={editingAccount.role}
                   label="Account Role"
@@ -469,7 +470,7 @@ export function AccountsTable() {
                   <MenuItem value="admin">Administrator</MenuItem>
                   <MenuItem value="engineer">Engineer</MenuItem>
                   <MenuItem value="user">Standard User</MenuItem>
-                </Select>
+                </SearchableSelect>
               </FormControl>
             </Box>
           )}

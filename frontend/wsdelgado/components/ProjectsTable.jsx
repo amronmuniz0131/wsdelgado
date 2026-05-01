@@ -16,7 +16,10 @@ import {
   Box,
   CircularProgress,
   MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
+import SearchableSelect from "@/components/SearchableSelect";
 import { DataGrid, getGridStringOperators } from "@mui/x-data-grid";
 import { Plus, Check } from "lucide-react";
 
@@ -410,74 +413,71 @@ export function ProjectsTable(props) {
               onChange={handleInputChange}
             />
 
-            <TextField
-              margin="dense"
-              name="client"
-              label="Client"
-              select
-              fullWidth
-              variant="outlined"
-              value={newProject.client}
-              onChange={handleInputChange}
-            >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              {users
-                .filter((emp) =>
-                  emp.role?.toLowerCase().includes("user")
-                )
-                .map((emp) => (
-                  <MenuItem key={emp.id} value={emp.id}>
-                    {emp.name} ({emp.role})
-                  </MenuItem>
-                ))}
-            </TextField>
+            <FormControl fullWidth margin="dense">
+              <InputLabel>Client</InputLabel>
+              <SearchableSelect
+                name="client"
+                label="Client"
+                value={newProject.client}
+                onChange={handleInputChange}
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                {users
+                  .filter((emp) =>
+                    emp.role?.toLowerCase().includes("user")
+                  )
+                  .map((emp) => (
+                    <MenuItem key={emp.id} value={emp.id}>
+                      {emp.name} ({emp.role})
+                    </MenuItem>
+                  ))}
+              </SearchableSelect>
+            </FormControl>
 
-            <TextField
-              margin="dense"
-              name="foremanId"
-              label="Foreman"
-              select
-              fullWidth
-              variant="outlined"
-              value={newProject.foremanId}
-              onChange={handleInputChange}
-            >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              {employees
-                .filter((emp) =>
-                  emp.position?.toLowerCase().includes("foreman") && emp.assignedProjectId === null
-                )
-                .map((emp) => (
-                  <MenuItem key={emp.id} value={emp.id}>
-                    {emp.name} ({emp.position})
-                  </MenuItem>
-                ))}
-            </TextField>
+            <FormControl fullWidth margin="dense">
+              <InputLabel>Foreman</InputLabel>
+              <SearchableSelect
+                name="foremanId"
+                label="Foreman"
+                value={newProject.foremanId}
+                onChange={handleInputChange}
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                {employees
+                  .filter((emp) =>
+                    emp.position?.toLowerCase().includes("foreman") && emp.assignedProjectId === null
+                  )
+                  .map((emp) => (
+                    <MenuItem key={emp.id} value={emp.id}>
+                      {emp.name} ({emp.position})
+                    </MenuItem>
+                  ))}
+              </SearchableSelect>
+            </FormControl>
 
-            <TextField
-              margin="dense"
-              name="engineerId"
-              label="Engineer"
-              select
-              fullWidth
-              variant="outlined"
-              value={newProject.engineerId}
-              onChange={handleInputChange}
-            >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              {engineers
-                .map((emp) => (
-                  <MenuItem key={emp.id} value={emp.id}>
-                    {emp.name}
-                  </MenuItem>
-                ))}
-            </TextField>
+            <FormControl fullWidth margin="dense">
+              <InputLabel>Engineer</InputLabel>
+              <SearchableSelect
+                name="engineerId"
+                label="Engineer"
+                value={newProject.engineerId}
+                onChange={handleInputChange}
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                {engineers
+                  .map((emp) => (
+                    <MenuItem key={emp.id} value={emp.id}>
+                      {emp.name}
+                    </MenuItem>
+                  ))}
+              </SearchableSelect>
+            </FormControl>
 
             <TextField
               margin="dense"
