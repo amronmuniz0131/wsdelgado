@@ -63,7 +63,6 @@ export function EmployeesTable() {
       const response = await fetch(`${API_BASE_URL}/projects`);
       const data = await response.json();
       setProjects(data.records || []);
-      console.log(data.records)
     } catch (error) {
       console.error("Error fetching projects:", error);
     }
@@ -79,7 +78,7 @@ export function EmployeesTable() {
     employeeId: "EMP-" + (count),
     name: "",
     position: "",
-    assignedProject: "",
+    assignedProjectId: "",
     dateOfEmployment: "",
     status: "available",
     email: "",
@@ -110,7 +109,7 @@ export function EmployeesTable() {
       employeeId: "EMP-" + (count),
       name: "",
       position: "",
-      assignedProject: "",
+      assignedProjectId: "",
       dateOfEmployment: "",
       status: "available",
       email: "",
@@ -153,10 +152,23 @@ export function EmployeesTable() {
 
   const handleAddEmployee = async () => {
     try {
+      const payload = {
+        employee_id: newEmployee.employeeId || `EMP-${count}`,
+        name: newEmployee.name,
+        position: newEmployee.position,
+        assigned_project_id: newEmployee.assignedProjectId,
+        date_of_employment: newEmployee.dateOfEmployment,
+        status: newEmployee.status,
+        email: newEmployee.email,
+        phone: newEmployee.phone,
+        address: newEmployee.address,
+        notes: newEmployee.notes,
+      };
+
       const response = await fetch(`${API_BASE_URL}/employees`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newEmployee),
+        body: JSON.stringify(payload),
       });
       if (response.ok) {
         fetchEmployees();
@@ -173,10 +185,24 @@ export function EmployeesTable() {
 
   const handleUpdateEmployee = async () => {
     try {
+      const payload = {
+        id: editingEmployee.id,
+        employee_id: editingEmployee.employeeId,
+        name: editingEmployee.name,
+        position: editingEmployee.position,
+        assigned_project_id: editingEmployee.assignedProjectId,
+        date_of_employment: editingEmployee.dateOfEmployment,
+        status: editingEmployee.status,
+        email: editingEmployee.email,
+        phone: editingEmployee.phone,
+        address: editingEmployee.address,
+        notes: editingEmployee.notes,
+      };
+
       const response = await fetch(`${API_BASE_URL}/employees/${editingEmployee.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingEmployee),
+        body: JSON.stringify(payload),
       });
       if (response.ok) {
         // Sync project assignment for Engineers and Foremen
@@ -279,7 +305,7 @@ export function EmployeesTable() {
       headerAlign: "center",
     },
     {
-      field: "assignedProject",
+      field: "project_name",
       headerName: "ASSIGNED PROJECT",
       width: 200,
       align: "center",
@@ -287,11 +313,11 @@ export function EmployeesTable() {
       renderCell: (params) => {
         return (
           <Typography className="h-full flex items-center justify-center">
-            {params.row.position.toLowerCase() === 'engineer' || params.row.position.toLowerCase() === 'foreman'
-              ? params.row.assignedProject
+            {params.row.position?.toLowerCase() === 'engineer' || params.row.position?.toLowerCase() === 'foreman'
+              ? params.row.project_name
               : params.row.tasks && params.row.is_finished
                 ? ''
-                : params.row.assignedProject
+                : params.row.project_name
             }
           </Typography>
         );
@@ -299,7 +325,7 @@ export function EmployeesTable() {
       }
     },
     {
-      field: "dateOfEmployment",
+      field: "date_of_employment",
       headerName: "EMPLOYMENT DATE",
       width: 180,
       align: "center",
@@ -314,14 +340,14 @@ export function EmployeesTable() {
       renderCell: (params) => (
         <Box className="flex items-center justify-center h-full">
           <Chip
-            label={getStatusLabel(params.row.position.toLowerCase() === 'engineer' || params.row.position.toLowerCase() === 'foreman'
+            label={getStatusLabel(params.row.position?.toLowerCase() === 'engineer' || params.row.position?.toLowerCase() === 'foreman'
               ? params.row.assignedProjectId === null
                 ? "available"
                 : 'assigned'
               : (params.row.tasks && params.row.is_finished)
                 ? "available"
                 : "assigned")}
-            color={getStatusColor(params.row.position.toLowerCase() === 'engineer' || params.row.position.toLowerCase() === 'foreman'
+            color={getStatusColor(params.row.position?.toLowerCase() === 'engineer' || params.row.position?.toLowerCase() === 'foreman'
               ? params.row.assignedProjectId === null
                 ? "available"
                 : 'assigned'
@@ -503,7 +529,7 @@ export function EmployeesTable() {
                 {user?.toLowerCase() === "admin" && (
                   <Box>
                     <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Assigned Project</Typography>
-                    <Typography className="text-gray-800 font-bold text-blue-600 italic underline decoration-blue-200 decoration-4 underline-offset-4" disabled={selectedEmployee.position.toLowerCase() !== "engineer"}>{selectedEmployee.assignedProject}</Typography>
+                    <Typography className="text-gray-800 font-bold text-blue-600 italic underline decoration-blue-200 decoration-4 underline-offset-4" disabled={selectedEmployee.position?.toLowerCase() !== "engineer"}>{selectedEmployee.assignedProject}</Typography>
                   </Box>
                 )}
                 <Box>
@@ -601,26 +627,26 @@ export function EmployeesTable() {
               onChange={handleInputChange}
             >
               {positions.map((position) => (
-                position.position.toLowerCase() !== "admin" && position.position.toLowerCase() !== "engineer" && (
+                position.position?.toLowerCase() !== "admin" && position.position?.toLowerCase() !== "engineer" && (
                   <MenuItem key={position.id} value={position.position}>
                     {position.position}
                   </MenuItem>
                 )
               ))}
             </TextField>
-            {newEmployee.position === 'engineer' || newEmployee.position === 'foreman' && (
+            {(newEmployee.position?.toLowerCase() === 'engineer' || newEmployee.position?.toLowerCase() === 'foreman') && (
               <TextField
                 margin="dense"
-                name="assignedProject"
+                name="assignedProjectId"
                 label="Assigned Project"
                 fullWidth
                 select
                 variant="outlined"
-                value={newEmployee.assignedProject}
+                value={newEmployee.assignedProjectId}
                 onChange={handleInputChange}
               >
                 {projects.map((project) => (
-                  <MenuItem key={project.id} value={project.name}>
+                  <MenuItem key={project.id} value={project.id}>
                     {project.name}
                   </MenuItem>
                 ))}
@@ -720,14 +746,14 @@ export function EmployeesTable() {
                 onChange={handleEditInputChange}
               >
                 {positions.map((position) => (
-                  position.position.toLowerCase() !== "admin" && position.position.toLowerCase() !== "engineer" && (
+                  position.position?.toLowerCase() !== "admin" && (
                     <MenuItem key={position.id} value={position.position}>
                       {position.position}
                     </MenuItem>
                   )
                 ))}
               </TextField>
-              {(editingEmployee.position.toLowerCase() === "engineer" || editingEmployee.position.toLowerCase() === "foreman") && (
+              {(editingEmployee.position?.toLowerCase() === "engineer" || editingEmployee.position?.toLowerCase() === "foreman") && (
                 <TextField
                   margin="dense"
                   name="assignedProjectId"

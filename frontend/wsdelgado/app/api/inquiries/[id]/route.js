@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function PATCH(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const query = "UPDATE inquiries SET is_read = 1 WHERE id = ?";
     await turso.execute({ sql: query, args: [id] });

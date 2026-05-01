@@ -21,12 +21,32 @@ export async function POST(request) {
     const bcrypt = require("bcryptjs");
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    await turso.execute({
+    // Insert user and get the new user ID
+    const userResult = await turso.execute({
       sql: "INSERT INTO users (name, email, password, role, first_login) VALUES (?, ?, ?, ?, ?)",
       args: [data.name, data.email, hashedPassword, data.role || 'user', 0],
     });
+    const userId = userResult.lastInsertRowid?.toString();
 
-    return NextResponse.json({ message: "Account created successfully." }, { status: 201 });
+    // Create corresponding employee profile
+    const employeeId = `EMP-${userId}`;
+    await turso.execute({
+      sql: "INSERT INTO employees (employee_id, name, position, assigned_project_id, date_of_employment, status, email, phone, address, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      args: [
+        employeeId,
+        data.name,
+        null, // position can be set later
+        null, // assigned_project_id
+        null, // date_of_employment
+        'available',
+        data.email,
+        null, // phone
+        null, // address
+        '' // notes
+      ],
+    });
+
+    return NextResponse.json({ message: "Account and employee created successfully.", userId, employeeId }, { status: 201 });
   } catch (error) {
     console.error("Error creating account:", error);
     return NextResponse.json({ message: "Error creating account." }, { status: 500 });

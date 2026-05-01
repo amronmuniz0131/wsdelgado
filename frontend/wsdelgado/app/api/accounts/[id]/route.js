@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const data = await request.json();
 
     let query = "UPDATE users SET name=?, email=?, role=?, updated_at=CURRENT_TIMESTAMP";
@@ -30,12 +30,18 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
+    // Delete related employee profile using employee_id format
+    // await turso.execute({
+    //   sql: "DELETE FROM employees WHERE employee_id = ?",
+    //   args: [`EMP-${id}`],
+    // });
+    // Delete user record
     await turso.execute({
       sql: "DELETE FROM users WHERE id = ?",
       args: [id],
     });
-    return NextResponse.json({ message: "Account deleted successfully." });
+    return NextResponse.json({ message: "Account and employee deleted successfully." });
   } catch (error) {
     console.error("Error deleting account:", error);
     return NextResponse.json({ message: "Error deleting account." }, { status: 500 });

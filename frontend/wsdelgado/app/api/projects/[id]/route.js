@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const query = `
       SELECT p.*, f.name as foreman_name, u.name as engineer_name, c.name as client_name 
       FROM projects p
@@ -28,23 +28,31 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const data = await request.json();
 
     const query = `
       UPDATE projects 
-      SET name=?, location=?, client=?, address=?, progress=?, 
-          foreman_id=?, engineer_id=?, start_date=?, end_date=?, completion_date=?,
-          updated_at=CURRENT_TIMESTAMP
+      SET name = COALESCE(?, name),
+          location = COALESCE(?, location),
+          client = COALESCE(?, client),
+          address = COALESCE(?, address),
+          progress = COALESCE(?, progress),
+          foreman_id = COALESCE(?, foreman_id),
+          engineer_id = COALESCE(?, engineer_id),
+          start_date = COALESCE(?, start_date),
+          end_date = COALESCE(?, end_date),
+          completion_date = COALESCE(?, completion_date),
+          updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `;
 
     const args = [
-      data.name,
+      data.name || null,
       data.location || null,
       data.client || null,
       data.address || null,
-      data.progress || 0,
+      data.progress !== undefined ? data.progress : null,
       data.foreman_id || null,
       data.engineer_id || null,
       data.start_date || null,
@@ -64,7 +72,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     await turso.execute({
       sql: "DELETE FROM projects WHERE id = ?",

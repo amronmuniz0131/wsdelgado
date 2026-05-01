@@ -3,28 +3,36 @@ import { NextResponse } from "next/server";
 
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const data = await request.json();
 
     const query = `
       UPDATE equipments 
-      SET name=?, type=?, status=?, project_id=?, operator_id=?, 
-          requested_by_id=?, estimated_hours=?, borrow_date=?, return_date=?, is_approved=?,
-          updated_at=CURRENT_TIMESTAMP
+      SET name = COALESCE(?, name),
+          type = COALESCE(?, type),
+          status = COALESCE(?, status),
+          project_id = COALESCE(?, project_id),
+          operator_id = COALESCE(?, operator_id),
+          requested_by_id = COALESCE(?, requested_by_id),
+          estimated_hours = COALESCE(?, estimated_hours),
+          borrow_date = COALESCE(?, borrow_date),
+          return_date = COALESCE(?, return_date),
+          is_approved = COALESCE(?, is_approved),
+          updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `;
 
     const args = [
-      data.name,
+      data.name || null,
       data.type || null,
-      data.status || 'Available',
+      data.status || null,
       data.projectId || data.project_id || null,
       data.operatorId || data.operator_id || null,
       data.requestedById || data.requested_by_id || null,
-      data.estimatedHours || data.estimated_hours || 0,
+      data.estimatedHours || data.estimated_hours || null,
       data.borrowDate || data.borrow_date || null,
       data.returnDate || data.return_date || null,
-      data.is_approved !== undefined ? data.is_approved : 0,
+      data.is_approved !== undefined ? data.is_approved : null,
       id
     ];
 
@@ -42,7 +50,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     await turso.execute({
       sql: "DELETE FROM equipments WHERE id = ?",

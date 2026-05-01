@@ -3,22 +3,28 @@ import { NextResponse } from "next/server";
 
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const data = await request.json();
 
     const query = `
       UPDATE materials 
-      SET name=?, quantity=?, unit=?, max_stock=?, last_restocked=?, price=?, updated_at=CURRENT_TIMESTAMP
+      SET name = COALESCE(?, name),
+          quantity = COALESCE(?, quantity),
+          unit = COALESCE(?, unit),
+          max_stock = COALESCE(?, max_stock),
+          last_restocked = COALESCE(?, last_restocked),
+          price = COALESCE(?, price),
+          updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `;
 
     const args = [
-      data.name,
-      data.quantity || 0,
+      data.name || null,
+      data.quantity !== undefined ? data.quantity : null,
       data.unit || null,
-      data.max_stock || 0,
+      data.max_stock !== undefined ? data.max_stock : null,
       data.last_restocked || null,
-      data.price || 0,
+      data.price !== undefined ? data.price : null,
       id
     ];
 
@@ -36,7 +42,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     await turso.execute({
       sql: "DELETE FROM materials WHERE id = ?",

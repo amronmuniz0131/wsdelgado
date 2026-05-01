@@ -43,7 +43,7 @@ export function TaskModal(props) {
                 task_id: props.selectedTask?.id,
                 employee_id: taskData.employee_id
             };
-            const response = await fetch(`${API_BASE_URL}/assign/create`, {
+            const response = await fetch(`${API_BASE_URL}/assign`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -57,8 +57,8 @@ export function TaskModal(props) {
             } else {
                 DangerToast(`Error: ${result.message}`);
             }
-            const res = await fetch(`${API_BASE_URL}/tasks/update`, {
-                method: "POST",
+            const res = await fetch(`${API_BASE_URL}/tasks/${props.selectedTask?.id}`, {
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },

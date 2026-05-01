@@ -41,6 +41,8 @@ export async function POST(request) {
       data.price || 0
     ];
 
+    console.log(args);
+
     await turso.execute({ sql: query, args });
 
     return NextResponse.json(

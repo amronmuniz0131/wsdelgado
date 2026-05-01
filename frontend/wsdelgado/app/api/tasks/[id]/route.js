@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const query = `
       SELECT t.*, p.name as project_name, GROUP_CONCAT(e.name, ', ') as assigned_employees
       FROM tasks t
@@ -30,26 +30,32 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const data = await request.json();
 
     const query = `
       UPDATE tasks 
-      SET name=?, status=?, severity=?, project_id=?, 
-          start_date=?, end_date=?, quantity=?, finished=?,
-          updated_at=CURRENT_TIMESTAMP
+      SET name = COALESCE(?, name),
+          status = COALESCE(?, status),
+          severity = COALESCE(?, severity),
+          project_id = COALESCE(?, project_id),
+          start_date = COALESCE(?, start_date),
+          end_date = COALESCE(?, end_date),
+          quantity = COALESCE(?, quantity),
+          finished = COALESCE(?, finished),
+          updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `;
 
     const args = [
-      data.name,
-      data.status || 'pending',
-      data.severity || 0,
-      data.project_id,
+      data.name || null,
+      data.status || null,
+      data.severity || null,
+      data.project_id || null,
       data.start_date || null,
       data.end_date || null,
-      data.quantity || 0,
-      data.finished || 0,
+      data.quantity || null,
+      data.finished || null,
       id
     ];
 
@@ -64,7 +70,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     await turso.execute({
       sql: "DELETE FROM tasks WHERE id = ?",

@@ -58,7 +58,8 @@ export function ProjectsTable(props) {
       let arr = []
       setEmployees(data.records || []);
       data.records.map((d) => {
-        if (d.position?.toLowerCase() === "engineer" && d.assignedProjectId === null) {
+        console.log(d)
+        if (d.position?.toLowerCase() == "engineer" && d.assignedProjectId == null) {
           arr.push(d)
         }
       })
@@ -131,7 +132,7 @@ export function ProjectsTable(props) {
       flex: 1,
       minWidth: 130,
       filterOperators: filteredOperators,
-      valueGetter: (value, row) => row?.engineerName || row?.engineer || ""
+      valueGetter: (value, row) => row?.engineer_name || row?.engineer || ""
     },
     {
       field: "location",
@@ -146,7 +147,7 @@ export function ProjectsTable(props) {
       flex: 1,
       minWidth: 150,
       filterOperators: filteredOperators,
-      valueGetter: (value, row) => row?.clientName || row?.client || ""
+      valueGetter: (value, row) => row?.client_name || row?.client || ""
     },
     {
       field: "address",
@@ -257,10 +258,18 @@ export function ProjectsTable(props) {
 
   const handleAddProject = async () => {
     try {
+      const payload = {
+        name: newProject.name,
+        location: newProject.location || null,
+        client: newProject.client || null,
+        address: newProject.address || null,
+        foreman_id: newProject.foremanId || null,
+        engineer_id: newProject.engineerId || null,
+      };
       const response = await fetch(`${API_BASE_URL}/projects`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newProject),
+        body: JSON.stringify(payload),
       });
       if (response.ok) {
         const result = await response.json();
@@ -317,7 +326,7 @@ export function ProjectsTable(props) {
 
     return projects.filter((project) => {
       if (props.user === "engineer") {
-        const engineerName = project.engineerName || project.engineer;
+        const engineerName = project.engineer_name || project.engineer;
         return engineerName === userData.name;
       }
       if (props.user === "user") {

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const result = await turso.execute({
       sql: "SELECT * FROM employees WHERE id = ? LIMIT 1",
       args: [id],
@@ -22,28 +22,36 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const data = await request.json();
 
     const query = `
       UPDATE employees 
-      SET employee_id=?, name=?, position=?, assigned_project_id=?, 
-          date_of_employment=?, status=?, email=?, phone=?, address=?, notes=?,
-          updated_at=CURRENT_TIMESTAMP
+      SET employee_id = COALESCE(?, employee_id),
+          name = COALESCE(?, name),
+          position = COALESCE(?, position),
+          assigned_project_id = COALESCE(?, assigned_project_id), 
+          date_of_employment = COALESCE(?, date_of_employment),
+          status = COALESCE(?, status),
+          email = COALESCE(?, email),
+          phone = COALESCE(?, phone),
+          address = COALESCE(?, address),
+          notes = COALESCE(?, notes),
+          updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `;
 
     const args = [
-      data.employee_id,
-      data.name,
+      data.employee_id || null,
+      data.name || null,
       data.position || null,
-      data.assigned_project_id || null,
+      data.assigned_project_id || data.assignedProjectId || null,
       data.date_of_employment || null,
-      data.status || 'available',
+      data.status || null,
       data.email || null,
       data.phone || null,
       data.address || null,
-      data.notes || '',
+      data.notes || null,
       id
     ];
 
@@ -58,7 +66,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     await turso.execute({
       sql: "DELETE FROM employees WHERE id = ?",

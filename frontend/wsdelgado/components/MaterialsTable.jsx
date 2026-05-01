@@ -167,10 +167,15 @@ export function MaterialsTable(props) {
     const endpoint = isUpdate ? `${API_BASE_URL}/materials/${payload.id}` : `${API_BASE_URL}/materials`;
 
     try {
+      const params = {
+        name: payload.name,
+        quantity: payload.quantity,
+        max_stock: payload.max_stock
+      }
       const response = await fetch(endpoint, {
-        method: isUpdate ? "PUT" : "POST",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(params),
       });
 
       if (response.ok) {

@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS projects (
   progress INTEGER DEFAULT 0,
   foreman_id INTEGER,
   engineer_id INTEGER,
+  start_date DATE,
+  end_date DATE,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (foreman_id) REFERENCES employees (id) ON DELETE SET NULL,
@@ -77,6 +79,9 @@ CREATE TABLE IF NOT EXISTS equipments (
   operator_id INTEGER,
   requested_by_id INTEGER,
   estimated_hours INTEGER DEFAULT 0,
+  borrow_date DATE,
+  return_date DATE,
+  is_approved INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE SET NULL,
@@ -93,11 +98,30 @@ CREATE TABLE IF NOT EXISTS materials (
   last_restocked DATE,
   requesting_engineer_id INTEGER,
   project_id INTEGER,
+  max_stock INTEGER DEFAULT 0,
   price DECIMAL(15,2) DEFAULT 0.00,
   is_approved INTEGER DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (requesting_engineer_id) REFERENCES employees (id) ON DELETE SET NULL,
+  FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS positions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  position TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  material_id INTEGER NOT NULL,
+  quantity INTEGER NOT NULL,
+  engineer_id INTEGER,
+  project_id INTEGER,
+  request_date DATE NOT NULL,
+  is_approve INTEGER DEFAULT 0,
+  FOREIGN KEY (material_id) REFERENCES materials (id) ON DELETE CASCADE,
+  FOREIGN KEY (engineer_id) REFERENCES employees (id) ON DELETE SET NULL,
   FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE SET NULL
 );
 

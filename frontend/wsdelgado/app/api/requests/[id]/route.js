@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const result = await turso.execute({
       sql: "SELECT * FROM requests WHERE id = ? LIMIT 1",
       args: [id],
@@ -22,21 +22,25 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const data = await request.json();
 
     // Fetch existing data first to handle partial updates if needed, 
     // or just use the provided data.
     const query = `
       UPDATE requests 
-      SET material_id=?, quantity=?, engineer_id=?, project_id=?, 
-          request_date=?, is_approve=?
+      SET material_id = COALESCE(?, material_id),
+          quantity = COALESCE(?, quantity),
+          engineer_id = COALESCE(?, engineer_id),
+          project_id = COALESCE(?, project_id), 
+          request_date = COALESCE(?, request_date),
+          is_approve = COALESCE(?, is_approve)
       WHERE id = ?
     `;
 
     const args = [
-      data.material_id,
-      data.quantity,
+      data.material_id || null,
+      data.quantity || null,
       data.engineer_id || null,
       data.project_id || null,
       data.request_date || null,
@@ -55,7 +59,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     await turso.execute({
       sql: "DELETE FROM requests WHERE id = ?",
