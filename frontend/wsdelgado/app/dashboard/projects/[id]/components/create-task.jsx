@@ -10,9 +10,9 @@ import {
     TextField,
     FormControl,
     InputLabel,
-    Select,
     MenuItem
 } from "@mui/material";
+import SearchableSelect from "@/components/SearchableSelect";
 
 export default function CreateTask(props) {
     return (
@@ -39,7 +39,7 @@ export default function CreateTask(props) {
                     <div className="w-full">
                         <FormControl fullWidth variant="outlined">
                             <InputLabel>Severity</InputLabel>
-                            <Select
+                            <SearchableSelect
                                 value={props.taskData.severity}
                                 onChange={(e) => props.setTaskData({ ...props.taskData, severity: e.target.value })}
                                 label="Severity"
@@ -47,7 +47,7 @@ export default function CreateTask(props) {
                                 <MenuItem value={1}>Low</MenuItem>
                                 <MenuItem value={2}>Medium</MenuItem>
                                 <MenuItem value={3}>High</MenuItem>
-                            </Select>
+                            </SearchableSelect>
                         </FormControl>
                     </div>
                 </div>

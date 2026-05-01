@@ -13,9 +13,9 @@ import {
     TextField,
     FormControl,
     InputLabel,
-    Select,
     MenuItem
 } from "@mui/material";
+import SearchableSelect from "@/components/SearchableSelect";
 export function TaskModal(props) {
     const [tasks, setTasks] = useState([]);
     const [taskData, setTaskData] = useState({
@@ -91,7 +91,7 @@ export function TaskModal(props) {
             <DialogContent className="pt-6 space-y-4">
                 <FormControl fullWidth variant="outlined">
                     <InputLabel>Employee Name</InputLabel>
-                    <Select
+                    <SearchableSelect
                         multiple
                         value={taskData.employee_id || []}
                         onChange={handleChange}
@@ -114,7 +114,7 @@ export function TaskModal(props) {
                                     </MenuItem>
                                 )
                             ))}
-                    </Select>
+                    </SearchableSelect>
                 </FormControl>
             </DialogContent>
             <DialogActions className="p-4 border-t border-gray-100">

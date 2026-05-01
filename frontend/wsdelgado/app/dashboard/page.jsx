@@ -16,8 +16,8 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Select,
 } from "@mui/material";
+import SearchableSelect from "@/components/SearchableSelect";
 import { ProjectsTable } from "@/components/ProjectsTable";
 import { MaterialsTable } from "@/components/MaterialsTable";
 import { EquipmentsTable } from "@/components/EquipmentsTable";
@@ -168,7 +168,7 @@ function DashboardContent() {
             />
             <FormControl fullWidth margin="dense">
               <InputLabel>Account Role</InputLabel>
-              <Select
+              <SearchableSelect
                 name="role"
                 value={newAccount.role}
                 label="Account Role"
@@ -178,7 +178,7 @@ function DashboardContent() {
                 <MenuItem value="admin">Administrator</MenuItem>
                 <MenuItem value="engineer">Engineer</MenuItem>
                 <MenuItem value="user">Standard User</MenuItem>
-              </Select>
+              </SearchableSelect>
             </FormControl>
           </Box>
         </DialogContent>

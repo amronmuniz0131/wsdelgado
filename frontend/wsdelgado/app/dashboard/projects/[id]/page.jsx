@@ -23,7 +23,8 @@ import {
   IconButton,
 } from "@mui/material";
 import { ArrowLeft, User, MapPin, Briefcase, CheckCircle2, Image as ImageIcon, Upload, Plus, X, Package } from "lucide-react";
-import { MenuItem, Select, InputLabel, FormControl } from "@mui/material";
+import { MenuItem, InputLabel, FormControl } from "@mui/material";
+import SearchableSelect from "@/components/SearchableSelect";
 import { DataGrid } from "@mui/x-data-grid";
 import { EquipmentsTable } from "@/components/EquipmentsTable";
 import { TaskModal } from "./components/task.jsx";
@@ -989,7 +990,7 @@ export default function ProjectDetailsPage() {
         <DialogContent className="pt-6 space-y-4">
           <FormControl fullWidth variant="outlined">
             <InputLabel id="material-select-label">Select Material</InputLabel>
-            <Select
+            <SearchableSelect
               labelId="material-select-label"
               value={requestData.material_id}
               onChange={(e) => setRequestData({ ...requestData, material_id: e.target.value })}
@@ -1000,7 +1001,7 @@ export default function ProjectDetailsPage() {
                   {m.name} ({m.quantity}/{m.max_stock})
                 </MenuItem>
               ))}
-            </Select>
+            </SearchableSelect>
           </FormControl>
           <TextField
             label="Quantity"
@@ -1049,7 +1050,7 @@ export default function ProjectDetailsPage() {
         <DialogContent className="pt-6 space-y-4">
           <FormControl fullWidth variant="outlined">
             <InputLabel id="equipment-select-label">Select Equipment</InputLabel>
-            <Select
+            <SearchableSelect
               labelId="equipment-select-label"
               value={equipmentRequestData.equipment_id}
               onChange={(e) => setEquipmentRequestData({ ...equipmentRequestData, equipment_id: e.target.value })}
@@ -1060,7 +1061,7 @@ export default function ProjectDetailsPage() {
                   {e.name} ({e.type})
                 </MenuItem>
               ))}
-            </Select>
+            </SearchableSelect>
           </FormControl>
           <TextField
             label="Estimated Usage Hours"
