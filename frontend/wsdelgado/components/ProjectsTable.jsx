@@ -61,7 +61,6 @@ export function ProjectsTable(props) {
       let arr = []
       setEmployees(data.records || []);
       data.records.map((d) => {
-        console.log(d)
         if (d.position?.toLowerCase() == "engineer" && d.assignedProjectId == null) {
           arr.push(d)
         }

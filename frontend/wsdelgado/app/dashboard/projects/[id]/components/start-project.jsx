@@ -34,7 +34,7 @@ export default function StartProject({ project, setProject }) {
                 body: JSON.stringify({
                     id: project.id,
                     start_date: new Date().toISOString().slice(0, 19).replace('T', ' '),
-                    end_date: endDate,
+                    end_date: endDate.split(' ')[0],
                 }),
             });
 
