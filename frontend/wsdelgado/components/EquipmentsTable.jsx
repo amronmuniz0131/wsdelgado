@@ -68,7 +68,7 @@ export function EquipmentsTable(props) {
         records = data.records.filter(e => String(e.projectId) === String(props.projectId));
       }
       data.records.map((d) => {
-        if (d.status == "Requested" || d.status == "Overdue")
+        if (d.status == "Requested" || (d.status == "In Use" && new Date(d.returnDate) < new Date()))
           count = count + 1
       })
       props.setCount(count)
