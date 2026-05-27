@@ -47,6 +47,7 @@ function DashboardContent() {
   const [openModal, setOpenModal] = useState(false);
   const [assignments, setAssignments] = useState([]);
   const [ganttData, setGanttData] = useState([]);
+  const [employee_count, setEmployeeCount] = useState(0)
   const [equipmentCount, setEquipmentCount] = useState(0);
   const [materialCount, setMaterialCount] = useState(0);
 
@@ -223,7 +224,7 @@ function DashboardContent() {
               Available Employees
             </div>
             <div className="py-4 text-xl ">
-              {totalProgress.done}
+              {employee_count}
             </div>
           </div>
           {/* Inquiries */}
@@ -235,7 +236,7 @@ function DashboardContent() {
                 Messages
               </div>
               <div className="py-4 text-xl ">
-                {totalProgress.done}
+                {unreadMessages}
               </div>
             </div>
           }
@@ -279,7 +280,7 @@ function DashboardContent() {
         </div>
       </div>
       <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-        <ProjectsTable user={user} setTotalProgress={setTotalProgress} openModal={openModal} setOpenModal={setOpenModal} userData={newAccount} />
+        <ProjectsTable user={user} employee_count={setEmployeeCount} setTotalProgress={setTotalProgress} openModal={openModal} setOpenModal={setOpenModal} userData={newAccount} />
       </section>
 
       {(user === "admin" || user === "engineer") &&

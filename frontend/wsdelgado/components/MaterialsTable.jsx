@@ -75,6 +75,7 @@ export function MaterialsTable(props) {
 
   useEffect(() => {
     if (props.user === "admin") {
+      let objectCount = 0
       let obj = {}
       materials.map((data) => {
         let count = 0;
@@ -84,9 +85,10 @@ export function MaterialsTable(props) {
           }
         })
         obj = { ...obj, [data.name]: count }
+        objectCount = objectCount + count
       })
+      props.setCount(objectCount)
       setCount(obj)
-      console.log(obj)
     }
   }, [materials, requests])
 

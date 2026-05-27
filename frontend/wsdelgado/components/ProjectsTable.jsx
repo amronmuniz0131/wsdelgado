@@ -66,6 +66,7 @@ export function ProjectsTable(props) {
 
   const fetchEmployees = async () => {
     try {
+      let count = 0
       const response = await fetch(`${API_BASE_URL}/employees/read.php`);
       const data = await response.json();
       let arr = []
@@ -74,7 +75,11 @@ export function ProjectsTable(props) {
         if (d.position?.toLowerCase() === "engineer") {
           arr.push(d)
         }
+        if (d.project_id === null || d.is_finished) {
+          count = count + 1
+        }
       })
+      props.employee_count(count)
       setEngineers(arr);
     } catch (error) {
       console.error("Error fetching employees:", error);

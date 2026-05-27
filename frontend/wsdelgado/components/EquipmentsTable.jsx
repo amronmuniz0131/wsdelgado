@@ -60,12 +60,18 @@ export function EquipmentsTable(props) {
   const fetchEquipments = async () => {
     setIsLoading(true);
     try {
+      let count = 0
       const response = await fetch(`${API_BASE_URL}/equipments/read.php`);
       const data = await response.json();
       let records = data.records || [];
       if (props.projectId) {
         records = data.records.filter(e => String(e.projectId) === String(props.projectId));
       }
+      data.records.map((d) => {
+        if (d.status == "Requested" || d.status == "Overdue")
+          count = count + 1
+      })
+      props.setCount(count)
       setEquipments(records);
     } catch (error) {
       console.error("Error fetching equipments:", error);
