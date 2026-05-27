@@ -24,7 +24,6 @@ export function ProjectsTable(props) {
   const router = useRouter();
   const [projects, setProjects] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const [open, setOpen] = useState(false);
   const [users, setUsers] = useState([]);
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,6 +41,20 @@ export function ProjectsTable(props) {
       const response = await fetch(`${API_BASE_URL}/projects/read.php`);
       const data = await response.json();
       setProjects(data.records || []);
+      let count = 0
+      let not_done = 0
+      let overdue = 0
+      data?.records.map((d) => {
+        if (d.progress == 100) {
+          count++;
+
+        } else if (d.progress < 100 && new Date() < new Date(d.end_date)) {
+          not_done++
+        } else {
+          overdue++
+        }
+      })
+      props.setTotalProgress({ "done": count, "ongoing": not_done, "overdue": overdue })
     } catch (error) {
       console.error("Error fetching projects:", error);
     } finally {
@@ -58,7 +71,7 @@ export function ProjectsTable(props) {
       let arr = []
       setEmployees(data.records || []);
       data.records.map((d) => {
-        if (d.position?.toLowerCase() === "engineer" && d.assignedProjectId === null) {
+        if (d.position?.toLowerCase() === "engineer") {
           arr.push(d)
         }
       })
@@ -132,13 +145,6 @@ export function ProjectsTable(props) {
       minWidth: 130,
       filterOperators: filteredOperators,
       valueGetter: (value, row) => row?.engineerName || row?.engineer || ""
-    },
-    {
-      field: "location",
-      headerName: "Location",
-      flex: 1,
-      minWidth: 120,
-      filterOperators: filteredOperators
     },
     {
       field: "client",
@@ -388,17 +394,6 @@ export function ProjectsTable(props) {
               value={newProject.name}
               onChange={handleInputChange}
               className="col-span-1 md:col-span-2"
-            />
-
-            <TextField
-              margin="dense"
-              name="location"
-              label="Location"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={newProject.location}
-              onChange={handleInputChange}
             />
 
             <TextField

@@ -20,7 +20,8 @@ export function TaskModal(props) {
     const [tasks, setTasks] = useState([]);
     const [taskData, setTaskData] = useState({
         employee_id: [],
-        task_id: props.selectedTask?.id
+        task_id: props.selectedTask?.id,
+        end_date: props.selectedTask?.end_date
     })
     const handleChange = (event) => {
         const { target: { value } } = event;
@@ -41,7 +42,8 @@ export function TaskModal(props) {
         try {
             const payload = {
                 task_id: props.selectedTask?.id,
-                employee_id: taskData.employee_id
+                employee_id: taskData.employee_id,
+                end_date: taskData.end_date
             };
             const response = await fetch(`${API_BASE_URL}/assign/create.php`, {
                 method: "POST",
@@ -66,6 +68,7 @@ export function TaskModal(props) {
                     id: props.selectedTask?.id,
                     status: 1,
                     start_date: new Date().toISOString().slice(0, 19).replace('T', ' '),
+                    end_date: taskData.end_date
                 }),
             });
             window.location.reload();
@@ -88,7 +91,7 @@ export function TaskModal(props) {
             <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 pb-4">
                 Assign Task for: {props.selectedTask?.name}
             </DialogTitle>
-            <DialogContent className="pt-6 space-y-4">
+            <DialogContent className="!pt-6 space-y-4">
                 <FormControl fullWidth variant="outlined">
                     <InputLabel>Employee Name</InputLabel>
                     <Select
@@ -115,6 +118,16 @@ export function TaskModal(props) {
                                 )
                             ))}
                     </Select>
+                    <TextField
+                        label="End Date"
+                        InputLabelProps={{ shrink: true }}
+                        type="date"
+                        value={taskData.end_date}
+                        onChange={(e) => setTaskData({ ...taskData, end_date: e.target.value })}
+                        fullWidth
+                        sx={{ mt: 2 }}
+                        required
+                    />
                 </FormControl>
             </DialogContent>
             <DialogActions className="p-4 border-t border-gray-100">

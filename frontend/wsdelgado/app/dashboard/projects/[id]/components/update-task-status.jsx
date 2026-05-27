@@ -35,7 +35,7 @@ export default function UpdateTaskStatus({ isOpen, handleClose, task, onUpdate }
       };
 
       if (newTotal === Number(task.quantity)) {
-        payload.end_date = new Date().toISOString().split('T')[0];
+        // payload.end_date = new Date().toISOString().split('T')[0];
       }
 
       const response = await fetch(`${API_BASE_URL}/tasks/update.php`, {

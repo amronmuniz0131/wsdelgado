@@ -4,12 +4,16 @@ import { useEffect, useState, useRef } from "react";
 import { Badge } from "@mui/material";
 import { API_BASE_URL } from "@/lib/api";
 import { Mail } from "lucide-react";
+import { DataGrid } from "@mui/x-data-grid";
+
+import { PieChart } from '@mui/x-charts/PieChart';
 import {
   Button,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  Chip,
   TextField,
   Typography,
   Box,
@@ -22,6 +26,7 @@ import { ProjectsTable } from "@/components/ProjectsTable";
 import { MaterialsTable } from "@/components/MaterialsTable";
 import { EquipmentsTable } from "@/components/EquipmentsTable";
 import { InquiriesList } from "@/components/InquiriesList";
+import GanttChart from "@/components/GanttChart";
 
 import RoleProtectedRoute from "@/components/RoleProtectedRoute";
 
@@ -35,15 +40,72 @@ export default function DashboardPage() {
 
 function DashboardContent() {
   const bottomRef = useRef(null);
+  const inventoryRef = useRef(null)
   const [user, setUser] = useState("");
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [totalProgress, setTotalProgress] = useState({});
   const [openModal, setOpenModal] = useState(false);
+  const [assignments, setAssignments] = useState([]);
+  const [ganttData, setGanttData] = useState([]);
+  const [equipmentCount, setEquipmentCount] = useState(0);
+  const [materialCount, setMaterialCount] = useState(0);
+
+  const employeeAssignColumns = [
+    { field: "employee_name", headerName: "Employee Name", flex: 1 },
+    { field: "task_name", headerName: "Task Name", flex: 1 },
+    { field: "project_name", headerName: "Project Name", flex: 1 },
+    {
+      field: "is_finish", headerName: "Status", flex: 1, renderCell: (params) => {
+
+        return (
+          <Chip
+            label={params.value ? "Done" : "Ongoing"}
+            size="small"
+            className={`h-5 text-[9px] font-black uppercase ${params.value ? "!bg-green-100 !text-green-700" :
+              params.value ? "!bg-red-100 !text-red-700" :
+                "!bg-orange-100 !text-orange-700"
+              }`}
+          />
+        )
+      }
+    },
+  ];
   useEffect(() => {
     setUser(localStorage.getItem("user"));
+
+    const fetchAssignments = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/assign/read.php`);
+        if (response.ok) {
+          const data = await response.json();
+          setAssignments(data.records || []);
+        }
+      } catch (error) {
+        console.error("Error fetching assignments:", error);
+      }
+    };
+
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/projects/read.php`);
+        if (response.ok) {
+          const data = await response.json();
+          setGanttData(data.records || []);
+        }
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      }
+    };
+
+    fetchAssignments();
+    fetchProjects();
   }, []);
 
   const ScrollToBottom = () => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+  const ScrollToInventory = () => {
+    inventoryRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
   const [openAddModal, setOpenAddModal] = useState(false);
   const [newAccount, setNewAccount] = useState({
@@ -91,9 +153,10 @@ function DashboardContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col p-6 space-y-8">
+      {"done:" + totalProgress.done}
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-3xl font-bold text-gray-900 capitalize">{user} Dashboard</h1>
-        {(user === "admin" || user === "engineer") && (
+        {(user === "admin") && (
           <div onClick={ScrollToBottom} className="flex cursor-pointer items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-100">
             <span className="text-sm font-medium text-gray-700">Messages:</span>
             <Badge badgeContent={unreadMessages} color="error" max={99}>
@@ -103,19 +166,131 @@ function DashboardContent() {
         )}
       </div>
 
+      <section className="bg-white flex flex-col gap-2 p-6 rounded-lg shadow-sm border border-gray-100">
+        {/* cards */}
+        <div className="flex gap-2 mb-4">
+          {/* Ongoing Projects */}
+          <div className='border-gray-300 border rounded-md flex flex-col w-42 text-black items-center justify-center'>
+            <div className="bg-yellow-200 w-full text-center py-2 rounded-t-md h-18 flex items-center justify-center">
+              Ongoing Projects
+            </div>
+            <div className="py-4 text-xl ">
+              {totalProgress.ongoing}
+            </div>
+          </div>
+          {/* Done Projects */}
+          <div className='border-gray-300 border rounded-md flex flex-col w-42 text-black items-center justify-center'>
+            <div className="bg-green-200 w-full text-center py-2 rounded-t-md h-18 flex items-center justify-center">
+              Finished Projects
+            </div>
+            <div className="py-4 text-xl ">
+              {totalProgress.done}
+            </div>
+          </div>
+          {/* Overdues (equipments or projects) */}
+          <div className='border-gray-300 border rounded-md flex flex-col w-42 text-black items-center justify-center'>
+            <div className="bg-red-200 w-full text-center py-2 rounded-t-md h-18 flex items-center justify-center">
+              Project Overdues
+            </div>
+            <div className="py-4 text-xl ">
+              {totalProgress.overdue}
+            </div>
+          </div>
+          {/* materials request count */}
+          <div className='border-gray-300 border hover:cursor-pointer rounded-md flex flex-col w-42 text-black items-center justify-center'
+            onClick={ScrollToInventory}>
+            <div className="bg-blue-200 w-full text-center py-2 rounded-t-md h-18 flex items-center justify-center">
+              Equipment Requests
+            </div>
+            <div className="py-4 text-xl ">
+              {equipmentCount}
+            </div>
+          </div>
+          {/* Inventory Notifications */}
+          <div className='border-gray-300 border hover:cursor-pointer rounded-md flex flex-col w-42 text-black items-center justify-center'
+            onClick={ScrollToInventory}>
+            <div className="bg-gray-200 w-full text-center py-2 rounded-t-md h-18 flex items-center justify-center">
+              Inventory Notifications
+            </div>
+            <div className="py-4 text-xl ">
+              {materialCount}
+            </div>
+          </div>
+          {/* available employees */}
+          <div className='border-gray-300 border hover:cursor-pointer rounded-md flex flex-col w-42 text-black items-center justify-center'
+            onClick={() => { window.location.href = "/employees" }}>
+            <div className="bg-orange-200 w-full text-center py-2 rounded-t-md h-18 flex items-center justify-center">
+              Available Employees
+            </div>
+            <div className="py-4 text-xl ">
+              {totalProgress.done}
+            </div>
+          </div>
+          {/* Inquiries */}
+          {
+            user == "admin" &&
+            <div className='border-gray-300 border hover:cursor-pointer rounded-md flex flex-col w-42 text-black items-center justify-center'
+              onClick={ScrollToBottom}>
+              <div className="bg-violet-200 w-full text-center py-2 rounded-t-md h-18 flex items-center justify-center">
+                Messages
+              </div>
+              <div className="py-4 text-xl ">
+                {totalProgress.done}
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+      <div className="flex gap-2 w-full">
+        <div className="text-center flex flex-col justify-between font-bold text-black py-2 w-1/5 rounded-lg shadow-sm border border-gray-100">
+          Projects Status
+          <PieChart
+            series={[
+              {
+                data: [
+                  { id: 0, value: (totalProgress.done / (totalProgress.done + totalProgress.ongoing + totalProgress.overdue)) * 100, label: 'Done', color: "#B9F8CF" },
+                  { id: 1, value: (totalProgress.ongoing / (totalProgress.done + totalProgress.ongoing + totalProgress.overdue)) * 100, label: 'Ongoing', color: "#FFF085" },
+                  { id: 2, value: (totalProgress.overdue / (totalProgress.done + totalProgress.ongoing + totalProgress.overdue)) * 100, label: 'Overdue', color: "#FFC9C9" },
+                ],
+              },
+            ]}
+            width={200}
+            height={200}
+          />
+        </div>
+        <div className="text-center pb-10 font-bold text-black py-2 w-2/5 rounded-lg shadow-sm border border-gray-100">
+          Task List
+          <DataGrid
+            rows={[...assignments].sort((a, b) => (a.employee_name || "").localeCompare(b.employee_name || ""))}
+            columns={employeeAssignColumns}
+            pageSizeOptions={[5, 10, 20]}
+            initialState={{
+              pagination: { paginationModel: { pageSize: 5 } },
+            }}
+            disableRowSelectionOnClick
+            sx={{
+              border: 'none',
+              '& .MuiDataGrid-cell:focus': { outline: 'none' },
+            }}
+          />
+        </div>
+        <div className="text-center pb-10 font-bold text-black  w-2/5 rounded-lg shadow-sm border border-gray-100">
+          <GanttChart data={ganttData}></GanttChart>
+        </div>
+      </div>
       <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-        <ProjectsTable user={user} openModal={openModal} setOpenModal={setOpenModal} userData={newAccount} />
+        <ProjectsTable user={user} setTotalProgress={setTotalProgress} openModal={openModal} setOpenModal={setOpenModal} userData={newAccount} />
       </section>
 
       {(user === "admin" || user === "engineer") &&
-        <div>
+        <div ref={inventoryRef} className="scroll-mt-24">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
             <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-              <MaterialsTable user={user} />
+              <MaterialsTable user={user} setCount={setMaterialCount} />
             </section>
 
             <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-              <EquipmentsTable user={user} />
+              <EquipmentsTable user={user} setCount={setEquipmentCount} />
             </section>
           </div>
         </div>

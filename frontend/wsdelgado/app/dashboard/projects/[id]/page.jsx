@@ -25,6 +25,7 @@ import {
 import { ArrowLeft, User, MapPin, Briefcase, CheckCircle2, Image as ImageIcon, Upload, Plus, X, Package } from "lucide-react";
 import { MenuItem, Select, InputLabel, FormControl } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import GanttChart from "@/components/GanttChart";
 import { EquipmentsTable } from "@/components/EquipmentsTable";
 import { TaskModal } from "./components/task.jsx";
 import CreateTask from "./components/create-task.jsx";
@@ -42,7 +43,6 @@ export default function ProjectDetailsPage() {
   const [isAssignTaskModalOpen, setAssignTaskModalOpen] = useState(false);
   const [isStatusModalOpen, setStatusModalOpen] = useState(false);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
-
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [newImage, setNewImage] = useState({ title: "", description: "", url: "" });
 
@@ -241,6 +241,7 @@ export default function ProjectDetailsPage() {
           <Button
             variant="outlined"
             size="small"
+            disabled={params.row.finished}
             onClick={() => { setAssignTaskModalOpen(true); setSelectedTask(params.row) }}
             className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-[10px] py-1 h-7"
           >
@@ -249,6 +250,8 @@ export default function ProjectDetailsPage() {
           <Button
             variant="outlined"
             size="small"
+            disabled={params.row.finished}
+
             onClick={() => { setStatusModalOpen(true); setSelectedTask(params.row) }}
             className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-[10px] py-1 h-7"
           >
@@ -884,6 +887,7 @@ export default function ProjectDetailsPage() {
                 />
               </Box>
             </Card>
+            <GanttChart data={tasks} />
 
             {/* Material Requests Table */}
             <Card className="shadow-sm border border-gray-100 rounded-2xl overflow-hidden mt-6">

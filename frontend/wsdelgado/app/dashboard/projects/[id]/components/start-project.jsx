@@ -72,6 +72,8 @@ export default function StartProject({ project, setProject }) {
                     <TextField
                         label="End Date"
                         type="date"
+                        InputLabelProps={{ shrink: true }}
+                        sx={{ mt: 2 }}
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
                         fullWidth

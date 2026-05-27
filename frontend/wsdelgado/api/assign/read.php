@@ -32,6 +32,7 @@ if($num > 0) {
             "task_name" => isset($task_name) ? $task_name : null,
             "project_id" => $project_id,
             "project_name" => isset($project_name) ? $project_name : null,
+            "is_finish" => isset($is_finish) ? $is_finish : null,
             "created_at" => $created_at
         );
         array_push($history_arr["records"], $history_item);

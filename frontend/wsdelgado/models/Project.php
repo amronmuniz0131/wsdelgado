@@ -5,7 +5,6 @@ class Project {
 
     public $id;
     public $name;
-    public $location;
     public $client;
     public $address;
     public $progress;
@@ -24,7 +23,7 @@ class Project {
     // CREATE
     public function create() {
         $query = "INSERT INTO " . $this->table_name . " 
-                SET name=:name, location=:location, client=:client, 
+                SET name=:name, client=:client, 
                     address=:address, progress=:progress, 
                     foreman_id=:foreman_id, engineer_id=:engineer_id,
                     start_date=:start_date, end_date=:end_date";
@@ -34,7 +33,6 @@ class Project {
         $this->sanitize();
 
         $stmt->bindParam(":name", $this->name);
-        $stmt->bindParam(":location", $this->location);
         $stmt->bindParam(":client", $this->client);
         $stmt->bindParam(":address", $this->address);
         $stmt->bindParam(":progress", $this->progress);
@@ -88,7 +86,7 @@ class Project {
     // UPDATE
     public function update() {
         $query = "UPDATE " . $this->table_name . " 
-                SET name=:name, location=:location, client=:client, 
+                SET name=:name, client=:client, 
                     address=:address, progress=:progress, 
                     foreman_id=:foreman_id, engineer_id=:engineer_id,
                     start_date=:start_date, end_date=:end_date,
@@ -101,7 +99,6 @@ class Project {
         $this->id = htmlspecialchars(strip_tags($this->id));
 
         $stmt->bindParam(":name", $this->name);
-        $stmt->bindParam(":location", $this->location);
         $stmt->bindParam(":client", $this->client);
         $stmt->bindParam(":address", $this->address);
         $stmt->bindParam(":progress", $this->progress);
@@ -133,7 +130,6 @@ class Project {
 
     private function sanitize() {
         $this->name = htmlspecialchars(strip_tags($this->name));
-        $this->location = htmlspecialchars(strip_tags($this->location));
         $this->client = htmlspecialchars(strip_tags($this->client));
         $this->address = htmlspecialchars(strip_tags($this->address));
         $this->progress = htmlspecialchars(strip_tags($this->progress));

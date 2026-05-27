@@ -12,7 +12,6 @@ $data = json_decode(file_get_contents("php://input"));
 
 if(!empty($data->name)){
     $project->name = $data->name;
-    $project->location = $data->location ?? "";
     $project->client = $data->client ?? "";
     $project->address = $data->address ?? "";
     $project->progress = $data->progress ?? 0;
