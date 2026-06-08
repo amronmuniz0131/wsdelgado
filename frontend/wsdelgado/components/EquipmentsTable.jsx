@@ -71,7 +71,9 @@ export function EquipmentsTable(props) {
         if (d.status == "Requested" || (d.status == "In Use" && new Date(d.returnDate) < new Date()))
           count = count + 1
       })
-      props.setCount(count)
+      if (props?.setCount) {
+        props?.setCount(count)
+      }
       setEquipments(records);
     } catch (error) {
       console.error("Error fetching equipments:", error);
