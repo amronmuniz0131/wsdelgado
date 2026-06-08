@@ -25,7 +25,7 @@ export function TaskModal(props) {
     })
     const handleChange = (event) => {
         const { target: { value } } = event;
-        setTaskData({ ...taskData, employee_id: typeof value === 'string' ? value.split(',') : value })
+        setTaskData({ ...taskData, employee_id: typeof value == 'string' ? value.split(',') : value })
     }
     const [employees, setEmployees] = useState([])
     const fetchEmployees = async () => {
@@ -100,12 +100,12 @@ export function TaskModal(props) {
                         onChange={handleChange}
                         label="Employee Name"
                         renderValue={(selected) =>
-                            selected.map(id => employees.find(emp => emp.id === id)?.name || id).join(', ')
+                            selected.map(id => employees.find(emp => emp.id == id)?.name || id).join(', ')
                         }
                     >
                         {employees
                             .filter(emp =>
-                                (emp.position?.toLowerCase() !== "engineer" && emp.position?.toLowerCase() !== "foreman" && emp.position?.toLowerCase() !== "admin" && emp.project_id_task === null) ||
+                                (emp.position?.toLowerCase() !== "engineer" && emp.position?.toLowerCase() !== "foreman" && emp.position?.toLowerCase() !== "admin" && emp.project_id_task == null) ||
                                 emp.is_finished !== 0
                             )
                             .map((employee, index) => (

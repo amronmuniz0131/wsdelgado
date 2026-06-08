@@ -142,7 +142,7 @@ function DashboardContent() {
         handleCloseAdd();
       } else {
         const error = await response.json();
-        if (error.error === 401) {
+        if (error.error == 401) {
           setOpenModal(true)
           setOpenAddModal(false)
         }
@@ -157,7 +157,7 @@ function DashboardContent() {
       {"done:" + totalProgress.done}
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-3xl font-bold text-gray-900 capitalize">{user} Dashboard</h1>
-        {(user === "admin") && (
+        {(user == "admin") && (
           <div onClick={ScrollToBottom} className="flex cursor-pointer items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-100">
             <span className="text-sm font-medium text-gray-700">Messages:</span>
             <Badge badgeContent={unreadMessages} color="error" max={99}>
@@ -283,7 +283,7 @@ function DashboardContent() {
         <ProjectsTable user={user} employee_count={setEmployeeCount} setTotalProgress={setTotalProgress} openModal={openModal} setOpenModal={setOpenModal} userData={newAccount} />
       </section>
 
-      {(user === "admin" || user === "engineer") &&
+      {(user == "admin" || user == "engineer") &&
         <div ref={inventoryRef} className="scroll-mt-24">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
             <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
@@ -297,7 +297,7 @@ function DashboardContent() {
         </div>
       }
 
-      {user === "admin" && (
+      {user == "admin" && (
         <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 mt-8" ref={bottomRef}>
           <InquiriesList openModal={handleOpenAdd} setNewAccount={setNewAccount} user={user} onUnreadCountChange={setUnreadMessages} />
         </section>

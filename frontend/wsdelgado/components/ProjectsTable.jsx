@@ -72,10 +72,10 @@ export function ProjectsTable(props) {
       let arr = []
       setEmployees(data.records || []);
       data.records.map((d) => {
-        if (d.position?.toLowerCase() === "engineer") {
+        if (d.position?.toLowerCase() == "engineer") {
           arr.push(d)
         }
-        if (d.project_id === null || d.is_finished) {
+        if (d.project_id == null || d.is_finished) {
           count = count + 1
         }
       })
@@ -115,7 +115,7 @@ export function ProjectsTable(props) {
   useEffect(() => {
     if (props.userData) {
       users.map((d) => {
-        if (props.userData.email === d.email) {
+        if (props.userData.email == d.email) {
           setNewProject((prev) => ({ ...prev, client: d.id }));
         }
       })
@@ -279,7 +279,7 @@ export function ProjectsTable(props) {
 
         // Update Foreman
         if (newProject.foremanId) {
-          const foreman = employees.find((e) => e.id === newProject.foremanId);
+          const foreman = employees.find((e) => e.id == newProject.foremanId);
           if (foreman) {
             await fetch(`${API_BASE_URL}/employees/update.php`, {
               method: "POST",
@@ -295,7 +295,7 @@ export function ProjectsTable(props) {
 
         // Update Engineer
         if (newProject.engineerId) {
-          const engineer = engineers.find((e) => e.id === newProject.engineerId);
+          const engineer = engineers.find((e) => e.id == newProject.engineerId);
           if (engineer) {
             await fetch(`${API_BASE_URL}/employees/update.php`, {
               method: "POST",
@@ -323,16 +323,16 @@ export function ProjectsTable(props) {
   };
 
   const filteredProjects = React.useMemo(() => {
-    if (props.user === "admin") return projects;
+    if (props.user == "admin") return projects;
     if (!userData) return [];
 
     return projects.filter((project) => {
-      if (props.user === "engineer") {
+      if (props.user == "engineer") {
         const engineerName = project.engineerName || project.engineer;
-        return engineerName === userData.name;
+        return engineerName == userData.name;
       }
-      if (props.user === "user") {
-        return project.clientName === userData.name;
+      if (props.user == "user") {
+        return project.clientName == userData.name;
       }
       return false;
     });
@@ -348,7 +348,7 @@ export function ProjectsTable(props) {
         >
           Ongoing Projects
         </Typography>
-        {props.user === "admin" && (
+        {props.user == "admin" && (
           <Button
             variant="contained"
             color="primary"
@@ -440,7 +440,7 @@ export function ProjectsTable(props) {
               </MenuItem>
               {employees
                 .filter((emp) =>
-                  emp.position?.toLowerCase().includes("foreman") && emp.assignedProjectId === null
+                  emp.position?.toLowerCase().includes("foreman") && emp.assignedProjectId == null
                 )
                 .map((emp) => (
                   <MenuItem key={emp.id} value={emp.id}>

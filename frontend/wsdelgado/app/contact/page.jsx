@@ -139,10 +139,10 @@ export default function ContactPage() {
               <div className="pt-4">
                 <button
                   type="submit"
-                  disabled={status === "Sending..."}
+                  disabled={status == "Sending..."}
                   className="w-full bg-gray-200 text-gray-900 py-3 px-6 rounded-none text-sm font-bold uppercase tracking-wider hover:bg-gray-300 transition-colors border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {status === "Sending..." ? "Sending..." : "Send Message"}
+                  {status == "Sending..." ? "Sending..." : "Send Message"}
                 </button>
                 {status && status !== "Sending..." && (
                   <p className={`mt-4 text-sm font-medium ${status.includes("success") ? "text-green-600" : "text-rose-600"}`}>

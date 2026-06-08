@@ -41,7 +41,7 @@ class User {
         try {
             if($stmt->execute()) {
                 // Automatically create an employee profile for engineers and admins
-                if ($this->role === 'engineer' || $this->role === 'admin') {
+                if ($this->role == 'engineer' || $this->role == 'admin') {
                     include_once 'Employee.php';
                     $employee = new Employee($this->conn);
                     $employee->name = $this->name;

@@ -34,7 +34,7 @@ export default function UpdateTaskStatus({ isOpen, handleClose, task, onUpdate }
         finished: newTotal,
       };
 
-      if (newTotal === Number(task.quantity)) {
+      if (newTotal == Number(task.quantity)) {
         // payload.end_date = new Date().toISOString().split('T')[0];
       }
 

@@ -74,13 +74,13 @@ export function MaterialsTable(props) {
   const [requestCount, setCount] = useState({})
 
   useEffect(() => {
-    if (props.user === "admin") {
+    if (props.user == "admin") {
       let objectCount = 0
       let obj = {}
       materials.map((data) => {
         let count = 0;
         requests.map((req) => {
-          if (req.material_id === data.id && req.is_approve === "Pending") {
+          if (req.material_id == data.id && req.is_approve == "Pending") {
             count++;
           }
         })
@@ -156,7 +156,7 @@ export function MaterialsTable(props) {
     // Check if the material already exists based on name (case-insensitive)
     if (!payload.id) {
       const existingMaterial = materials.find(
-        (m) => m.name && payload.name && m.name.toLowerCase().trim() === payload.name.toLowerCase().trim()
+        (m) => m.name && payload.name && m.name.toLowerCase().trim() == payload.name.toLowerCase().trim()
       );
 
       if (existingMaterial) {
@@ -227,7 +227,7 @@ export function MaterialsTable(props) {
 
       if (updateReqResponse.ok) {
         // 2. Deduct quantity from material
-        const material = materials.find(m => m.id === req.material_id);
+        const material = materials.find(m => m.id == req.material_id);
         if (material) {
           const newQuantity = Math.max(0, parseInt(material.quantity) - parseInt(req.quantity));
           const updateMatResponse = await fetch(`${API_BASE_URL}/materials/update.php`, {
@@ -327,19 +327,19 @@ export function MaterialsTable(props) {
           <Button
             variant="contained"
             onClick={() => { openTable(true); setCurrentMaterial(params.row.id) }}
-            disabled={props.user === "engineer"}
+            disabled={props.user == "engineer"}
             className="relative bg-blue-600 !text-2xs hover:bg-blue-700"
             size="small"
           >
             View More
-            {props.user === "admin" && requestCount[params.row.name] !== 0 &&
+            {props.user == "admin" && requestCount[params.row.name] !== 0 &&
               <span className="absolute -top-1 -right-2 h-4 w-4 text-xs animate-bounce rounded-full bg-red-400">{requestCount[params.row.name]}</span>
             }
           </Button>
           <Button
             variant="contained"
             onClick={() => handleOpen(params.row)}
-            disabled={props.user === "engineer"}
+            disabled={props.user == "engineer"}
             className="bg-blue-600 !text-2xs hover:bg-blue-700"
             size="small"
           >
@@ -362,7 +362,7 @@ export function MaterialsTable(props) {
             Construction Materials Inventory
           </Typography>
         </Box>
-        {(props.user === "admin") && (
+        {(props.user == "admin") && (
           <Button
             variant="contained"
             color="primary"
@@ -472,7 +472,7 @@ export function MaterialsTable(props) {
           </Button>
 
           <Box className="flex gap-2">
-            {props.user === "admin" ? (
+            {props.user == "admin" ? (
               <>
                 {materialRequest.id ? (
                   <>
@@ -538,7 +538,7 @@ export function MaterialsTable(props) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {requests.length === 0 ? (
+                {requests.length == 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center" className="py-8">
                       No material requests found.
@@ -547,7 +547,7 @@ export function MaterialsTable(props) {
                 ) : (
                   requests.map((req) => (
 
-                    req.material_id === currentMaterial && (
+                    req.material_id == currentMaterial && (
                       <TableRow key={req.id} hover>
                         <TableCell>{req.project_name || req.project_id}</TableCell>
                         <TableCell>{req.engineer_name || req.engineer_id}</TableCell>
@@ -558,15 +558,15 @@ export function MaterialsTable(props) {
                           <Chip
                             label={req.is_approve}
                             size="small"
-                            color={req.is_approve === "Approve" ? "success" : req.is_approve === "Reject" ? "error" : "warning"}
+                            color={req.is_approve == "Approve" ? "success" : req.is_approve == "Reject" ? "error" : "warning"}
                           />
                         </TableCell>
                         <TableCell align="center">
-                          {req.is_approve === "Pending" && props.user === "admin" && (
+                          {req.is_approve == "Pending" && props.user == "admin" && (
                             <Box className="flex gap-1 justify-center">
                               {(() => {
                                 let isInsufficient = false;
-                                const currentMat = materials.find(m => m.id === req.material_id);
+                                const currentMat = materials.find(m => m.id == req.material_id);
                                 if (currentMat) {
                                   isInsufficient = parseInt(currentMat.quantity) < parseInt(req.quantity);
                                 }

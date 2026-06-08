@@ -225,7 +225,7 @@ function ReportsContent() {
       width: 130,
       renderCell: (params) => (
         <Box className="flex items-center h-full">
-          <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${params.value === 'In Use' ? 'bg-blue-100 text-blue-700' : params.value === 'Available' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+          <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${params.value == 'In Use' ? 'bg-blue-100 text-blue-700' : params.value == 'Available' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
             {params.value}
           </span>
         </Box>
@@ -279,7 +279,7 @@ function ReportsContent() {
       width: 120,
       renderCell: (params) => (
         <Box className="flex items-center h-full">
-          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${params.value === 'Approve' ? 'bg-green-100 text-green-700' : params.value === 'Reject' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${params.value == 'Approve' ? 'bg-green-100 text-green-700' : params.value == 'Reject' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
             {params.value || "Pending"}
           </span>
         </Box>
@@ -338,7 +338,7 @@ function ReportsContent() {
         <Grid container spacing={3} className="mb-8 w-full">
           {[
             { label: "Active Projects", value: projects.length, icon: TrendingUp, color: "bg-blue-50 text-blue-600 border-blue-100" },
-            { label: "Machinery in Use", value: equipments.filter(e => e.status === "In Use").length, icon: HardHat, color: "bg-emerald-50 text-emerald-600 border-emerald-100" },
+            { label: "Machinery in Use", value: equipments.filter(e => e.status == "In Use").length, icon: HardHat, color: "bg-emerald-50 text-emerald-600 border-emerald-100" },
             { label: "Stock Alerts", value: materials.filter(m => (m.quantity / m.max_stock) < 0.2).length, icon: Package, color: "bg-amber-50 text-amber-600 border-amber-100" },
             { label: "Total Workforce", value: employees.length, icon: Users, color: "bg-violet-50 text-violet-600 border-violet-100" },
           ].map((stat, idx) => (

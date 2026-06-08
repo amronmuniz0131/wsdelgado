@@ -40,7 +40,7 @@ export function InquiriesList({ openModal, setNewAccount, user, onUnreadCountCha
   };
 
   useEffect(() => {
-    if (user === "admin") {
+    if (user == "admin") {
       fetchInquiries();
     }
   }, [user]);

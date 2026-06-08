@@ -5,7 +5,7 @@ import "gantt-task-react/dist/index.css";
 
 export default function GanttChart({ data }) {
   const tasks = useMemo(() => {
-    if (!data || data.length === 0) return [];
+    if (!data || data.length == 0) return [];
 
     return data.map((item, index) => {
       let start = item.start_date ? new Date(item.start_date) : new Date();
@@ -32,7 +32,7 @@ export default function GanttChart({ data }) {
     });
   }, [data]);
 
-  if (tasks.length === 0) {
+  if (tasks.length == 0) {
     return (
       <div className="flex items-center justify-center p-8 bg-gray-50 border border-gray-100 rounded-md text-gray-500">
         No project data available to display in Gantt Chart.

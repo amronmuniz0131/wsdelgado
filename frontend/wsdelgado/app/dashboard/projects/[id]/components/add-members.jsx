@@ -95,7 +95,7 @@ export default function AddMembers({ isOpen, handleClose, projectId, onUpdate })
           variant="outlined"
           className="mt-2"
         >
-          {employees.length === 0 ? (
+          {employees.length == 0 ? (
             <MenuItem disabled>No available employees found</MenuItem>
           ) : (
             employees.map((emp) => (

@@ -65,7 +65,7 @@ export function EquipmentsTable(props) {
       const data = await response.json();
       let records = data.records || [];
       if (props.projectId) {
-        records = data.records.filter(e => String(e.projectId) === String(props.projectId));
+        records = data.records.filter(e => String(e.projectId) == String(props.projectId));
       }
       data.records.map((d) => {
         if (d.status == "Requested" || (d.status == "In Use" && new Date(d.returnDate) < new Date()))
@@ -299,7 +299,7 @@ export function EquipmentsTable(props) {
       filterOperators: filteredOperators,
       renderCell: (params) => {
         let status = params.row.status;
-        if (status === "In Use" && params.row.returnDate) {
+        if (status == "In Use" && params.row.returnDate) {
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           const rDate = new Date(params.row.returnDate);
@@ -350,18 +350,18 @@ export function EquipmentsTable(props) {
           >
             Edit
           </Button>
-          {params.row.status !== "Maintenance" && props.user === "admin" && (
+          {params.row.status !== "Maintenance" && props.user == "admin" && (
             <Button
               variant="outlined"
               onClick={() => handleMaintenance(params.row.id)}
               className="border-red-600 text-red-600 hover:bg-red-50 !text-2xs"
               size="small"
-              disabled={params.row.status === "In Use"}
+              disabled={params.row.status == "In Use"}
             >
               Maint.
             </Button>
           )}
-          {params.row.status === "Maintenance" && props.user === "admin" && (
+          {params.row.status == "Maintenance" && props.user == "admin" && (
             <Button
               variant="outlined"
               onClick={() => handleEndMaintenance(params.row.id)}
@@ -371,7 +371,7 @@ export function EquipmentsTable(props) {
               End Maint.
             </Button>
           )}
-          {params.row.status === "In Use" && props.user === "admin" && (
+          {params.row.status == "In Use" && props.user == "admin" && (
             <Button
               variant="outlined"
               onClick={() => handleReturn(params.row.id)}
@@ -398,7 +398,7 @@ export function EquipmentsTable(props) {
             Construction Equipments
           </Typography>
         </Box>
-        {props.user === "admin" && !props.projectId && (
+        {props.user == "admin" && !props.projectId && (
           <Button
             variant="contained"
             color="primary"
@@ -536,7 +536,7 @@ export function EquipmentsTable(props) {
                 </Box>
               </Box>
 
-              {equipmentRequest.status === "Requested" && props.user === "admin" && (
+              {equipmentRequest.status == "Requested" && props.user == "admin" && (
                 <Box className="flex gap-2 pt-2 border-t border-blue-100">
                   <Button
                     onClick={handleApprove}
@@ -571,7 +571,7 @@ export function EquipmentsTable(props) {
           </Button>
 
           <Box className="flex gap-2">
-            {props.user === "admin" ? (
+            {props.user == "admin" ? (
               <>
                 {equipmentRequest.id ? (
                   <>

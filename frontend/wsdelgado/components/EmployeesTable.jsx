@@ -181,13 +181,13 @@ export function EmployeesTable() {
       if (response.ok) {
         // Sync project assignment for Engineers and Foremen
         const pos = editingEmployee.position?.toLowerCase();
-        if ((pos === "engineer" || pos === "foreman") && editingEmployee.assignedProjectId !== prevProject) {
+        if ((pos == "engineer" || pos == "foreman") && editingEmployee.assignedProjectId !== prevProject) {
           // 1. Clear from previous project
           if (prevProject) {
             try {
               const clearPayload = { id: prevProject };
-              if (pos === "engineer") clearPayload.engineer_id = null;
-              if (pos === "foreman") clearPayload.foreman_id = null;
+              if (pos == "engineer") clearPayload.engineer_id = null;
+              if (pos == "foreman") clearPayload.foreman_id = null;
 
               await fetch(`${API_BASE_URL}/projects/update.php`, {
                 method: "POST",
@@ -202,10 +202,10 @@ export function EmployeesTable() {
           // 2. Assign to new project
           if (editingEmployee.assignedProjectId) {
             try {
-              const targetProject = projects.find(p => String(p.id) === String(editingEmployee.assignedProjectId));
+              const targetProject = projects.find(p => String(p.id) == String(editingEmployee.assignedProjectId));
               // If the project already has an engineer, unassign the old one
               const oldEngineer = employees.find((d) => {
-                return d.assignedProjectId === targetProject.id && d.position === "engineer"
+                return d.assignedProjectId == targetProject.id && d.position == "engineer"
               });
               console.log(oldEngineer)
               if (oldEngineer) {
@@ -221,8 +221,8 @@ export function EmployeesTable() {
               }
 
               const projectUpdatePayload = { id: editingEmployee.assignedProjectId };
-              if (pos === "engineer") projectUpdatePayload.engineer_id = editingEmployee.id;
-              if (pos === "foreman") projectUpdatePayload.foreman_id = editingEmployee.id;
+              if (pos == "engineer") projectUpdatePayload.engineer_id = editingEmployee.id;
+              if (pos == "foreman") projectUpdatePayload.foreman_id = editingEmployee.id;
 
               await fetch(`${API_BASE_URL}/projects/update.php`, {
                 method: "POST",
@@ -287,7 +287,7 @@ export function EmployeesTable() {
       renderCell: (params) => {
         return (
           <Typography className="h-full flex items-center justify-center">
-            {params.row.position.toLowerCase() === 'engineer' || params.row.position.toLowerCase() === 'foreman'
+            {params.row.position.toLowerCase() == 'engineer' || params.row.position.toLowerCase() == 'foreman'
               ? params.row.assignedProject
               : params.row.tasks && params.row.is_finished
                 ? ''
@@ -314,15 +314,15 @@ export function EmployeesTable() {
       renderCell: (params) => (
         <Box className="flex items-center justify-center h-full">
           <Chip
-            label={getStatusLabel(params.row.position.toLowerCase() === 'engineer' || params.row.position.toLowerCase() === 'foreman'
-              ? params.row.assignedProjectId === null
+            label={getStatusLabel(params.row.position.toLowerCase() == 'engineer' || params.row.position.toLowerCase() == 'foreman'
+              ? params.row.assignedProjectId == null
                 ? "available"
                 : 'assigned'
               : (params.row.tasks && params.row.is_finished)
                 ? "available"
                 : "assigned")}
-            color={getStatusColor(params.row.position.toLowerCase() === 'engineer' || params.row.position.toLowerCase() === 'foreman'
-              ? params.row.assignedProjectId === null
+            color={getStatusColor(params.row.position.toLowerCase() == 'engineer' || params.row.position.toLowerCase() == 'foreman'
+              ? params.row.assignedProjectId == null
                 ? "available"
                 : 'assigned'
               : (params.row.tasks && params.row.is_finished)
@@ -335,7 +335,7 @@ export function EmployeesTable() {
         </Box>
       ),
     },
-    ...(user === "admin" ? [{
+    ...(user == "admin" ? [{
       field: "actions",
       headerName: "ACTION",
       width: 120,
@@ -500,7 +500,7 @@ export function EmployeesTable() {
                   <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Current Position</Typography>
                   <Typography className="text-gray-800 font-bold">{selectedEmployee.position}</Typography>
                 </Box>
-                {userRole.toLowerCase() === "admin" && (
+                {userRole.toLowerCase() == "admin" && (
                   <Box>
                     <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Assigned Project</Typography>
                     <Typography className="text-gray-800 font-bold text-blue-600 italic underline decoration-blue-200 decoration-4 underline-offset-4" disabled={selectedEmployee.position.toLowerCase() !== "engineer"}>{selectedEmployee.assignedProject}</Typography>
@@ -608,7 +608,7 @@ export function EmployeesTable() {
                 )
               ))}
             </TextField>
-            {newEmployee.position === 'engineer' || newEmployee.position === 'foreman' && (
+            {newEmployee.position == 'engineer' || newEmployee.position == 'foreman' && (
               <TextField
                 margin="dense"
                 name="assignedProject"
@@ -727,7 +727,7 @@ export function EmployeesTable() {
                   )
                 ))}
               </TextField>
-              {(editingEmployee.position.toLowerCase() === "engineer" || editingEmployee.position.toLowerCase() === "foreman") && (
+              {(editingEmployee.position.toLowerCase() == "engineer" || editingEmployee.position.toLowerCase() == "foreman") && (
                 <TextField
                   margin="dense"
                   name="assignedProjectId"
