@@ -32,6 +32,15 @@ if(!empty($data->id)) {
     if (property_exists($data, 'end_date')) {
         $task->end_date = $data->end_date;
     }
+    if (property_exists($data, 'actual_end')) {
+        $task->actual_end = $data->actual_end;
+    }
+    if (property_exists($data, 'proof_image')) {
+        $task->proof_image = $data->proof_image;
+    }
+    if (property_exists($data, 'notes')) {
+        $task->notes = $data->notes;
+    }
     if (property_exists($data, 'quantity')) {
         $task->quantity = $data->quantity;
     }

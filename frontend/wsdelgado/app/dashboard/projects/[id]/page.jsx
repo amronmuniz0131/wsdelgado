@@ -42,6 +42,10 @@ export default function ProjectDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAssignTaskModalOpen, setAssignTaskModalOpen] = useState(false);
   const [isStatusModalOpen, setStatusModalOpen] = useState(false);
+  const [isStartTaskModalOpen, setIsStartTaskModalOpen] = useState(false);
+  const [startTaskData, setStartTaskData] = useState({ start_date: "", end_date: "" });
+  const [isViewTaskModalOpen, setIsViewTaskModalOpen] = useState(false);
+  const [taskHistory, setTaskHistory] = useState([]);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [newImage, setNewImage] = useState({ title: "", description: "", url: "" });
@@ -229,10 +233,10 @@ export default function ProjectDetailsPage() {
         />
       )
     },
-    ...(userRole === "engineer" && project?.completion_date === null ? [{
+    {
       field: "actions",
       headerName: "Actions",
-      width: 180,
+      width: 230,
       align: 'right',
       headerAlign: 'right',
       sortable: false,
@@ -241,25 +245,51 @@ export default function ProjectDetailsPage() {
           <Button
             variant="outlined"
             size="small"
-            disabled={params.row.finished}
-            onClick={() => { setAssignTaskModalOpen(true); setSelectedTask(params.row) }}
+            onClick={() => { setIsViewTaskModalOpen(true); setSelectedTask(params.row) }}
             className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-[10px] py-1 h-7"
           >
-            Assign
+            View
           </Button>
-          <Button
-            variant="outlined"
-            size="small"
-            disabled={params.row.finished}
+          {userRole === "engineer" && project?.completion_date === null && (
+            <>
+              <Button
+                variant="outlined"
+                size="small"
+                disabled={params.row.finished}
 
-            onClick={() => { setStatusModalOpen(true); setSelectedTask(params.row) }}
-            className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-[10px] py-1 h-7"
-          >
-            Done
-          </Button>
+                onClick={() => { setAssignTaskModalOpen(true); setSelectedTask(params.row) }}
+                className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-[10px] py-1 h-7"
+              >
+                Assign
+              </Button>
+              {params.row.start_date == "0000-00-00 00:00:00" ? (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={params.row.finished}
+
+                  onClick={() => { setIsStartTaskModalOpen(true); setSelectedTask(params.row); const endDate = params.row.end_date?.slice(0, 10); setStartTaskData({ start_date: "", end_date: endDate && endDate !== "0000-00-00" ? endDate : "" }) }}
+                  className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-[10px] py-1 h-7"
+                >
+                  Start
+                </Button>
+              ) : (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={params.row.finished}
+
+                  onClick={() => { setStatusModalOpen(true); setSelectedTask(params.row) }}
+                  className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-[10px] py-1 h-7"
+                >
+                  Done
+                </Button>
+              )}
+            </>
+          )}
         </Box>
       )
-    }] : [])
+    }
   ];
 
   const fetchProjectDetails = async () => {
@@ -353,6 +383,24 @@ export default function ProjectDetailsPage() {
       console.error("Error fetching tasks:", error);
     }
   };
+
+  const fetchTaskHistory = async (taskId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/assign/read.php?task_id=${taskId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setTaskHistory(data.records || []);
+      }
+    } catch (error) {
+      console.error("Error fetching task history:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (isViewTaskModalOpen && selectedTask) {
+      fetchTaskHistory(selectedTask.id);
+    }
+  }, [isViewTaskModalOpen, selectedTask]);
 
   const fetchAssign = async () => {
     try {
@@ -629,6 +677,41 @@ export default function ProjectDetailsPage() {
       }
     } catch (error) {
       console.error("Error deleting task:", error);
+    }
+  };
+
+  const handleStartTaskSubmit = async () => {
+    if (!startTaskData.start_date || !startTaskData.end_date) {
+      DangerToast("Please fill in all fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/tasks/update.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: selectedTask.id,
+          start_date: startTaskData.start_date,
+          end_date: startTaskData.end_date
+        }),
+      });
+
+      if (response.ok) {
+        SuccessToast("Task started successfully!");
+        setIsStartTaskModalOpen(false);
+        fetchTasks();
+        fetchProjectDetails();
+      } else {
+        const error = await response.json();
+        DangerToast(`Failed to start task: ${error.message}`);
+      }
+    } catch (error) {
+      console.error("Error starting task:", error);
+      DangerToast("An error occurred while starting the task.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1148,6 +1231,167 @@ export default function ProjectDetailsPage() {
           fetchProjectDetails();
         }}
       />
+
+      {/* Start Task Modal */}
+      <Dialog
+        open={isStartTaskModalOpen}
+        onClose={() => setIsStartTaskModalOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ className: "rounded-2xl" }}
+      >
+        <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 pb-4">
+          Start Task
+        </DialogTitle>
+        <DialogContent className="pt-6 space-y-4">
+          <Typography variant="body2" className="text-gray-600 !mb-4">
+            Set the schedule for: <span className="font-bold text-blue-600">{selectedTask?.name}</span>
+          </Typography>
+          <TextField
+            label="Start Date"
+            type="datetime-local"
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+            variant="outlined"
+            value={startTaskData.start_date}
+            onChange={(e) => setStartTaskData({ ...startTaskData, start_date: e.target.value })}
+            required
+          />
+          <TextField
+            label="End Date"
+            type="datetime-local"
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+            variant="outlined"
+            value={startTaskData.end_date}
+            onChange={(e) => setStartTaskData({ ...startTaskData, end_date: e.target.value })}
+            required
+          />
+        </DialogContent>
+        <DialogActions className="p-4 border-t border-gray-100">
+          <Button onClick={() => setIsStartTaskModalOpen(false)} color="inherit">Cancel</Button>
+          <Button
+            onClick={handleStartTaskSubmit}
+            variant="contained"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={isSubmitting || !startTaskData.start_date || !startTaskData.end_date}
+          >
+            {isSubmitting ? <CircularProgress size={24} /> : "Start Task"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* View Task Modal */}
+      <Dialog
+        open={isViewTaskModalOpen}
+        onClose={() => setIsViewTaskModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ className: "rounded-2xl" }}
+      >
+        <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 pb-4">
+          Task Details
+        </DialogTitle>
+        <DialogContent className="!pt-5">
+          {selectedTask && (
+            <Box className="space-y-5">
+              {/* Task info */}
+              <Box>
+                <Typography variant="h6" className="font-black text-gray-900">{selectedTask.name}</Typography>
+                <Box className="flex gap-2 mt-2">
+                  <Chip
+                    label={selectedTask.severity === 1 ? "Low" : selectedTask.severity === 2 ? "Medium" : "High"}
+                    size="small"
+                    className={`h-5 text-[9px] font-black uppercase ${selectedTask.severity === 1 ? "!bg-green-100 !text-green-700" : selectedTask.severity === 2 ? "!bg-yellow-100 !text-yellow-700" : "!bg-red-100 !text-red-700"}`}
+                  />
+                  <Chip
+                    label={selectedTask.status === 0 ? "Pending" : selectedTask.finished < selectedTask.quantity ? "In Progress" : "Completed"}
+                    size="small"
+                    className={`h-5 text-[9px] font-black uppercase ${selectedTask.status === 0 ? "!bg-red-100 !text-red-700" : selectedTask.finished < selectedTask.quantity ? "!bg-blue-100 !text-blue-700" : "!bg-green-100 !text-green-700"}`}
+                  />
+                </Box>
+              </Box>
+
+              <Box className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl">
+                <Box>
+                  <Typography variant="caption" className="text-gray-400 font-bold uppercase text-[10px] block">Start Date</Typography>
+                  <Typography variant="body2" className="font-bold text-gray-700">
+                    {selectedTask.start_date && selectedTask.start_date !== "0000-00-00 00:00:00" ? selectedTask.start_date : "Not started"}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" className="text-gray-400 font-bold uppercase text-[10px] block">Target End</Typography>
+                  <Typography variant="body2" className="font-bold text-gray-700">
+                    {selectedTask.end_date && selectedTask.end_date !== "0000-00-00 00:00:00" ? selectedTask.end_date : "TBA"}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" className="text-gray-400 font-bold uppercase text-[10px] block">Actual End</Typography>
+                  <Typography variant="body2" className="font-bold text-gray-700">
+                    {selectedTask.actual_end && selectedTask.actual_end !== "0000-00-00 00:00:00" ? selectedTask.actual_end : "—"}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" className="text-gray-400 font-bold uppercase text-[10px] block">Progress</Typography>
+                  <Typography variant="body2" className="font-bold text-gray-700">
+                    {selectedTask.finished} / {selectedTask.quantity}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {selectedTask.notes && (
+                <Box>
+                  <Typography variant="caption" className="text-gray-400 font-bold uppercase text-[10px] block">Notes</Typography>
+                  <Typography variant="body2" className="text-gray-700 bg-blue-50/50 p-3 rounded-lg">{selectedTask.notes}</Typography>
+                </Box>
+              )}
+
+              {/* Proof image */}
+              {selectedTask.proof_image && (
+                <Box>
+                  <Typography variant="caption" className="text-gray-400 font-bold uppercase text-[10px] block !mb-1">Proof of Completion</Typography>
+                  <Box
+                    component="img"
+                    src={selectedTask.proof_image}
+                    alt="Task proof"
+                    className="w-full rounded-xl border border-gray-200 cursor-pointer"
+                    onClick={() => window.open(selectedTask.proof_image, "_blank")}
+                  />
+                </Box>
+              )}
+
+              {/* Assigned employees history */}
+              <Box>
+                <Typography variant="caption" className="text-gray-400 font-bold uppercase text-[10px] block !mb-2">
+                  Assigned Employees ({taskHistory.length})
+                </Typography>
+                {taskHistory.length === 0 ? (
+                  <Typography variant="body2" className="text-gray-400 italic">No employees assigned yet.</Typography>
+                ) : (
+                  <Box className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                    {taskHistory.map((h) => (
+                      <Box key={h.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                        <Box className="flex items-center gap-2">
+                          <User size={14} className="text-blue-500" />
+                          <Typography variant="body2" className="font-bold text-gray-700">{h.employee_name || `Employee #${h.employee_id}`}</Typography>
+                        </Box>
+                        <Typography variant="caption" className="text-gray-400">
+                          {new Date(h.created_at).toLocaleString()}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions className="p-4 border-t border-gray-100">
+          <Button onClick={() => setIsViewTaskModalOpen(false)} variant="contained" className="bg-gray-600 hover:bg-gray-700 rounded-lg">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
       <AddMembers
         isOpen={isAddMemberModalOpen}
         handleClose={() => setIsAddMemberModalOpen(false)}
