@@ -32,6 +32,9 @@ if(!empty($data->id)) {
     if (property_exists($data, 'is_approve')) {
         $request->is_approve = $data->is_approve;
     }
+    if (property_exists($data, 'notes')) {
+        $request->notes = $data->notes;
+    }
 
     if($request->update()) {
         http_response_code(200);

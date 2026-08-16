@@ -323,7 +323,15 @@ export function ProjectsTable(props) {
   };
 
   const filteredProjects = React.useMemo(() => {
-    if (props.user === "admin") return projects;
+    if (props.user === "admin") {
+      let arr = []
+      projects.forEach((project) => {
+        if (project.completion_date === null) {
+          arr.push(project);
+        }
+      })
+      return arr;
+    };
     if (!userData) return [];
 
     return projects.filter((project) => {

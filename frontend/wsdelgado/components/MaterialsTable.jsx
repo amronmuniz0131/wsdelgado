@@ -55,7 +55,8 @@ export function MaterialsTable(props) {
     siteLocation: "",
     status: "In Stock",
     price: "",
-    is_approved: 0
+    is_approved: 0,
+    uom: "",
   });
 
   const fetchMaterials = async () => {
@@ -108,7 +109,8 @@ export function MaterialsTable(props) {
         siteLocation: material.siteLocation || "",
         status: material.status || "",
         price: material.price || "",
-        is_approved: material.is_approved || 0
+        is_approved: material.is_approved || 0,
+        uom: material.uom || "",
       });
     } else {
       setMaterialRequest({
@@ -120,7 +122,8 @@ export function MaterialsTable(props) {
         siteLocation: "",
         status: "In Stock",
         price: "",
-        is_approved: 0
+        is_approved: 0,
+        uom: "",
       });
     }
     setOpen(true);
@@ -137,7 +140,8 @@ export function MaterialsTable(props) {
       siteLocation: "",
       status: "In Stock",
       price: "",
-      is_approved: 0
+      is_approved: 0,
+      uom: "",
     });
   };
 
@@ -196,6 +200,8 @@ export function MaterialsTable(props) {
   };
 
   const [table, openTable] = useState(false);
+  const [rejectTarget, setRejectTarget] = useState(null);
+  const [rejectNotes, setRejectNotes] = useState("");
 
   const fetchRequests = async () => {
     try {
@@ -235,7 +241,8 @@ export function MaterialsTable(props) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               ...material,
-              quantity: newQuantity
+              quantity: newQuantity,
+              uom: material.uom || "",
             }),
           });
 
@@ -253,14 +260,15 @@ export function MaterialsTable(props) {
     }
   };
 
-  const handleRejectRequest = async (req) => {
+  const handleRejectRequest = async (req, notes = "") => {
     try {
       const response = await fetch(`${API_BASE_URL}/request/update.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...req,
-          is_approve: "Reject"
+          is_approve: "Reject",
+          notes
         }),
       });
 
@@ -271,6 +279,25 @@ export function MaterialsTable(props) {
     } catch (error) {
       console.error("Error rejecting request:", error);
     }
+  };
+
+  const handleOpenReject = (req) => {
+    setRejectTarget(req);
+    setRejectNotes("");
+  };
+
+  const handleCloseReject = () => {
+    setRejectTarget(null);
+    setRejectNotes("");
+  };
+
+  const handleConfirmReject = () => {
+    if (!rejectNotes.trim()) {
+      DangerToast("Please provide a reason for rejecting this request.");
+      return;
+    }
+    handleRejectRequest(rejectTarget, rejectNotes.trim());
+    handleCloseReject();
   };
 
 
@@ -294,7 +321,7 @@ export function MaterialsTable(props) {
       type: 'number'
     },
     {
-      field: "unit",
+      field: "uom",
       headerName: "Unit",
       flex: 1,
       minWidth: 100,
@@ -432,6 +459,16 @@ export function MaterialsTable(props) {
               value={materialRequest.max_stock}
               onChange={handleInputChange}
             />
+            <TextField
+              margin="dense"
+              name="uom"
+              label="Unit of Measure"
+              type="text"
+              fullWidth
+              variant="outlined"
+              value={materialRequest.uom || ""}
+              onChange={handleInputChange}
+            />
             {/* <TextField
               select
               margin="dense"
@@ -534,13 +571,14 @@ export function MaterialsTable(props) {
                   <TableCell className="font-bold text-right">Qty</TableCell>
                   <TableCell className="font-bold">Date</TableCell>
                   <TableCell className="font-bold">Status</TableCell>
+                  <TableCell className="font-bold">Notes</TableCell>
                   <TableCell className="font-bold text-center">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {requests.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" className="py-8">
+                    <TableCell colSpan={8} align="center" className="py-8">
                       No material requests found.
                     </TableCell>
                   </TableRow>
@@ -560,6 +598,9 @@ export function MaterialsTable(props) {
                             size="small"
                             color={req.is_approve === "Approve" ? "success" : req.is_approve === "Reject" ? "error" : "warning"}
                           />
+                        </TableCell>
+                        <TableCell className="max-w-[200px] truncate" title={req.notes}>
+                          {req.notes || "—"}
                         </TableCell>
                         <TableCell align="center">
                           {req.is_approve === "Pending" && props.user === "admin" && (
@@ -588,7 +629,7 @@ export function MaterialsTable(props) {
                                 variant="contained"
                                 color="error"
                                 className="bg-red-600 !text-3xs"
-                                onClick={() => handleRejectRequest(req)}
+                                onClick={() => handleOpenReject(req)}
                               >
                                 Reject
                               </Button>
@@ -606,6 +647,48 @@ export function MaterialsTable(props) {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => openTable(false)} color="inherit">Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Reject Reason Modal */}
+      <Dialog open={Boolean(rejectTarget)} onClose={handleCloseReject} maxWidth="sm" fullWidth>
+        <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 mb-4">
+          Reject Request
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" className="text-gray-600 mt-1 mb-3">
+            Please provide a reason for rejecting this request. This will be shown to the requesting engineer.
+          </Typography>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Rejection Notes"
+            type="text"
+            fullWidth
+            multiline
+            rows={3}
+            variant="outlined"
+            value={rejectNotes}
+            onChange={(e) => setRejectNotes(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions className="p-4 border-t border-gray-100">
+          <Button
+            onClick={handleCloseReject}
+            color="inherit"
+            className="text-gray-600 hover:bg-gray-100"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmReject}
+            variant="contained"
+            color="error"
+            className="bg-red-600 hover:bg-red-700"
+            disabled={!rejectNotes.trim()}
+          >
+            Reject Request
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>
