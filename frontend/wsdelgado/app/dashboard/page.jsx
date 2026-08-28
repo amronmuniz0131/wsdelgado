@@ -23,6 +23,7 @@ import {
   Select,
 } from "@mui/material";
 import { ProjectsTable } from "@/components/ProjectsTable";
+import { ProjectsTable as CompleteTable } from "@/components/CompleteTable";
 import { MaterialsTable } from "@/components/MaterialsTable";
 import { EquipmentsTable } from "@/components/EquipmentsTable";
 import { InquiriesList } from "@/components/InquiriesList";
@@ -281,6 +282,10 @@ function DashboardContent() {
       </div>
       <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
         <ProjectsTable user={user} employee_count={setEmployeeCount} setTotalProgress={setTotalProgress} openModal={openModal} setOpenModal={setOpenModal} userData={newAccount} />
+      </section>
+
+      <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+        <CompleteTable user={user} employee_count={setEmployeeCount} setTotalProgress={setTotalProgress} openModal={openModal} setOpenModal={setOpenModal} userData={newAccount} />
       </section>
 
       {(user === "admin") &&
