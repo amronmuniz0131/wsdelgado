@@ -41,6 +41,20 @@ export function ProjectsTable(props) {
       const response = await fetch(`${API_BASE_URL}/projects/read.php`);
       const data = await response.json();
       setProjects(data.records || []);
+      let count = 0
+      let not_done = 0
+      let overdue = 0
+      data?.records.map((d) => {
+        if (d.progress == 100) {
+          count++;
+
+        } else if (d.progress < 100 && new Date() < new Date(d.end_date)) {
+          not_done++
+        } else {
+          overdue++
+        }
+      })
+      props.setTotalProgress({ "done": count, "ongoing": not_done, "overdue": overdue })
     } catch (error) {
       console.error("Error fetching projects:", error);
     } finally {
@@ -58,10 +72,10 @@ export function ProjectsTable(props) {
       let arr = []
       setEmployees(data.records || []);
       data.records.map((d) => {
-        if (d.position?.toLowerCase() == "engineer") {
+        if (d.position?.toLowerCase() === "engineer") {
           arr.push(d)
         }
-        if (d.project_id == null || d.is_finished) {
+        if (d.project_id === null || d.is_finished) {
           count = count + 1
         }
       })
@@ -101,7 +115,7 @@ export function ProjectsTable(props) {
   useEffect(() => {
     if (props.userData) {
       users.map((d) => {
-        if (props.userData.email == d.email) {
+        if (props.userData.email === d.email) {
           setNewProject((prev) => ({ ...prev, client: d.id }));
         }
       })
@@ -160,7 +174,7 @@ export function ProjectsTable(props) {
       align: "center",
       headerAlign: "center",
       renderCell: (params) => {
-        if (params.row.completion_date && params.row.completion_date != "0000-00-00") {
+        if (params.row.completion_date && params.row.completion_date !== "0000-00-00") {
           return (
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", width: "100%" }}>
               <Box
@@ -247,106 +261,26 @@ export function ProjectsTable(props) {
     });
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewProject((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleAddProject = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/projects/create.php`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newProject),
-      });
-      if (response.ok) {
-        const result = await response.json();
-        const projectId = result.id;
-
-        // Update Foreman
-        if (newProject.foremanId) {
-          const foreman = employees.find((e) => e.id == newProject.foremanId);
-          if (foreman) {
-            await fetch(`${API_BASE_URL}/employees/update.php`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                ...foreman,
-                assignedProjectId: projectId,
-                status: "assigned",
-              }),
-            });
-          }
-        }
-
-        // Update Engineer
-        if (newProject.engineerId) {
-          const engineer = engineers.find((e) => e.id == newProject.engineerId);
-          if (engineer) {
-            await fetch(`${API_BASE_URL}/employees/update.php`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                ...engineer,
-                assignedProjectId: projectId,
-                status: "assigned",
-              }),
-            });
-          }
-        }
-
-        fetchProjects();
-        fetchEmployees(); // Refresh employee list to reflect assignment
-        SuccessToast("Project added successfully");
-        handleClose();
-      } else {
-        const error = await response.json();
-        DangerToast(error.message || "Failed to create project");
-      }
-    } catch (error) {
-      console.error("Error creating project:", error);
-    }
-  };
-
   const filteredProjects = React.useMemo(() => {
     const isCompleted = (project) =>
       project.completion_date && project.completion_date !== "0000-00-00";
 
     if (props.user === "admin") {
-      return projects.filter((project) => !isCompleted(project));
-    };
+      return projects.filter(isCompleted);
+    }
     if (!userData) return [];
 
     return projects.filter((project) => {
-      if (isCompleted(project)) return false;
       if (props.user === "engineer") {
         const engineerName = project.engineerName || project.engineer;
-        return engineerName == userData.name;
+        return isCompleted(project) && engineerName === userData.name;
       }
-      if (props.user == "user") {
-        return project.clientName == userData.name;
+      if (props.user === "user") {
+        return isCompleted(project) && project.clientName === userData.name;
       }
       return false;
     });
   }, [projects, props.user, userData]);
-
-  React.useEffect(() => {
-    if (props.setTotalProgress) {
-      let count = 0;
-      let not_done = 0;
-      let overdue = 0;
-      filteredProjects.forEach((d) => {
-        if (d.progress == 100) {
-          count++;
-        } else if (d.progress < 100 && new Date() < new Date(d.end_date)) {
-          not_done++;
-        } else {
-          overdue++;
-        }
-      });
-      props.setTotalProgress({ "done": count, "ongoing": not_done, "overdue": overdue });
-    }
-  }, [filteredProjects, props.setTotalProgress]);
 
   return (
     <Box className="w-full">
@@ -356,19 +290,8 @@ export function ProjectsTable(props) {
           component="h2"
           className="text-gray-800 font-semibold"
         >
-          Ongoing Projects
+          Finished Projects
         </Typography>
-        {props.user == "admin" && (
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<Plus size={18} />}
-            onClick={() => props.setOpenModal(true)}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            Add Project
-          </Button>
-        )}
       </Box>
 
       <Paper className="shadow-sm border border-gray-200 w-full" sx={{ width: '100%' }}>
@@ -390,130 +313,6 @@ export function ProjectsTable(props) {
           }}
         />
       </Paper>
-
-      {/* Add Project Modal */}
-      <Dialog open={props.openModal} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 mb-4">
-          Create New Project
-        </DialogTitle>
-        <DialogContent>
-          <Box className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-            <TextField
-              autoFocus
-              margin="dense"
-              name="name"
-              label="Project Name"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={newProject.name}
-              onChange={handleInputChange}
-              className="col-span-1 md:col-span-2"
-            />
-
-            <TextField
-              margin="dense"
-              name="client"
-              label="Client"
-              select
-              fullWidth
-              variant="outlined"
-              value={newProject.client}
-              onChange={handleInputChange}
-            >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              {users
-                .filter((emp) =>
-                  emp.role?.toLowerCase().includes("user")
-                )
-                .map((emp) => (
-                  <MenuItem key={emp.id} value={emp.id}>
-                    {emp.name} ({emp.role})
-                  </MenuItem>
-                ))}
-            </TextField>
-
-            <TextField
-              margin="dense"
-              name="foremanId"
-              label="Foreman"
-              select
-              fullWidth
-              variant="outlined"
-              value={newProject.foremanId}
-              onChange={handleInputChange}
-            >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              {employees
-                .filter((emp) =>
-                  emp.position?.toLowerCase().includes("foreman") && emp.assignedProjectId == null
-                )
-                .map((emp) => (
-                  <MenuItem key={emp.id} value={emp.id}>
-                    {emp.name} ({emp.position})
-                  </MenuItem>
-                ))}
-            </TextField>
-
-            <TextField
-              margin="dense"
-              name="engineerId"
-              label="Engineer"
-              select
-              fullWidth
-              variant="outlined"
-              value={newProject.engineerId}
-              onChange={handleInputChange}
-            >
-              <MenuItem value="">
-                <em>None</em>
-              </MenuItem>
-              {engineers
-                .map((emp) => (
-                  <MenuItem key={emp.id} value={emp.id}>
-                    {emp.name}
-                  </MenuItem>
-                ))}
-            </TextField>
-
-            <TextField
-              margin="dense"
-              name="address"
-              label="Full Address"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={newProject.address}
-              onChange={handleInputChange}
-              className="col-span-1 md:col-span-2"
-              multiline
-              rows={2}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions className="p-4 border-t border-gray-100">
-          <Button
-            onClick={handleClose}
-            color="inherit"
-            className="text-gray-600 hover:bg-gray-100"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleAddProject}
-            variant="contained"
-            color="primary"
-            className="bg-blue-600 hover:bg-blue-700"
-            disabled={!newProject.name || !newProject.client}
-          >
-            Create Project
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 }

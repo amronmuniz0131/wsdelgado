@@ -11,6 +11,7 @@ class Requests
     public $project_id;
     public $request_date;
     public $is_approve;
+    public $notes;
     public $material_name;
     public $engineer_name;
     public $project_name;
@@ -26,7 +27,7 @@ class Requests
         $query = "INSERT INTO " . $this->table_name . " 
                 SET material_id=:material_id, quantity=:quantity, engineer_id=:engineer_id, 
                     project_id=:project_id, request_date=:request_date, 
-                    is_approve=:is_approve";
+                    is_approve=:is_approve, notes=:notes";
 
         $stmt = $this->conn->prepare($query);
 
@@ -38,6 +39,7 @@ class Requests
         $stmt->bindParam(":project_id", $this->project_id);
         $stmt->bindParam(":request_date", $this->request_date);
         $stmt->bindParam(":is_approve", $this->is_approve);
+        $stmt->bindParam(":notes", $this->notes);
 
         if ($stmt->execute()) {
             return true;
@@ -88,7 +90,7 @@ class Requests
         $query = "UPDATE " . $this->table_name . " 
                 SET material_id=:material_id, quantity=:quantity, engineer_id=:engineer_id, 
                     project_id=:project_id, request_date=:request_date, 
-                    is_approve=:is_approve
+                    is_approve=:is_approve, notes=:notes
                 WHERE id = :id";
 
         $stmt = $this->conn->prepare($query);
@@ -102,6 +104,7 @@ class Requests
         $stmt->bindParam(":project_id", $this->project_id);
         $stmt->bindParam(":request_date", $this->request_date);
         $stmt->bindParam(":is_approve", $this->is_approve);
+        $stmt->bindParam(":notes", $this->notes);
         $stmt->bindParam(":id", $this->id);
 
         if ($stmt->execute()) {
@@ -132,6 +135,7 @@ class Requests
         $this->project_id = htmlspecialchars(strip_tags($this->project_id));
         $this->request_date = htmlspecialchars(strip_tags($this->request_date));
         $this->is_approve = htmlspecialchars(strip_tags($this->is_approve));
+        $this->notes = htmlspecialchars(strip_tags($this->notes ?? ""));
     }
 }
 ?>

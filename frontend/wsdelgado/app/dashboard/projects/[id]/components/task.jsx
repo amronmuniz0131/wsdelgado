@@ -14,14 +14,16 @@ import {
     FormControl,
     InputLabel,
     Select,
-    MenuItem
+    MenuItem,
+    Checkbox,
+    ListItemText
 } from "@mui/material";
 export function TaskModal(props) {
     const [tasks, setTasks] = useState([]);
     const [taskData, setTaskData] = useState({
         employee_id: [],
         task_id: props.selectedTask?.id,
-        end_date: props.selectedTask?.end_date
+        // end_date: props.selectedTask?.end_date || ""
     })
     const handleChange = (event) => {
         const { target: { value } } = event;
@@ -67,17 +69,16 @@ export function TaskModal(props) {
                 body: JSON.stringify({
                     id: props.selectedTask?.id,
                     status: 1,
-                    start_date: new Date().toISOString().slice(0, 19).replace('T', ' '),
                     end_date: taskData.end_date
                 }),
             });
-            window.location.reload();
+            // window.location.reload();
         } catch (error) {
             console.error("Error creating task:", error);
         }
     }
     useEffect(() => {
-        setTaskData({ ...taskData, employee_id: [] })
+        setTaskData({ employee_id: [], end_date: props.selectedTask?.end_date || "" })
         fetchEmployees();
     }, [props.isOpen])
     return (
@@ -113,21 +114,13 @@ export function TaskModal(props) {
                                 employee.position.toLowerCase() != 'foreman' &&
                                 employee.position.toLowerCase() != 'admin' && (
                                     <MenuItem key={index + '-employee'} value={employee.id}>
-                                        {employee.name} ({employee.position})
+                                        <Checkbox checked={taskData.employee_id.indexOf(employee.id) > -1} />
+                                        <ListItemText primary={`${employee.name} (${employee.position})`} />
                                     </MenuItem>
                                 )
                             ))}
                     </Select>
-                    <TextField
-                        label="End Date"
-                        InputLabelProps={{ shrink: true }}
-                        type="date"
-                        value={taskData.end_date}
-                        onChange={(e) => setTaskData({ ...taskData, end_date: e.target.value })}
-                        fullWidth
-                        sx={{ mt: 2 }}
-                        required
-                    />
+                    
                 </FormControl>
             </DialogContent>
             <DialogActions className="p-4 border-t border-gray-100">

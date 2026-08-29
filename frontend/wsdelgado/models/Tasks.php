@@ -11,6 +11,9 @@ class Task
     public $project_id;
     public $start_date;
     public $end_date;
+    public $actual_end;
+    public $proof_image;
+    public $notes;
     public $quantity;
     public $finished;
 
@@ -23,7 +26,7 @@ class Task
     {
         $query = "INSERT INTO " . $this->table_name . " 
                 SET name=:name, status=:status, severity=:severity, project_id=:project_id, 
-                    start_date=:start_date, end_date=:end_date, quantity=:quantity, finished=:finished";
+                    start_date=:start_date, end_date=:end_date, actual_end=:actual_end, quantity=:quantity, finished=:finished";
 
         $stmt = $this->conn->prepare($query);
 
@@ -35,6 +38,7 @@ class Task
         $stmt->bindParam(":project_id", $this->project_id);
         $stmt->bindParam(":start_date", $this->start_date);
         $stmt->bindParam(":end_date", $this->end_date);
+        $stmt->bindParam(":actual_end", $this->actual_end);
         $stmt->bindParam(":quantity", $this->quantity);
         $stmt->bindParam(":finished", $this->finished);
 
@@ -88,9 +92,9 @@ class Task
     // UPDATE
     public function update()
     {
-        $query = "UPDATE " . $this->table_name . " 
-                SET name=:name, status=:status, severity=:severity, project_id=:project_id, 
-                    start_date=:start_date, end_date=:end_date, quantity=:quantity, finished=:finished
+        $query = "UPDATE " . $this->table_name . "
+                SET name=:name, status=:status, severity=:severity, project_id=:project_id,
+                    start_date=:start_date, end_date=:end_date, actual_end=:actual_end, proof_image=:proof_image, notes=:notes, quantity=:quantity, finished=:finished
                 WHERE id = :id";
 
         $stmt = $this->conn->prepare($query);
@@ -103,6 +107,9 @@ class Task
         $stmt->bindParam(":project_id", $this->project_id);
         $stmt->bindParam(":start_date", $this->start_date);
         $stmt->bindParam(":end_date", $this->end_date);
+        $stmt->bindParam(":actual_end", $this->actual_end);
+        $stmt->bindParam(":proof_image", $this->proof_image);
+        $stmt->bindParam(":notes", $this->notes);
         $stmt->bindParam(":quantity", $this->quantity);
         $stmt->bindParam(":finished", $this->finished);
         $stmt->bindParam(":id", $this->id);
@@ -137,6 +144,9 @@ class Task
         $this->end_date = htmlspecialchars(strip_tags($this->end_date));
         $this->quantity = htmlspecialchars(strip_tags($this->quantity));
         $this->finished = htmlspecialchars(strip_tags($this->finished));
+        $this->actual_end = htmlspecialchars(strip_tags($this->actual_end));
+        $this->notes = htmlspecialchars(strip_tags($this->notes ?? ""));
+        // proof_image is base64 data; sanitize() is not called on create for it
     }
 }
 ?>

@@ -17,6 +17,7 @@ if(!empty($data->material_id)){
     $request->project_id = $data->project_id;
     $request->request_date = $data->request_date;
     $request->is_approve = $data->is_approve;
+    $request->notes = $data->notes ?? "";
 
     if($request->create()){
         http_response_code(201);

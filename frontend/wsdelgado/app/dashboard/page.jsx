@@ -23,6 +23,7 @@ import {
   Select,
 } from "@mui/material";
 import { ProjectsTable } from "@/components/ProjectsTable";
+import { ProjectsTable as CompleteTable } from "@/components/CompleteTable";
 import { MaterialsTable } from "@/components/MaterialsTable";
 import { EquipmentsTable } from "@/components/EquipmentsTable";
 import { InquiriesList } from "@/components/InquiriesList";
@@ -297,8 +298,11 @@ function DashboardContent() {
         <ProjectsTable user={user} employee_count={setEmployeeCount} setTotalProgress={setTotalProgress} openModal={openModal} setOpenModal={setOpenModal} userData={newAccount} />
       </section>
 
-      {
-        (user == "admin" || user == "engineer") &&
+      <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+        <CompleteTable user={user} employee_count={setEmployeeCount} setTotalProgress={setTotalProgress} openModal={openModal} setOpenModal={setOpenModal} userData={newAccount} />
+      </section>
+
+      {(user === "admin") &&
         <div ref={inventoryRef} className="scroll-mt-24">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
             <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">

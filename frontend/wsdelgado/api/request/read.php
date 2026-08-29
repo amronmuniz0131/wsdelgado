@@ -27,7 +27,8 @@ if ($num > 0) {
             "project_id" => $project_id,
             "project_name" => $project_name,
             "request_date" => $request_date,
-            "is_approve" => $is_approve
+            "is_approve" => $is_approve,
+            "notes" => $notes
         );
         array_push($requests_arr["records"], $request_item);
     }
