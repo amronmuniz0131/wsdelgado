@@ -376,9 +376,20 @@ export default function ProjectDetailsPage() {
       const response = await fetch(`${API_BASE_URL}/tasks/read.php`);
       if (response.ok) {
         const data = await response.json();
-        const projectTasks = (data.records || []).filter(
-          task => String(task.project_id) == String(id)
-        );
+        const projectTasks = (data.records || [])
+          .filter(task => String(task.project_id) == String(id))
+          .sort((a, b) => {
+            const statusRank = (t) => {
+              const isPending = t.status == 0 || t.start_date == "0000-00-00 00:00:00";
+              const isCompleted = t.finished >= t.quantity;
+              const isOverdue = !isPending && !isCompleted && t.end_date && t.end_date != "0000-00-00" && new Date() > new Date(t.end_date);
+              if (isOverdue) return 0;
+              if (isPending) return 1;
+              if (!isCompleted) return 2; // In Progress
+              return 3; // Completed
+            };
+            return statusRank(a) - statusRank(b);
+          });
         setTasks(projectTasks);
         let points = 0
         let total = 0
