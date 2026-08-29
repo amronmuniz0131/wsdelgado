@@ -310,16 +310,16 @@ export function ProjectsTable(props) {
 
   const filteredProjects = React.useMemo(() => {
     const isCompleted = (project) =>
-      project.completion_date && project.completion_date !== "0000-00-00";
+      project.completion_date && project.completion_date != "0000-00-00";
 
-    if (props.user === "admin") {
+    if (props.user == "admin") {
       return projects.filter((project) => !isCompleted(project));
     };
     if (!userData) return [];
 
     return projects.filter((project) => {
       if (isCompleted(project)) return false;
-      if (props.user === "engineer") {
+      if (props.user == "engineer") {
         const engineerName = project.engineerName || project.engineer;
         return engineerName == userData.name;
       }
