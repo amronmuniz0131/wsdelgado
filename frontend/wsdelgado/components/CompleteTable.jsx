@@ -72,10 +72,10 @@ export function ProjectsTable(props) {
       let arr = []
       setEmployees(data.records || []);
       data.records.map((d) => {
-        if (d.position?.toLowerCase() === "engineer") {
+        if (d.position?.toLowerCase() == "engineer") {
           arr.push(d)
         }
-        if (d.project_id === null || d.is_finished) {
+        if (d.project_id == null || d.is_finished) {
           count = count + 1
         }
       })
@@ -115,7 +115,7 @@ export function ProjectsTable(props) {
   useEffect(() => {
     if (props.userData) {
       users.map((d) => {
-        if (props.userData.email === d.email) {
+        if (props.userData.email == d.email) {
           setNewProject((prev) => ({ ...prev, client: d.id }));
         }
       })
@@ -174,7 +174,7 @@ export function ProjectsTable(props) {
       align: "center",
       headerAlign: "center",
       renderCell: (params) => {
-        if (params.row.completion_date && params.row.completion_date !== "0000-00-00") {
+        if (params.row.completion_date && params.row.completion_date != "0000-00-00") {
           return (
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", width: "100%" }}>
               <Box
@@ -263,20 +263,20 @@ export function ProjectsTable(props) {
 
   const filteredProjects = React.useMemo(() => {
     const isCompleted = (project) =>
-      project.completion_date && project.completion_date !== "0000-00-00";
+      project.completion_date && project.completion_date != "0000-00-00";
 
-    if (props.user === "admin") {
+    if (props.user == "admin") {
       return projects.filter(isCompleted);
     }
     if (!userData) return [];
 
     return projects.filter((project) => {
-      if (props.user === "engineer") {
+      if (props.user == "engineer") {
         const engineerName = project.engineerName || project.engineer;
-        return isCompleted(project) && engineerName === userData.name;
+        return isCompleted(project) && engineerName == userData.name;
       }
-      if (props.user === "user") {
-        return isCompleted(project) && project.clientName === userData.name;
+      if (props.user == "user") {
+        return isCompleted(project) && project.clientName == userData.name;
       }
       return false;
     });

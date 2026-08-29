@@ -302,7 +302,7 @@ function DashboardContent() {
         <CompleteTable user={user} employee_count={setEmployeeCount} setTotalProgress={setTotalProgress} openModal={openModal} setOpenModal={setOpenModal} userData={newAccount} />
       </section>
 
-      {(user === "admin") &&
+      {(user == "admin") &&
         <div ref={inventoryRef} className="scroll-mt-24">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
             <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
