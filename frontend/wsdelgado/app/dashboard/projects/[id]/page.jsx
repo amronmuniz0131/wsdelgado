@@ -198,7 +198,7 @@ export default function ProjectDetailsPage() {
       renderCell: (params) => (
         <Box className="flex flex-col justify-center h-full">
           <Typography className="text-[11px] font-medium text-gray-600">Start: {params.row.start_date}</Typography>
-          {params.row.end_date !== "0000-00-00" && <Typography className="text-[11px] font-medium text-gray-600">End: {params.row.end_date}</Typography>}
+          {params.row.end_date != "0000-00-00" && <Typography className="text-[11px] font-medium text-gray-600">End: {params.row.end_date}</Typography>}
         </Box>
       )
     },
@@ -222,13 +222,33 @@ export default function ProjectDetailsPage() {
       width: 120,
       align: 'right',
       headerAlign: 'right',
-      renderCell: (params) => (
-        <Chip
-          label={params.row.status == 0 ? "Pending" : params.row.finished < params.row.quantity ? "In Progress" : "Completed"}
-          size="small"
-          className={`h-5 text-[9px] font-black uppercase ${params.row.status == 0 ? "!bg-red-100 !text-red-700" : params.row.finished < params.row.quantity ? "!bg-blue-100 !text-blue-700" : "!bg-green-100 !text-green-700"}`}
-        />
-      )
+      renderCell: (params) => {
+        const isPending = params.row.status == 0;
+        const isCompleted = params.row.finished >= params.row.quantity;
+        const isOverdue = !isPending && !isCompleted && params.row.end_date && params.row.end_date !== "0000-00-00" && new Date() > new Date(params.row.end_date);
+        
+        let label = "In Progress";
+        let colorClass = "!bg-blue-100 !text-blue-700";
+        
+        if (isPending) {
+          label = "Pending";
+          colorClass = "!bg-red-100 !text-red-700";
+        } else if (isCompleted) {
+          label = "Completed";
+          colorClass = "!bg-green-100 !text-green-700";
+        } else if (isOverdue) {
+          label = "Overdue";
+          colorClass = "!bg-orange-100 !text-orange-700";
+        }
+        
+        return (
+          <Chip
+            label={label}
+            size="small"
+            className={`h-5 text-[9px] font-black uppercase ${colorClass}`}
+          />
+        );
+      }
     },
     ...(userRole == "engineer" && project?.completion_date == null ? [{
       field: "actions",
@@ -669,8 +689,8 @@ export default function ProjectDetailsPage() {
             </Typography>
             <Box className="flex items-center gap-4">
               <Chip
-                label={progress == 100 ? "Completed" : project.start_date !== null ? "In Progress" : "Pending"}
-                color={progress == 100 ? "success" : project.start_date !== null ? "primary" : "default"}
+                label={progress == 100 ? "Completed" : project.start_date != null ? "In Progress" : "Pending"}
+                color={progress == 100 ? "success" : project.start_date != null ? "primary" : "default"}
                 className="font-bold rounded-lg"
               />
               <Typography variant="body2" className="text-gray-400 font-medium">#{project.id} • Registered {new Date(project.created_at).toLocaleDateString()}</Typography>
@@ -729,9 +749,9 @@ export default function ProjectDetailsPage() {
                 variant="contained"
                 color="primary"
                 onClick={() => setFinishProjectModal(true)}
-              // disabled={isSubmitting || (project && project.end_date !== null && project.end_date !== "0000-00-00")}
+              // disabled={isSubmitting || (project && project.end_date != null && project.end_date != "0000-00-00")}
               >
-                {project && project.end_date !== null && project.end_date !== "0000-00-00" ? "Project Completed" : "Complete Project"}
+                {project && project.end_date != null && project.end_date != "0000-00-00" ? "Project Completed" : "Complete Project"}
               </Button>
             }
           </Box>

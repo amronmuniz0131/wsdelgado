@@ -29,7 +29,7 @@ export default function ProfilePage() {
         setMessage("");
         // Validate new passwords match when user intends to change password
         if (newPassword || confirmPassword) {
-            if (newPassword !== confirmPassword) {
+            if (newPassword != confirmPassword) {
                 setMessage("New passwords do not match.");
                 setStatus("error");
                 setSaving(false);

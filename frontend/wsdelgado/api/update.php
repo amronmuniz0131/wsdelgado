@@ -25,7 +25,7 @@ if(!empty($data->id)) {
         if(!empty($data->password)) {
             // Check if current_password matches the stored hash
             // Allow bypass if it's an admin update OR if it's the user's first login
-            if(empty($data->is_admin_update) && (string)$user->first_login !== "0") {
+            if(empty($data->is_admin_update) && (string)$user->first_login != "0") {
                 if(empty($data->current_password) || !password_verify($data->current_password, $user->password)) {
                     http_response_code(401);
                     echo json_encode(array("message" => "Current password is incorrect."));

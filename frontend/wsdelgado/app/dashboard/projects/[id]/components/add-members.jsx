@@ -36,8 +36,8 @@ export default function AddMembers({ isOpen, handleClose, projectId, onUpdate })
         const available = (data.records || []).filter(
           (emp) =>
             !emp.assignedProjectId &&
-            emp.position?.toLowerCase() !== "engineer" &&
-            emp.position?.toLowerCase() !== "admin"
+            emp.position?.toLowerCase() != "engineer" &&
+            emp.position?.toLowerCase() != "admin"
         );
         setEmployees(available);
       }
@@ -99,7 +99,7 @@ export default function AddMembers({ isOpen, handleClose, projectId, onUpdate })
             <MenuItem disabled>No available employees found</MenuItem>
           ) : (
             employees.map((emp) => (
-              emp.position.toLowerCase() !== 'engineer' && emp.position.toLowerCase() !== 'foreman' && emp.position.toLowerCase() !== 'admin' &&
+              emp.position.toLowerCase() != 'engineer' && emp.position.toLowerCase() != 'foreman' && emp.position.toLowerCase() != 'admin' &&
               <MenuItem key={emp.id} value={emp.id} className="py-3 px-4">
                 <Box className="flex items-center gap-4">
                   <Avatar className="bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm text-sm w-9 h-9">

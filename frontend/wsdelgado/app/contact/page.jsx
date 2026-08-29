@@ -144,7 +144,7 @@ export default function ContactPage() {
                 >
                   {status == "Sending..." ? "Sending..." : "Send Message"}
                 </button>
-                {status && status !== "Sending..." && (
+                {status && status != "Sending..." && (
                   <p className={`mt-4 text-sm font-medium ${status.includes("success") ? "text-green-600" : "text-rose-600"}`}>
                     {status}
                   </p>

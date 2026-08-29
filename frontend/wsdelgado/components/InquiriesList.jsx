@@ -125,7 +125,7 @@ export function InquiriesList({ openModal, setNewAccount, user, onUnreadCountCha
     },
   ];
 
-  if (user !== "admin") return null;
+  if (user != "admin") return null;
 
   return (
     <Box className="w-full">

@@ -181,7 +181,7 @@ export function EmployeesTable() {
       if (response.ok) {
         // Sync project assignment for Engineers and Foremen
         const pos = editingEmployee.position?.toLowerCase();
-        if ((pos == "engineer" || pos == "foreman") && editingEmployee.assignedProjectId !== prevProject) {
+        if ((pos == "engineer" || pos == "foreman") && editingEmployee.assignedProjectId != prevProject) {
           // 1. Clear from previous project
           if (prevProject) {
             try {
@@ -503,7 +503,7 @@ export function EmployeesTable() {
                 {userRole.toLowerCase() == "admin" && (
                   <Box>
                     <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Assigned Project</Typography>
-                    <Typography className="text-gray-800 font-bold text-blue-600 italic underline decoration-blue-200 decoration-4 underline-offset-4" disabled={selectedEmployee.position.toLowerCase() !== "engineer"}>{selectedEmployee.assignedProject}</Typography>
+                    <Typography className="text-gray-800 font-bold text-blue-600 italic underline decoration-blue-200 decoration-4 underline-offset-4" disabled={selectedEmployee.position.toLowerCase() != "engineer"}>{selectedEmployee.assignedProject}</Typography>
                   </Box>
                 )}
                 <Box>
@@ -601,7 +601,7 @@ export function EmployeesTable() {
               onChange={handleInputChange}
             >
               {positions.map((position) => (
-                position.position.toLowerCase() !== "admin" && position.position.toLowerCase() !== "engineer" && (
+                position.position.toLowerCase() != "admin" && position.position.toLowerCase() != "engineer" && (
                   <MenuItem key={position.id} value={position.position}>
                     {position.position}
                   </MenuItem>
@@ -720,7 +720,7 @@ export function EmployeesTable() {
                 onChange={handleEditInputChange}
               >
                 {positions.map((position) => (
-                  position.position.toLowerCase() !== "admin" && position.position.toLowerCase() !== "engineer" && (
+                  position.position.toLowerCase() != "admin" && position.position.toLowerCase() != "engineer" && (
                     <MenuItem key={position.id} value={position.position}>
                       {position.position}
                     </MenuItem>

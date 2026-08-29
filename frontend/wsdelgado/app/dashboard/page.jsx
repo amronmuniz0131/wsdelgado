@@ -198,36 +198,46 @@ function DashboardContent() {
             </div>
           </div>
           {/* materials request count */}
-          <div className='border-gray-300 border hover:cursor-pointer rounded-md flex flex-col w-42 text-black items-center justify-center'
-            onClick={ScrollToInventory}>
-            <div className="bg-blue-200 w-full text-center py-2 rounded-t-md h-18 flex items-center justify-center">
-              Equipment Requests
-            </div>
-            <div className="py-4 text-xl ">
-              {equipmentCount}
-            </div>
-          </div>
+          {
+            user == 'admin' || user == 'engineer' && (
+
+              <div className='border-gray-300 border hover:cursor-pointer rounded-md flex flex-col w-42 text-black items-center justify-center'
+                onClick={ScrollToInventory}>
+                <div className="bg-blue-200 w-full text-center py-2 rounded-t-md h-18 flex items-center justify-center">
+                  Equipment Requests
+                </div>
+                <div className="py-4 text-xl ">
+                  {equipmentCount}
+                </div>
+              </div>
+            )
+          }
+          {
+            user == 'admin' || user == 'engineer' && (
+              <div className='border-gray-300 border hover:cursor-pointer rounded-md flex flex-col w-42 text-black items-center justify-center'
+                onClick={ScrollToInventory}>
+                <div className="bg-gray-200 w-full text-center py-2 rounded-t-md h-18 flex items-center justify-center">
+                  Inventory Notifications
+                </div>
+                <div className="py-4 text-xl ">
+                  {materialCount}
+                </div>
+              </div>
+            )
+          }
           {/* Inventory Notifications */}
-          <div className='border-gray-300 border hover:cursor-pointer rounded-md flex flex-col w-42 text-black items-center justify-center'
-            onClick={ScrollToInventory}>
-            <div className="bg-gray-200 w-full text-center py-2 rounded-t-md h-18 flex items-center justify-center">
-              Inventory Notifications
+          {user == 'admin' || user == 'engineer' && (
+
+            <div className='border-gray-300 border hover:cursor-pointer rounded-md flex flex-col w-42 text-black items-center justify-center'
+              onClick={() => { window.location.href = "/employees" }}>
+              <div className="bg-orange-200 w-full text-center py-2 rounded-t-md h-18 flex items-center justify-center">
+                Available Employees
+              </div>
+              <div className="py-4 text-xl ">
+                {employee_count}
+              </div>
             </div>
-            <div className="py-4 text-xl ">
-              {materialCount}
-            </div>
-          </div>
-          {/* available employees */}
-          <div className='border-gray-300 border hover:cursor-pointer rounded-md flex flex-col w-42 text-black items-center justify-center'
-            onClick={() => { window.location.href = "/employees" }}>
-            <div className="bg-orange-200 w-full text-center py-2 rounded-t-md h-18 flex items-center justify-center">
-              Available Employees
-            </div>
-            <div className="py-4 text-xl ">
-              {employee_count}
-            </div>
-          </div>
-          {/* Inquiries */}
+          )}
           {
             user == "admin" &&
             <div className='border-gray-300 border hover:cursor-pointer rounded-md flex flex-col w-42 text-black items-center justify-center'
@@ -241,7 +251,7 @@ function DashboardContent() {
             </div>
           }
         </div>
-      </section>
+      </section >
       <div className="flex gap-2 w-full">
         <div className="text-center flex flex-col justify-between font-bold text-black py-2 w-1/5 rounded-lg shadow-sm border border-gray-100">
           Projects Status
@@ -259,31 +269,36 @@ function DashboardContent() {
             height={200}
           />
         </div>
-        <div className="text-center pb-10 font-bold text-black py-2 w-2/5 rounded-lg shadow-sm border border-gray-100">
-          Task List
-          <DataGrid
-            rows={[...assignments].sort((a, b) => (a.employee_name || "").localeCompare(b.employee_name || ""))}
-            columns={employeeAssignColumns}
-            pageSizeOptions={[5, 10, 20]}
-            initialState={{
-              pagination: { paginationModel: { pageSize: 5 } },
-            }}
-            disableRowSelectionOnClick
-            sx={{
-              border: 'none',
-              '& .MuiDataGrid-cell:focus': { outline: 'none' },
-            }}
-          />
-        </div>
-        <div className="text-center pb-10 font-bold text-black  w-2/5 rounded-lg shadow-sm border border-gray-100">
-          <GanttChart data={ganttData}></GanttChart>
-        </div>
+        {(user == 'admin' || user == 'engineer') && (
+          <div className="text-center pb-10 font-bold text-black py-2 w-2/5 rounded-lg shadow-sm border border-gray-100">
+            Task List
+            <DataGrid
+              rows={[...assignments].sort((a, b) => (a.employee_name || "").localeCompare(b.employee_name || ""))}
+              columns={employeeAssignColumns}
+              pageSizeOptions={[5, 10, 20]}
+              initialState={{
+                pagination: { paginationModel: { pageSize: 5 } },
+              }}
+              disableRowSelectionOnClick
+              sx={{
+                border: 'none',
+                '& .MuiDataGrid-cell:focus': { outline: 'none' },
+              }}
+            />
+          </div>
+        )}
+        {(user == 'admin' || user == 'engineer') && (
+          <div className="text-center pb-10 font-bold text-black  w-2/5 rounded-lg shadow-sm border border-gray-100">
+            <GanttChart data={ganttData}></GanttChart>
+          </div>
+        )}
       </div>
       <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
         <ProjectsTable user={user} employee_count={setEmployeeCount} setTotalProgress={setTotalProgress} openModal={openModal} setOpenModal={setOpenModal} userData={newAccount} />
       </section>
 
-      {(user == "admin" || user == "engineer") &&
+      {
+        (user == "admin" || user == "engineer") &&
         <div ref={inventoryRef} className="scroll-mt-24">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
             <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
@@ -297,11 +312,13 @@ function DashboardContent() {
         </div>
       }
 
-      {user == "admin" && (
-        <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 mt-8" ref={bottomRef}>
-          <InquiriesList openModal={handleOpenAdd} setNewAccount={setNewAccount} user={user} onUnreadCountChange={setUnreadMessages} />
-        </section>
-      )}
+      {
+        user == "admin" && (
+          <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 mt-8" ref={bottomRef}>
+            <InquiriesList openModal={handleOpenAdd} setNewAccount={setNewAccount} user={user} onUnreadCountChange={setUnreadMessages} />
+          </section>
+        )
+      }
       {/* Add Account Modal */}
       <Dialog open={openAddModal} onClose={handleCloseAdd} maxWidth="sm" fullWidth PaperProps={{ className: "rounded-3xl" }}>
         <DialogTitle className="font-extrabold text-2xl text-gray-800 px-8 pt-8">
@@ -370,6 +387,6 @@ function DashboardContent() {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </div >
   );
 }

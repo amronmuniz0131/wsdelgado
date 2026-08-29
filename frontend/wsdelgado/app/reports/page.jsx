@@ -40,7 +40,7 @@ const ProjectComparisonChart = ({ projects }) => {
 
   const toggleSeries = (id) => {
     setHiddenSeries((prev) =>
-      prev.includes(id) ? prev.filter((n) => n !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((n) => n != id) : [...prev, id]
     );
   };
 

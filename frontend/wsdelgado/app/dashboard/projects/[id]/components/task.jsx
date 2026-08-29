@@ -105,13 +105,13 @@ export function TaskModal(props) {
                     >
                         {employees
                             .filter(emp =>
-                                (emp.position?.toLowerCase() !== "engineer" && emp.position?.toLowerCase() !== "foreman" && emp.position?.toLowerCase() !== "admin" && emp.project_id_task == null) ||
-                                emp.is_finished !== 0
+                                (emp.position?.toLowerCase() != "engineer" && emp.position?.toLowerCase() != "foreman" && emp.position?.toLowerCase() != "admin" && emp.project_id_task == null) ||
+                                emp.is_finished != 0
                             )
                             .map((employee, index) => (
-                                employee.position.toLowerCase() !== 'engineer' &&
-                                employee.position.toLowerCase() !== 'foreman' &&
-                                employee.position.toLowerCase() !== 'admin' && (
+                                employee.position.toLowerCase() != 'engineer' &&
+                                employee.position.toLowerCase() != 'foreman' &&
+                                employee.position.toLowerCase() != 'admin' && (
                                     <MenuItem key={index + '-employee'} value={employee.id}>
                                         {employee.name} ({employee.position})
                                     </MenuItem>

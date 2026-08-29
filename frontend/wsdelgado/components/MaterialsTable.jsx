@@ -332,7 +332,7 @@ export function MaterialsTable(props) {
             size="small"
           >
             View More
-            {props.user == "admin" && requestCount[params.row.name] !== 0 &&
+            {props.user == "admin" && requestCount[params.row.name] != 0 &&
               <span className="absolute -top-1 -right-2 h-4 w-4 text-xs animate-bounce rounded-full bg-red-400">{requestCount[params.row.name]}</span>
             }
           </Button>

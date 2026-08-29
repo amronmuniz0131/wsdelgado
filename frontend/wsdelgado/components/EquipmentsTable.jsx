@@ -348,11 +348,11 @@ export function EquipmentsTable(props) {
             onClick={() => handleOpen(params.row)}
             className="bg-blue-600 !text-2xs hover:bg-blue-700"
             size="small"
-            disabled={props.user !== "admin"}
+            disabled={props.user != "admin"}
           >
             Edit
           </Button>
-          {params.row.status !== "Maintenance" && props.user == "admin" && (
+          {params.row.status != "Maintenance" && props.user == "admin" && (
             <Button
               variant="outlined"
               onClick={() => handleMaintenance(params.row.id)}
@@ -577,7 +577,7 @@ export function EquipmentsTable(props) {
               <>
                 {equipmentRequest.id ? (
                   <>
-                    {equipmentRequest.status !== "Requested" && (
+                    {equipmentRequest.status != "Requested" && (
                       <Button
                         onClick={() => submitEquipment()}
                         variant="contained"

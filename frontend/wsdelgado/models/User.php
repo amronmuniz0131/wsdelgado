@@ -55,7 +55,7 @@ class User {
             }
         } catch (PDOException $e) {
             // Check for duplicate entry in exception (SQLState 23000 or MySQL code 1062)
-            if ($e->getCode() == '23000' || strpos($e->getMessage(), '1062') !== false) {
+            if ($e->getCode() == '23000' || strpos($e->getMessage(), '1062') != false) {
                 http_response_code(401);
                 echo json_encode(array("message" => "Email already exists.", "error" => 401));
                 exit;
@@ -130,7 +130,7 @@ class User {
             }
         } catch (PDOException $e) {
             // Check for duplicate entry in exception (SQLState 23000 or MySQL code 1062)
-            if ($e->getCode() == '23000' || strpos($e->getMessage(), '1062') !== false) {
+            if ($e->getCode() == '23000' || strpos($e->getMessage(), '1062') != false) {
                 http_response_code(401);
                 echo json_encode(array("message" => "Email already exists."));
                 exit;
