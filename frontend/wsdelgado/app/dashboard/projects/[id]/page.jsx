@@ -276,7 +276,7 @@ export default function ProjectDetailsPage() {
               <Button
                 variant="outlined"
                 size="small"
-                disabled={params.row.finished}
+                disabled={params.row.finished >= params.row.quantity}
 
                 onClick={() => { setAssignTaskModalOpen(true); setSelectedTask(params.row) }}
                 className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-[10px] py-1 h-7"
@@ -298,7 +298,7 @@ export default function ProjectDetailsPage() {
                 <Button
                   variant="outlined"
                   size="small"
-                  disabled={params.row.finished}
+                  disabled={params.row.finished >= params.row.quantity}
 
                   onClick={() => { setStatusModalOpen(true); setSelectedTask(params.row) }}
                   className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-[10px] py-1 h-7"
