@@ -227,7 +227,7 @@ export default function ProjectDetailsPage() {
       align: 'right',
       headerAlign: 'right',
       renderCell: (params) => {
-        const isPending = params.row.status == 0;
+        const isPending = params.row.status == 0 || params.row.start_date == "0000-00-00 00:00:00";
         const isCompleted = params.row.finished >= params.row.quantity;
         const isOverdue = !isPending && !isCompleted && params.row.end_date && params.row.end_date != "0000-00-00" && new Date() > new Date(params.row.end_date);
         
@@ -1110,7 +1110,7 @@ export default function ProjectDetailsPage() {
             >
               {materials.map((m) => (
                 <MenuItem key={m.id} value={m.id}>
-                  {m.name} ({m.quantity}/{m.max_stock})
+                  {m.name}
                 </MenuItem>
               ))}
             </Select>
@@ -1326,9 +1326,9 @@ export default function ProjectDetailsPage() {
                     className={`h-5 text-[9px] font-black uppercase ${selectedTask.severity == 1 ? "!bg-green-100 !text-green-700" : selectedTask.severity == 2 ? "!bg-yellow-100 !text-yellow-700" : "!bg-red-100 !text-red-700"}`}
                   />
                   <Chip
-                    label={selectedTask.status == 0 ? "Pending" : selectedTask.finished < selectedTask.quantity ? "In Progress" : "Completed"}
+                    label={selectedTask.status == 0 || selectedTask.start_date == "0000-00-00 00:00:00" ? "Pending" : selectedTask.finished < selectedTask.quantity ? "In Progress" : "Completed"}
                     size="small"
-                    className={`h-5 text-[9px] font-black uppercase ${selectedTask.status == 0 ? "!bg-red-100 !text-red-700" : selectedTask.finished < selectedTask.quantity ? "!bg-blue-100 !text-blue-700" : "!bg-green-100 !text-green-700"}`}
+                    className={`h-5 text-[9px] font-black uppercase ${selectedTask.status == 0  || selectedTask.start_date == "0000-00-00 00:00:00" ? "!bg-red-100 !text-red-700" : selectedTask.finished < selectedTask.quantity ? "!bg-blue-100 !text-blue-700" : "!bg-green-100 !text-green-700"}`}
                   />
                 </Box>
               </Box>
