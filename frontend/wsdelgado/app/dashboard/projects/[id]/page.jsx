@@ -113,6 +113,16 @@ export default function ProjectDetailsPage() {
       )
     },
     {
+      field: "note",
+      headerName: "Notes",
+      width: 150,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: (params) => (
+        <Typography className="h-full flex items-center justify-center text-[11px] font-medium text-gray-600">{params.row.notes}</Typography>
+      )
+    },
+    {
       field: "is_approve",
       headerName: "Status",
       width: 120,
