@@ -712,6 +712,70 @@ export default function ProjectDetailsPage() {
     }
   };
 
+  const MAX_IMAGE_BYTES = 2 * 1024 * 1024; // 2MB
+
+  const compressImage = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error("Failed to load image"));
+        img.onload = () => {
+          const encode = (width, quality) => {
+            const scale = width / img.width;
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = Math.round(img.height * scale);
+            canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL("image/jpeg", quality);
+          };
+
+          let width = Math.min(1600, img.width);
+          let quality = 0.8;
+          let dataUrl = encode(width, quality);
+
+          while (dataUrl.length > MAX_IMAGE_BYTES && quality > 0.3) {
+            quality -= 0.15;
+            dataUrl = encode(width, quality);
+          }
+          while (dataUrl.length > MAX_IMAGE_BYTES && width > 400) {
+            width = Math.round(width * 0.7);
+            quality = 0.8;
+            dataUrl = encode(width, quality);
+            while (dataUrl.length > MAX_IMAGE_BYTES && quality > 0.3) {
+              quality -= 0.15;
+              dataUrl = encode(width, quality);
+            }
+          }
+
+          resolve(dataUrl);
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleBeforeImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      DangerToast("Please select an image file.");
+      return;
+    }
+
+    try {
+      const compressed = await compressImage(file);
+      setStartTaskData((prev) => ({ ...prev, before_image: compressed }));
+    } catch (err) {
+      console.error(err);
+      DangerToast("Failed to process image.");
+    }
+    e.target.value = "";
+  };
+
   const handleStartTaskSubmit = async () => {
     if (!startTaskData.start_date || !startTaskData.end_date) {
       DangerToast("Please fill in all fields");
@@ -726,7 +790,8 @@ export default function ProjectDetailsPage() {
         body: JSON.stringify({
           id: selectedTask.id,
           start_date: startTaskData.start_date,
-          end_date: startTaskData.end_date
+          end_date: startTaskData.end_date,
+          before_image: startTaskData.before_image || ""
         }),
       });
 
@@ -1252,7 +1317,7 @@ export default function ProjectDetailsPage() {
         handleTaskSubmit={handleTaskSubmit}
         isSubmitting={isSubmitting}
       />
-      <TaskModal isOpen={isAssignTaskModalOpen} setTasks={setTasks} tasks={tasks} selectedTask={selectedTask} handleClose={() => { setAssignTaskModalOpen(false) }} />
+      <TaskModal fetchTasks={fetchTasks} fetchAssign={fetchAssign} isOpen={isAssignTaskModalOpen} setTasks={setTasks} tasks={tasks} selectedTask={selectedTask} handleClose={() => { setAssignTaskModalOpen(false) }} />
       <UpdateTaskStatus
         isOpen={isStatusModalOpen}
         handleClose={() => setStatusModalOpen(false)}
@@ -1260,6 +1325,7 @@ export default function ProjectDetailsPage() {
         onUpdate={() => {
           fetchTasks();
           fetchAssign();
+          window.location.reload();
           fetchProjectDetails();
         }}
       />
@@ -1275,7 +1341,7 @@ export default function ProjectDetailsPage() {
         <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 pb-4">
           Start Task
         </DialogTitle>
-        <DialogContent className="pt-6 space-y-4">
+        <DialogContent className="pt-6 space-y-4  flex flex-col gap-2">
           <Typography variant="body2" className="text-gray-600 !mb-4">
             Set the schedule for: <span className="font-bold text-blue-600">{selectedTask?.name}</span>
           </Typography>
@@ -1299,6 +1365,39 @@ export default function ProjectDetailsPage() {
             onChange={(e) => setStartTaskData({ ...startTaskData, end_date: e.target.value })}
             required
           />
+          <Box>
+            <input
+              accept="image/*"
+              id="before-image-upload"
+              type="file"
+              className="hidden"
+              onChange={handleBeforeImageChange}
+            />
+            {!startTaskData.before_image ? (
+              <label htmlFor="before-image-upload">
+                <Box className="border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors">
+                  <Upload size={24} className="text-gray-400" />
+                  <Typography variant="body2" className="font-bold text-gray-600">
+                    Upload Before Image <span className="text-red-500">*</span>
+                  </Typography>
+                  <Typography variant="caption" className="text-gray-400">
+                    Click to select an image (auto-compressed)
+                  </Typography>
+                </Box>
+              </label>
+            ) : (
+              <Box className="relative rounded-xl overflow-hidden border border-gray-200">
+                <img src={startTaskData.before_image} alt="Before preview" className="w-full h-48 object-cover" />
+                <IconButton
+                  size="small"
+                  onClick={() => setStartTaskData({ ...startTaskData, before_image: "" })}
+                  className="!absolute top-2 right-2 bg-white/90 hover:bg-white"
+                >
+                  <X size={16} />
+                </IconButton>
+              </Box>
+            )}
+          </Box>
         </DialogContent>
         <DialogActions className="p-4 border-t border-gray-100">
           <Button onClick={() => setIsStartTaskModalOpen(false)} color="inherit">Cancel</Button>
@@ -1377,7 +1476,20 @@ export default function ProjectDetailsPage() {
                   <Typography variant="body2" className="text-gray-700 bg-blue-50/50 p-3 rounded-lg">{selectedTask.notes}</Typography>
                 </Box>
               )}
+              
 
+              {selectedTask.before_image && (
+                <Box>
+                  <Typography variant="caption" className="text-gray-400 font-bold uppercase text-[10px] block !mb-1">Before Image</Typography>
+                  <Box
+                    component="img"
+                    src={selectedTask.before_image}
+                    alt="Task before"
+                    className="w-full rounded-xl border border-gray-200 cursor-pointer"
+                    onClick={() => window.open(selectedTask.before_image, "_blank")}
+                  />
+                </Box>
+              )}
               {/* Proof image */}
               {selectedTask.proof_image && (
                 <Box>

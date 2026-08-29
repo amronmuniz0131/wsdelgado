@@ -72,6 +72,8 @@ export function TaskModal(props) {
                     end_date: taskData.end_date
                 }),
             });
+            props.fetchTasks();
+            props.fetchAssign();
             // window.location.reload();
         } catch (error) {
             console.error("Error creating task:", error);
@@ -106,8 +108,7 @@ export function TaskModal(props) {
                     >
                         {employees
                             .filter(emp =>
-                                (emp.position?.toLowerCase() != "engineer" && emp.position?.toLowerCase() != "foreman" && emp.position?.toLowerCase() != "admin" && emp.project_id_task == null) ||
-                                emp.is_finished != 0
+                                (emp.position?.toLowerCase() != "engineer" && emp.position?.toLowerCase() != "foreman" && emp.position?.toLowerCase() != "admin")
                             )
                             .map((employee, index) => (
                                 employee.position.toLowerCase() != 'engineer' &&

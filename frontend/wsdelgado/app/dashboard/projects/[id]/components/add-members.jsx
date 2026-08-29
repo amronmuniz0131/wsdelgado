@@ -35,10 +35,10 @@ export default function AddMembers({ isOpen, handleClose, projectId, onUpdate })
         // 2. Not engineer or admin
         const available = (data.records || []).filter(
           (emp) =>
-            !emp.assignedProjectId &&
             emp.position?.toLowerCase() != "engineer" &&
             emp.position?.toLowerCase() != "admin"
         );
+        console.log(available)
         setEmployees(available);
       }
     } catch (error) {

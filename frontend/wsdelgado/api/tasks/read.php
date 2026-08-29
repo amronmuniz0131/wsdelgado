@@ -24,6 +24,7 @@ if ($num > 0) {
             "severity" => $severity,
             "project_id" => $project_id,
             "project_name" => $project_name,
+            "before_image" => $before_image,
             "start_date" => $start_date,
             "end_date" => $end_date,
             "quantity" => $quantity,

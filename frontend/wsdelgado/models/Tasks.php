@@ -13,6 +13,7 @@ class Task
     public $end_date;
     public $actual_end;
     public $proof_image;
+    public $before_image;
     public $notes;
     public $quantity;
     public $finished;
@@ -94,7 +95,7 @@ class Task
     {
         $query = "UPDATE " . $this->table_name . "
                 SET name=:name, status=:status, severity=:severity, project_id=:project_id,
-                    start_date=:start_date, end_date=:end_date, actual_end=:actual_end, proof_image=:proof_image, notes=:notes, quantity=:quantity, finished=:finished
+                    start_date=:start_date, end_date=:end_date, actual_end=:actual_end, proof_image=:proof_image, before_image=:before_image, notes=:notes, quantity=:quantity, finished=:finished
                 WHERE id = :id";
 
         $stmt = $this->conn->prepare($query);
@@ -109,6 +110,7 @@ class Task
         $stmt->bindParam(":end_date", $this->end_date);
         $stmt->bindParam(":actual_end", $this->actual_end);
         $stmt->bindParam(":proof_image", $this->proof_image);
+        $stmt->bindParam(":before_image", $this->before_image);
         $stmt->bindParam(":notes", $this->notes);
         $stmt->bindParam(":quantity", $this->quantity);
         $stmt->bindParam(":finished", $this->finished);
