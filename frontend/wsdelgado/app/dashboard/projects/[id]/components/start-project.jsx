@@ -55,7 +55,7 @@ export default function StartProject({ project, setProject }) {
     const user = localStorage.getItem('user')
     return (
         <div>
-            {user === "engineer" && (
+            {user == "engineer" && (
                 <Button variant="contained" onClick={() => setOpen(true)}>Start Project</Button>
             )}
             <Dialog

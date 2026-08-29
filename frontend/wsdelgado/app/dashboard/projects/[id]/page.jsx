@@ -69,6 +69,7 @@ export default function ProjectDetailsPage() {
   const [tasks, setTasks] = useState([]);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [progress, setProgress] = useState(0)
+  const [count, setCount] = useState(0)
   const [taskData, setTaskData] = useState({
     name: "",
     status: "Pending",
@@ -201,7 +202,7 @@ export default function ProjectDetailsPage() {
       renderCell: (params) => (
         <Box className="flex flex-col justify-center h-full">
           <Typography className="text-[11px] font-medium text-gray-600">Start: {params.row.start_date}</Typography>
-          {params.row.end_date !== "0000-00-00" && <Typography className="text-[11px] font-medium text-gray-600">End: {params.row.end_date}</Typography>}
+          {params.row.end_date != "0000-00-00" && <Typography className="text-[11px] font-medium text-gray-600">End: {params.row.end_date}</Typography>}
         </Box>
       )
     },
@@ -213,9 +214,9 @@ export default function ProjectDetailsPage() {
       headerAlign: 'center',
       renderCell: (params) => (
         <Chip
-          label={params.row.severity === 1 ? "Low" : params.row.severity === 2 ? "Medium" : "High"}
+          label={params.row.severity == 1 ? "Low" : params.row.severity == 2 ? "Medium" : "High"}
           size="small"
-          className={`h-5 text-[9px] font-black uppercase ${params.row.severity === 1 ? "!bg-green-100 !text-green-700" : params.row.severity === 2 ? "!bg-yellow-100 !text-yellow-700" : "!bg-red-100 !text-red-700"}`}
+          className={`h-5 text-[9px] font-black uppercase ${params.row.severity == 1 ? "!bg-green-100 !text-green-700" : params.row.severity == 2 ? "!bg-yellow-100 !text-yellow-700" : "!bg-red-100 !text-red-700"}`}
         />
       )
     },
@@ -225,13 +226,33 @@ export default function ProjectDetailsPage() {
       width: 120,
       align: 'right',
       headerAlign: 'right',
-      renderCell: (params) => (
-        <Chip
-          label={params.row.status === 0 ? "Pending" : params.row.finished < params.row.quantity ? "In Progress" : "Completed"}
-          size="small"
-          className={`h-5 text-[9px] font-black uppercase ${params.row.status === 0 ? "!bg-red-100 !text-red-700" : params.row.finished < params.row.quantity ? "!bg-blue-100 !text-blue-700" : "!bg-green-100 !text-green-700"}`}
-        />
-      )
+      renderCell: (params) => {
+        const isPending = params.row.status == 0;
+        const isCompleted = params.row.finished >= params.row.quantity;
+        const isOverdue = !isPending && !isCompleted && params.row.end_date && params.row.end_date !== "0000-00-00" && new Date() > new Date(params.row.end_date);
+        
+        let label = "In Progress";
+        let colorClass = "!bg-blue-100 !text-blue-700";
+        
+        if (isPending) {
+          label = "Pending";
+          colorClass = "!bg-red-100 !text-red-700";
+        } else if (isCompleted) {
+          label = "Completed";
+          colorClass = "!bg-green-100 !text-green-700";
+        } else if (isOverdue) {
+          label = "Overdue";
+          colorClass = "!bg-orange-100 !text-orange-700";
+        }
+        
+        return (
+          <Chip
+            label={label}
+            size="small"
+            className={`h-5 text-[9px] font-black uppercase ${colorClass}`}
+          />
+        );
+      }
     },
     {
       field: "actions",
@@ -327,7 +348,7 @@ export default function ProjectDetailsPage() {
       if (response.ok) {
         const data = await response.json();
         // Only show available equipment
-        setAllEquipments((data.records || []).filter(e => e.status === "Available"));
+        setAllEquipments((data.records || []).filter(e => e.status == "Available"));
       }
     } catch (error) {
       console.error("Error fetching equipments:", error);
@@ -341,7 +362,7 @@ export default function ProjectDetailsPage() {
         const data = await response.json();
         // Filter employees assigned to this project
         const assignedEmployees = (data.records || []).filter(
-          emp => String(emp.project_id_task) === String(id) && emp.is_finished === 0
+          emp => String(emp.project_id_task) == String(id) && emp.is_finished == 0
         );
         setTeam(assignedEmployees);
       }
@@ -356,7 +377,7 @@ export default function ProjectDetailsPage() {
       if (response.ok) {
         const data = await response.json();
         const projectTasks = (data.records || []).filter(
-          task => String(task.project_id) === String(id)
+          task => String(task.project_id) == String(id)
         );
         setTasks(projectTasks);
         let points = 0
@@ -410,8 +431,8 @@ export default function ProjectDetailsPage() {
 
       setTasks(prevTasks =>
         prevTasks.map(task => {
-          const taskAssignments = assignments.filter(a => String(a.task_id) === String(task.id));
-          if (taskAssignments.length === 0) return { ...task, employees: [] };
+          const taskAssignments = assignments.filter(a => String(a.task_id) == String(task.id));
+          if (taskAssignments.length == 0) return { ...task, employees: [] };
 
           // Find the latest created_at timestamp for this task's assignments
           const latestDate = taskAssignments.reduce((max, a) =>
@@ -420,7 +441,7 @@ export default function ProjectDetailsPage() {
           );
 
           const taskEmployees = taskAssignments
-            .filter(a => a.created_at === latestDate)
+            .filter(a => a.created_at == latestDate)
             .map(a => a.employee_name);
 
           return { ...task, employees: taskEmployees };
@@ -502,7 +523,7 @@ export default function ProjectDetailsPage() {
       if (response.ok) {
         const data = await response.json();
         const projectRequests = (data.records || []).filter(
-          req => String(req.project_id) === String(id)
+          req => String(req.project_id) == String(id)
         );
         setRequests(projectRequests);
       }
@@ -751,8 +772,8 @@ export default function ProjectDetailsPage() {
             </Typography>
             <Box className="flex items-center gap-4">
               <Chip
-                label={progress === 100 ? "Completed" : project.start_date !== null ? "In Progress" : "Pending"}
-                color={progress === 100 ? "success" : project.start_date !== null ? "primary" : "default"}
+                label={progress == 100 ? "Completed" : project.start_date != null ? "In Progress" : "Pending"}
+                color={progress == 100 ? "success" : project.start_date != null ? "primary" : "default"}
                 className="font-bold rounded-lg"
               />
               <Typography variant="body2" className="text-gray-400 font-medium">#{project.id} • Registered {new Date(project.created_at).toLocaleDateString()}</Typography>
@@ -802,18 +823,18 @@ export default function ProjectDetailsPage() {
               </Box>
             </Box>
             {
-              project.start_date === null &&
+              project.start_date == null &&
               <StartProject project={project} setProject={setProject} />
             }
             {
-              progress === 100 && project?.completion_date === null &&
+              progress == 100 && project?.completion_date == null &&
               <Button
                 variant="contained"
                 color="primary"
                 onClick={() => setFinishProjectModal(true)}
-              // disabled={isSubmitting || (project && project.end_date !== null && project.end_date !== "0000-00-00")}
+              // disabled={isSubmitting || (project && project.end_date != null && project.end_date != "0000-00-00")}
               >
-                {project && project.end_date !== null && project.end_date !== "0000-00-00" ? "Project Completed" : "Complete Project"}
+                {project && project.end_date != null && project.end_date != "0000-00-00" ? "Project Completed" : "Complete Project"}
               </Button>
             }
           </Box>
@@ -872,11 +893,11 @@ export default function ProjectDetailsPage() {
                       <Typography variant="caption" className="text-blue-400 font-bold">TIMELINES</Typography>
                       <Chip
                         label={
-                          progress === 100 ? "Completed" :
+                          progress == 100 ? "Completed" :
                             project.end_date && new Date() > new Date(project.end_date) ? "Overdue" : "On Schedule"
                         }
                         size="small"
-                        className={`h-5 text-[10px] font-black ${progress === 100 ? "!bg-green-100 !text-green-700" :
+                        className={`h-5 text-[10px] font-black ${progress == 100 ? "!bg-green-100 !text-green-700" :
                           project.end_date && new Date() > new Date(project.end_date) ? "!bg-red-100 !text-red-700" : "!bg-blue-100! text-blue-700"
                           }`}
                       />
@@ -940,7 +961,7 @@ export default function ProjectDetailsPage() {
                 </Typography>
                 <Box className="flex items-center gap-2">
                   <Chip label={`${tasks.length} Total`} size="small" variant="outlined" className="text-[10px] font-bold mr-2" />
-                  {userRole === "engineer" && project?.completion_date === null && (
+                  {userRole == "engineer" && project?.completion_date == null && (
                     <Button
                       variant="outlined"
                       size="small"
@@ -981,7 +1002,7 @@ export default function ProjectDetailsPage() {
                 </Typography>
                 <div className="flex items-center gap-2">
                   <Chip label={`${requests.length} Requests`} size="small" variant="outlined" className="text-[10px] font-bold" />
-                  {userRole === "engineer" && project?.completion_date === null && (
+                  {userRole == "engineer" && project?.completion_date == null && (
                     <Button
                       variant="outlined"
                       startIcon={<Package size={16} />}
@@ -1015,7 +1036,7 @@ export default function ProjectDetailsPage() {
             <Card className="shadow-sm border border-gray-100 rounded-2xl overflow-hidden mt-6">
               <Box className="p-6">
                 <div className="flex gap-2 justify-end w-full items-center">
-                  {userRole === "engineer" && project?.completion_date === null && (
+                  {userRole == "engineer" && project?.completion_date == null && (
                     <Button
                       variant="outlined"
                       startIcon={<Briefcase size={16} />}
@@ -1026,7 +1047,7 @@ export default function ProjectDetailsPage() {
                     </Button>
                   )}
                 </div>
-                <EquipmentsTable projectId={id} user={userRole} />
+                <EquipmentsTable projectId={id} setCount={setCount} user={userRole} />
               </Box>
             </Card>
           </div>

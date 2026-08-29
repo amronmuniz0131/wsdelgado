@@ -29,7 +29,7 @@ export default function ProfilePage() {
         setMessage("");
         // Validate new passwords match when user intends to change password
         if (newPassword || confirmPassword) {
-            if (newPassword !== confirmPassword) {
+            if (newPassword != confirmPassword) {
                 setMessage("New passwords do not match.");
                 setStatus("error");
                 setSaving(false);
@@ -134,8 +134,8 @@ export default function ProfilePage() {
                         {saving ? <CircularProgress size={20} color="inherit" /> : "Save Changes"}
                     </Button>
                     {message && (
-                        <Box className={`flex items-center ${status === "success" ? "text-green-600" : "text-red-600"}`}>
-                            {status === "success" ? <CheckCircle size={20} className="mr-1" /> : <AlertCircle size={20} className="mr-1" />}
+                        <Box className={`flex items-center ${status == "success" ? "text-green-600" : "text-red-600"}`}>
+                            {status == "success" ? <CheckCircle size={20} className="mr-1" /> : <AlertCircle size={20} className="mr-1" />}
                             <Typography variant="body2">{message}</Typography>
                         </Box>
                     )}
