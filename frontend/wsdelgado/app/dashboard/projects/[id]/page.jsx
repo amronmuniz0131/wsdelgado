@@ -276,7 +276,7 @@ export default function ProjectDetailsPage() {
               <Button
                 variant="outlined"
                 size="small"
-                disabled={params.row.finished}
+                disabled={params.row.actual_end != "0000-00-00 00:00:00"}
 
                 onClick={() => { setAssignTaskModalOpen(true); setSelectedTask(params.row) }}
                 className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-[10px] py-1 h-7"
@@ -287,7 +287,7 @@ export default function ProjectDetailsPage() {
                 <Button
                   variant="outlined"
                   size="small"
-                  disabled={params.row.finished}
+                  disabled={params.row.actual_end != "0000-00-00 00:00:00"}
 
                   onClick={() => { setIsStartTaskModalOpen(true); setSelectedTask(params.row); const endDate = params.row.end_date?.slice(0, 10); setStartTaskData({ start_date: "", end_date: endDate && endDate != "0000-00-00" ? endDate : "" }) }}
                   className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-[10px] py-1 h-7"
@@ -298,7 +298,7 @@ export default function ProjectDetailsPage() {
                 <Button
                   variant="outlined"
                   size="small"
-                  disabled={params.row.finished}
+                  disabled={params.row.actual_end !="0000-00-00 00:00:00"}
 
                   onClick={() => { setStatusModalOpen(true); setSelectedTask(params.row) }}
                   className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-[10px] py-1 h-7"
