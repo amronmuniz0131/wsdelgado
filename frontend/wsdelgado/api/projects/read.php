@@ -28,6 +28,7 @@ if($num > 0){
             "foremanName" => $foreman_name,
             "engineerName" => $engineer_name,
             "clientName" => $client_name,
+            "updated_at" => $updated_at,
             "start_date" => $start_date,
             "end_date" => $end_date,
             "completion_date" => $completion_date

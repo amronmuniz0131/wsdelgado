@@ -20,6 +20,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  MenuItem,
 } from "@mui/material";
 import { DataGrid, getGridStringOperators } from "@mui/x-data-grid";
 import { Plus } from "lucide-react";
@@ -97,6 +98,8 @@ export function MaterialsTable(props) {
     fetchMaterials();
     fetchRequests();
   }, []);
+
+  const units = [{name: "Kilogram", value: "kg"}, {name: "Gram", value: "g"}, {name: "Meter", value: "m"}, {name: "Liter", value: "l"}, {name: "Milliliter", value: "ml"}, {name: "Gallon", value: "gal"}, {name: "Bag", value: "bags"}, {name: "Box", value: "boxes"}, {name: "Pieces", value: "pcs"}]
 
   const handleOpen = (material) => {
     if (material && material.id) {
@@ -463,12 +466,18 @@ export function MaterialsTable(props) {
               margin="dense"
               name="uom"
               label="Unit of Measure"
-              type="text"
+              select
               fullWidth
               variant="outlined"
               value={materialRequest.uom || ""}
               onChange={handleInputChange}
-            />
+            >
+              {units.map((unit) => (
+                <MenuItem key={unit.value} value={unit.value}>
+                  {unit.name}
+                </MenuItem>
+              ))}
+            </TextField>
             {/* <TextField
               select
               margin="dense"

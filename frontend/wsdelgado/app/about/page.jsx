@@ -2,8 +2,28 @@
 
 import { Placeholder } from "@/components/Placeholder";
 import { Check } from "lucide-react";
+import groupImage from "./images/group.jpg";
+import willie from './images/willie.jpg'
+import jo from './images/jo.jpg'
+import fructuso from './images/fructuso.jpg'
+import maria from './images/maria.jpg'
 
 export default function AboutPage() {
+  const employees = [
+    { name: "Willie S. Delgado", position: "General Manager / Owner", image: willie },
+    { name: "Maria Theresa M. Delgado", position: "Operations Manager", image: maria },
+    { name: "Jo May Delgado", position: "Accounts Executive", image: jo },
+    // { name: "Cindy Aguilar", position: "Accounts Assistant" },
+    // { name: "Nestor S. Delgado", position: "Project Coordinator" },
+    { name: "Fructuso Remion", position: "Production Supervisor", image: fructuso },
+    // { name: "Romeo B. Banas", position: "Construction Foreman" },
+    // { name: "Jessy Espolong", position: "Lead Electrician" },
+    // { name: "Gomer Olicia", position: "Lead Plumber" },
+    // { name: "Roche Pacardo", position: "Lead Carpenter" },
+    // { name: "Dennis Campos", position: "Lead Painter" },
+    // { name: "Bogs Sinalampay", position: "Utility Driver" },
+    // { name: "Fructuso Remion", position: "Utility Driver" },
+  ]
   return (
     <div className="min-h-screen font-sans text-gray-900 bg-white">
       {/* Hero */}
@@ -25,22 +45,15 @@ export default function AboutPage() {
           <div>
             <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim veniam, quis nostrud exercitation ullamco laboris
-              nisi ut aliquip ex ea commodo consequat.
+              Our goal is to earn your trust, your confidence and improve all your future businesses.
             </p>
             <p className="text-gray-600 leading-relaxed">
-              Duis aute irure dolor in reprehenderit in voluptate velit esse
-              cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-              cupidatat non proident.
+              We aim not only your current business but to make you a lifetime partners of ours.
+We make sure that your business interests are perceived by our people, at all levels, to be as important to us as they are to you.
             </p>
           </div>
           <div className="aspect-[4/3] w-full">
-            <Placeholder
-              className="w-full h-full rounded-sm"
-              text="Mission Image"
-            />
+            <img src={groupImage.src} alt="Mission Image" className="w-full h-full object-cover rounded-sm" />
           </div>
         </div>
       </section>
@@ -50,18 +63,30 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold mb-12 text-center">Core Values</h2>
           <div className="grid md:grid-cols-3 gap-8">
-            {["Integrity", "Quality", "Innovation"].map((val) => (
+            {[
+              {
+                name: "Integrity",
+                description: "We do business honestly and transparently. Every commitment we make is honored, every price is fair, and every interaction is built on trust that we earn project after project."
+              },
+              {
+                name: "Quality",
+                description: "From foundation to finish, we hold our work to the highest standards. We use proven methods and premium materials to deliver structures that stand the test of time."
+              },
+              {
+                name: "Innovation",
+                description: "We continuously embrace modern techniques, tools, and technologies in construction to deliver smarter, faster, and more cost-effective solutions for our clients."
+              }
+            ].map((val) => (
               <div
-                key={val}
+                key={val.name}
                 className="p-8 border border-white/20 rounded-sm hover:bg-white/5 transition-colors"
               >
                 <div className="w-12 h-12 bg-white text-gray-900 rounded-full flex items-center justify-center mb-6">
                   <Check />
                 </div>
-                <h3 className="text-xl font-bold mb-4">{val}</h3>
+                <h3 className="text-xl font-bold mb-4">{val.name}</h3>
                 <p className="text-gray-400">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut
-                  enim ad minim veniam.
+                  {val.description}
                 </p>
               </div>
             ))}
@@ -77,13 +102,13 @@ export default function AboutPage() {
         </div>
 
         <div className="grid md:grid-cols-4 gap-8">
-          {[1, 2, 3, 4].map((member) => (
-            <div key={member} className="group">
+          {employees.map((member) => (
+            <div key={member.name} className="group">
               <div className="aspect-[3/4] mb-4 overflow-hidden relative">
-                <Placeholder className="w-full h-full group-hover:scale-105 transition-transform duration-500" />
+                <img src={member.image.src} alt={member.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               </div>
-              <h4 className="font-bold text-lg">Team Member {member}</h4>
-              <p className="text-sm text-gray-500">Position Title</p>
+              <h4 className="font-bold text-lg">{member.name}</h4>
+              <p className="text-sm text-gray-500">{member.position}</p>
             </div>
           ))}
         </div>

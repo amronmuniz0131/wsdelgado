@@ -40,21 +40,11 @@ export function ProjectsTable(props) {
     try {
       const response = await fetch(`${API_BASE_URL}/projects/read.php`);
       const data = await response.json();
-      setProjects(data.records || []);
-      let count = 0
-      let not_done = 0
-      let overdue = 0
-      data?.records.map((d) => {
-        if (d.progress == 100) {
-          count++;
-
-        } else if (d.progress < 100 && new Date() < new Date(d.end_date)) {
-          not_done++
-        } else {
-          overdue++
-        }
-      })
-      props.setTotalProgress({ "done": count, "ongoing": not_done, "overdue": overdue })
+      setProjects(
+        (data.records || []).sort(
+          (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
+        )
+      );
     } catch (error) {
       console.error("Error fetching projects:", error);
     } finally {
@@ -281,6 +271,12 @@ export function ProjectsTable(props) {
       return false;
     });
   }, [projects, props.user, userData]);
+
+  React.useEffect(() => {
+    if (props.setTotalProgress) {
+      props.setTotalProgress((prev) => ({ ...prev, done: filteredProjects.length }));
+    }
+  }, [filteredProjects, props.setTotalProgress]);
 
   return (
     <Box className="w-full">

@@ -71,6 +71,14 @@ export default function Header() {
           )}
           {!isAuthenticated && (
             <Link
+              href="/gallery"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+            >
+              Gallery
+            </Link>
+          )}
+          {!isAuthenticated && (
+            <Link
               href={`/contact`}
               className="text-sm font-medium text-gray-600 hover:text-gray-900"
             >
@@ -111,6 +119,18 @@ export default function Header() {
               }`}
             >
               Employees
+            </Link>
+          )}
+          {isAuthenticated && userRole == "admin" && (
+            <Link
+              href="/dashboard/gallery"
+              className={`text-sm font-medium transition-colors ${
+                userData?.first_login == 0
+                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Gallery
             </Link>
           )}
           {isAuthenticated && userRole == "admin" && (
@@ -212,6 +232,19 @@ export default function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               Employees
+            </Link>
+          )}
+          {isAuthenticated && userRole == "admin" && (
+            <Link
+              href="/dashboard/gallery"
+              className={`block py-2 transition-colors ${
+                userData?.first_login == 0
+                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
+                  : "text-gray-600"
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Gallery
             </Link>
           )}
           {isAuthenticated && userRole == "admin" && (
