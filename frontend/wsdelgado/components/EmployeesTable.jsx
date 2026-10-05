@@ -50,6 +50,7 @@ export function EmployeesTable() {
       const data = await response.json();
       setEmployees(data.records || []);
       setCount(data.records.length)
+      console.log(data.records)
       setNewEmployee((prev) => ({ ...prev, employeeId: "EMP-" + (data.records.length + 1) }));
     } catch (error) {
       console.error("Error fetching employees:", error);
@@ -325,7 +326,7 @@ export function EmployeesTable() {
               ? params.row.assignedProjectId == null
                 ? "available"
                 : 'assigned'
-              : (params.row.tasks && params.row.is_finished)
+              : (params.row.tasks && params.row.is_finished || params.row.is_finished == null)
                 ? "available"
                 : "assigned"
             )}
@@ -500,7 +501,7 @@ export function EmployeesTable() {
                   <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Current Position</Typography>
                   <Typography className="text-gray-800 font-bold">{selectedEmployee.position}</Typography>
                 </Box>
-                {userRole.toLowerCase() == "admin" && (
+                {user.toLowerCase() == "admin" && (
                   <Box>
                     <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Assigned Project</Typography>
                     <Typography className="text-gray-800 font-bold text-blue-600 italic underline decoration-blue-200 decoration-4 underline-offset-4" disabled={selectedEmployee.position.toLowerCase() != "engineer"}>{selectedEmployee.assignedProject}</Typography>
