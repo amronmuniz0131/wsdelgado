@@ -264,7 +264,7 @@ export function ProjectsTable(props) {
       const response = await fetch(`${API_BASE_URL}/projects/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(newProject),
       });
       if (response.ok) {
         const result = await response.json();
