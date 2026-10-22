@@ -172,13 +172,13 @@ export function MaterialsTable(props) {
       }
     }
 
-    const endpoint = payload.id ? `${API_BASE_URL}/materials/update` : `${API_BASE_URL}/materials/create`;
+    const isUpdate = Boolean(payload.id);
+    const endpoint = isUpdate ? `${API_BASE_URL}/materials/update` : `${API_BASE_URL}/materials/create`;
 
     try {
       const params = {
-        name: payload.name,
-        quantity: payload.quantity,
-        max_stock: payload.max_stock
+        ...payload,
+        uom: payload.uom || "",
       }
       const response = await fetch(endpoint, {
         method: "POST",
