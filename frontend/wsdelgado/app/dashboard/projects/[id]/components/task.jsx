@@ -121,7 +121,7 @@ export function TaskModal(props) {
                                     </MenuItem>
                                 )
                             ))}
-                    </Select>
+                    </SearchableSelect>
                     
                 </FormControl>
             </DialogContent>

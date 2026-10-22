@@ -44,7 +44,7 @@ export function EmployeesTable() {
   const [count, setCount] = useState(0)
   const [positions, setPositions] = useState([]);
   const [prevProject, setPrevProject] = useState(null);
-  const user = localStorage.getItem("user")
+  const [user, setUser] = useState("");
 
   const fetchEmployees = async () => {
     setIsLoading(true);
@@ -73,6 +73,7 @@ export function EmployeesTable() {
   };
 
   React.useEffect(() => {
+    setUser(localStorage.getItem("user") || "");
     fetchEmployees();
     fetchPositions();
     fetchProjects();
@@ -159,7 +160,7 @@ export function EmployeesTable() {
       const response = await fetch(`${API_BASE_URL}/employees/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(newEmployee),
       });
       if (response.ok) {
         fetchEmployees();
@@ -179,7 +180,7 @@ export function EmployeesTable() {
       const response = await fetch(`${API_BASE_URL}/employees/update`, {
         method: "POST", // Using POST for convenience as per PHP implementation
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(editingEmployee),
       });
       if (response.ok) {
         // Sync project assignment for Engineers and Foremen
@@ -611,26 +612,6 @@ export function EmployeesTable() {
                 )
               ))}
             </TextField>
-            {newEmployee.position == 'engineer' || newEmployee.position == 'foreman' && (
-              <TextField
-                margin="dense"
-                name="assignedProject"
-                label="Assigned Project"
-                fullWidth
-                select
-                variant="outlined"
-                value={newEmployee.assignedProject}
-                onChange={handleInputChange}
-              >
-                {positions.map((position) => (
-                  position.position?.toLowerCase() !== "admin" && position.position?.toLowerCase() !== "engineer" && (
-                    <MenuItem key={position.id} value={position.position}>
-                      {position.position}
-                    </MenuItem>
-                  )
-                ))}
-              </SearchableSelect>
-            </FormControl>
             {(newEmployee.position?.toLowerCase() === 'engineer' || newEmployee.position?.toLowerCase() === 'foreman') && (
               <FormControl fullWidth margin="dense">
                 <InputLabel>Assigned Project</InputLabel>
@@ -749,26 +730,6 @@ export function EmployeesTable() {
                   )
                 ))}
               </TextField>
-              {(editingEmployee.position.toLowerCase() == "engineer" || editingEmployee.position.toLowerCase() == "foreman") && (
-                <TextField
-                  margin="dense"
-                  name="assignedProjectId"
-                  label="Assigned Project"
-                  select
-                  fullWidth
-                  variant="outlined"
-                  value={editingEmployee.assignedProjectId || ""}
-                  onChange={handleEditInputChange}
-                >
-                  {positions.map((position) => (
-                    position.position?.toLowerCase() !== "admin" && (
-                      <MenuItem key={position.id} value={position.position}>
-                        {position.position}
-                      </MenuItem>
-                    )
-                  ))}
-                </SearchableSelect>
-              </FormControl>
               {(editingEmployee.position?.toLowerCase() === "engineer" || editingEmployee.position?.toLowerCase() === "foreman") && (
                 <FormControl fullWidth margin="dense">
                   <InputLabel>Assigned Project</InputLabel>

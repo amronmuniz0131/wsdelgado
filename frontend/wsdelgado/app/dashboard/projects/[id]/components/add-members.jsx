@@ -5,7 +5,6 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  TextField,
   MenuItem,
   Typography,
   Box,
@@ -89,32 +88,37 @@ export default function AddMembers({ isOpen, handleClose, projectId, onUpdate })
         <Typography variant="body2" className="text-gray-500 mb-6">
           Search and select an available employee to join the project workforce. Only employees without current assignments are listed.
         </Typography>
-        <TextField
-          select
-          label="Select Available Employee"
-          fullWidth
-          value={selectedEmployeeId}
-          onChange={(e) => setSelectedEmployeeId(e.target.value)}
-          variant="outlined"
-          className="mt-2"
-        >
-          {employees.length == 0 ? (
-            <MenuItem disabled>No available employees found</MenuItem>
-          ) : (
-            employees.map((emp) => (
-              emp.position.toLowerCase() != 'engineer' && emp.position.toLowerCase() != 'foreman' && emp.position.toLowerCase() != 'admin' &&
-              <MenuItem key={emp.id} value={emp.id} className="py-3 px-4">
-                <Box className="flex items-center gap-4">
-                  <Avatar className="bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm text-sm w-9 h-9">
-                    {emp.name.charAt(0)}
-                  </Avatar>
-                  <Box>
-                    <Typography variant="body2" className="font-bold text-gray-800">{emp.name}</Typography>
-                    <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">{emp.position}</Typography>
+        <FormControl fullWidth margin="dense" className="mt-2">
+          <InputLabel>Select Available Employee</InputLabel>
+          <SearchableSelect
+            name="employeeId"
+            label="Select Available Employee"
+            value={selectedEmployeeId}
+            onChange={(e) => setSelectedEmployeeId(e.target.value)}
+          >
+            {employees.length === 0 && (
+              <MenuItem disabled>No available employees found</MenuItem>
+            )}
+            {employees
+              .filter(
+                (emp) =>
+                  emp.position?.toLowerCase() !== "engineer" &&
+                  emp.position?.toLowerCase() !== "foreman" &&
+                  emp.position?.toLowerCase() !== "admin"
+              )
+              .map((emp) => (
+                <MenuItem key={emp.id} value={emp.id} className="py-3 px-4">
+                  <Box className="flex items-center gap-4">
+                    <Avatar className="bg-gradient-to-br from-blue-500 to-indigo-600 shadow-sm text-sm w-9 h-9">
+                      {emp.name.charAt(0)}
+                    </Avatar>
+                    <Box>
+                      <Typography variant="body2" className="font-bold text-gray-800">{emp.name}</Typography>
+                      <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">{emp.position}</Typography>
+                    </Box>
                   </Box>
                 </MenuItem>
-              ))
-            )}
+              ))}
           </SearchableSelect>
         </FormControl>
       </DialogContent>
