@@ -142,7 +142,7 @@ export function ProjectsTable(props) {
       flex: 1,
       minWidth: 130,
       filterOperators: filteredOperators,
-      valueGetter: (value, row) => row?.engineer_name || row?.engineer || ""
+      valueGetter: (value, row) => row?.engineerName || row?.engineer || ""
     },
     {
       field: "client",
@@ -150,7 +150,7 @@ export function ProjectsTable(props) {
       flex: 1,
       minWidth: 150,
       filterOperators: filteredOperators,
-      valueGetter: (value, row) => row?.client_name || row?.client || ""
+      valueGetter: (value, row) => row?.clientName || row?.client || ""
     },
     {
       field: "address",
