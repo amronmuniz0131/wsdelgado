@@ -32,7 +32,7 @@ class TaskHistory {
 
     // READ
     public function read() {
-        $query = "SELECT th.*, e.name as employee_name, t.name as task_name, p.name as project_name, p.id as project_id 
+        $query = "SELECT th.*, e.name as employee_name, t.name as task_name, t.finished as is_finish, p.name as project_name, p.id as project_id 
                 FROM " . $this->table_name . " th
                 LEFT JOIN employees e ON th.employee_id = e.id
                 LEFT JOIN tasks t ON th.task_id = t.id
@@ -45,7 +45,7 @@ class TaskHistory {
 
     // READ BY TASK
     public function readByTask() {
-        $query = "SELECT th.*, e.name as employee_name, t.name as task_name, p.name as project_name, p.id as project_id
+        $query = "SELECT th.*, e.name as employee_name, t.name as task_name, t.finished as is_finish, p.name as project_name, p.id as project_id
                 FROM " . $this->table_name . " th
                 LEFT JOIN employees e ON th.employee_id = e.id
                 LEFT JOIN tasks t ON th.task_id = t.id

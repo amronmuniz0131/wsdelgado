@@ -13,23 +13,27 @@ import {
     TextField,
     FormControl,
     InputLabel,
-    MenuItem
+    Select,
+    MenuItem,
+    Checkbox,
+    ListItemText
 } from "@mui/material";
 import SearchableSelect from "@/components/SearchableSelect";
 export function TaskModal(props) {
     const [tasks, setTasks] = useState([]);
     const [taskData, setTaskData] = useState({
         employee_id: [],
-        task_id: props.selectedTask?.id
+        task_id: props.selectedTask?.id,
+        // end_date: props.selectedTask?.end_date || ""
     })
     const handleChange = (event) => {
         const { target: { value } } = event;
-        setTaskData({ ...taskData, employee_id: typeof value === 'string' ? value.split(',') : value })
+        setTaskData({ ...taskData, employee_id: typeof value == 'string' ? value.split(',') : value })
     }
     const [employees, setEmployees] = useState([])
     const fetchEmployees = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/employees`);
+            const response = await fetch(`${API_BASE_URL}/employees/read`);
             const data = await response.json();
             setEmployees(data.records || []);
         } catch (error) {
@@ -41,9 +45,10 @@ export function TaskModal(props) {
         try {
             const payload = {
                 task_id: props.selectedTask?.id,
-                employee_id: taskData.employee_id
+                employee_id: taskData.employee_id,
+                end_date: taskData.end_date
             };
-            const response = await fetch(`${API_BASE_URL}/assign`, {
+            const response = await fetch(`${API_BASE_URL}/assign/create`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -57,24 +62,26 @@ export function TaskModal(props) {
             } else {
                 DangerToast(`Error: ${result.message}`);
             }
-            const res = await fetch(`${API_BASE_URL}/tasks/${props.selectedTask?.id}`, {
-                method: "PUT",
+            const res = await fetch(`${API_BASE_URL}/tasks/update`, {
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
                     id: props.selectedTask?.id,
                     status: 1,
-                    start_date: new Date().toISOString().slice(0, 19).replace('T', ' '),
+                    end_date: taskData.end_date
                 }),
             });
-            window.location.reload();
+            props.fetchTasks();
+            props.fetchAssign();
+            // window.location.reload();
         } catch (error) {
             console.error("Error creating task:", error);
         }
     }
     useEffect(() => {
-        setTaskData({ ...taskData, employee_id: [] })
+        setTaskData({ employee_id: [], end_date: props.selectedTask?.end_date || "" })
         fetchEmployees();
     }, [props.isOpen])
     return (
@@ -88,7 +95,7 @@ export function TaskModal(props) {
             <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 pb-4">
                 Assign Task for: {props.selectedTask?.name}
             </DialogTitle>
-            <DialogContent className="pt-6 space-y-4">
+            <DialogContent className="!pt-6 space-y-4">
                 <FormControl fullWidth variant="outlined">
                     <InputLabel>Employee Name</InputLabel>
                     <SearchableSelect
@@ -97,24 +104,25 @@ export function TaskModal(props) {
                         onChange={handleChange}
                         label="Employee Name"
                         renderValue={(selected) =>
-                            selected.map(id => employees.find(emp => emp.id === id)?.name || id).join(', ')
+                            selected.map(id => employees.find(emp => emp.id == id)?.name || id).join(', ')
                         }
                     >
                         {employees
                             .filter(emp =>
-                                (emp.position?.toLowerCase() !== "engineer" && emp.position?.toLowerCase() !== "foreman" && emp.position?.toLowerCase() !== "admin" && emp.project_id_task === null) ||
-                                emp.is_finished !== 0
+                                (emp.position?.toLowerCase() != "engineer" && emp.position?.toLowerCase() != "foreman" && emp.position?.toLowerCase() != "admin")
                             )
                             .map((employee, index) => (
-                                employee.position.toLowerCase() !== 'engineer' &&
-                                employee.position.toLowerCase() !== 'foreman' &&
-                                employee.position.toLowerCase() !== 'admin' && (
+                                employee.position.toLowerCase() != 'engineer' &&
+                                employee.position.toLowerCase() != 'foreman' &&
+                                employee.position.toLowerCase() != 'admin' && (
                                     <MenuItem key={index + '-employee'} value={employee.id}>
-                                        {employee.name} ({employee.position})
+                                        <Checkbox checked={taskData.employee_id.indexOf(employee.id) > -1} />
+                                        <ListItemText primary={`${employee.name} (${employee.position})`} />
                                     </MenuItem>
                                 )
                             ))}
-                    </SearchableSelect>
+                    </Select>
+                    
                 </FormControl>
             </DialogContent>
             <DialogActions className="p-4 border-t border-gray-100">

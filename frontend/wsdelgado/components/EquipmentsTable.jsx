@@ -64,11 +64,19 @@ export function EquipmentsTable(props) {
   const fetchEquipments = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/equipments`);
+      let count = 0
+      const response = await fetch(`${API_BASE_URL}/equipments/read`);
       const data = await response.json();
       let records = data.records || [];
       if (props.projectId) {
-        records = data.records.filter(e => String(e.projectId) === String(props.projectId));
+        records = data.records.filter(e => String(e.projectId) == String(props.projectId));
+      }
+      data.records.map((d) => {
+        if (d.status == "Requested" || (d.status == "In Use" && new Date(d.returnDate) < new Date()))
+          count = count + 1
+      })
+      if (props?.setCount) {
+        props?.setCount(count)
       }
       setEquipments(records);
     } catch (error) {
@@ -150,8 +158,7 @@ export function EquipmentsTable(props) {
       payload.status = "Available";
     }
 
-    const isUpdate = !!payload.id;
-    const endpoint = isUpdate ? `${API_BASE_URL}/equipments/${payload.id}` : `${API_BASE_URL}/equipments`;
+    const endpoint = payload.id ? `${API_BASE_URL}/equipments/update` : `${API_BASE_URL}/equipments/create`;
 
     try {
       const response = await fetch(endpoint, {
@@ -175,8 +182,8 @@ export function EquipmentsTable(props) {
 
   const handleMaintenance = async (id) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/equipments/${id}`, {
-        method: "PUT",
+      const response = await fetch(`${API_BASE_URL}/equipments/update`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: "Maintenance",
@@ -198,8 +205,8 @@ export function EquipmentsTable(props) {
 
   const handleEndMaintenance = async (id) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/equipments/${id}`, {
-        method: "PUT",
+      const response = await fetch(`${API_BASE_URL}/equipments/update`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: "Available",
@@ -221,8 +228,8 @@ export function EquipmentsTable(props) {
 
   const handleReturn = async (id) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/equipments/${id}`, {
-        method: "PUT",
+      const response = await fetch(`${API_BASE_URL}/equipments/update`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: "Available",
@@ -295,7 +302,7 @@ export function EquipmentsTable(props) {
       filterOperators: filteredOperators,
       renderCell: (params) => {
         let status = params.row.status;
-        if (status === "In Use" && params.row.returnDate) {
+        if (status == "In Use" && params.row.returnDate) {
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           const rDate = new Date(params.row.returnDate);
@@ -342,22 +349,22 @@ export function EquipmentsTable(props) {
             onClick={() => handleOpen(params.row)}
             className="bg-blue-600 !text-2xs hover:bg-blue-700"
             size="small"
-            disabled={props.user !== "admin"}
+            disabled={props.user != "admin"}
           >
             Edit
           </Button>
-          {params.row.status !== "Maintenance" && props.user === "admin" && (
+          {params.row.status != "Maintenance" && props.user == "admin" && (
             <Button
               variant="outlined"
               onClick={() => handleMaintenance(params.row.id)}
               className="border-red-600 text-red-600 hover:bg-red-50 !text-2xs"
               size="small"
-              disabled={params.row.status === "In Use"}
+              disabled={params.row.status == "In Use"}
             >
               Maint.
             </Button>
           )}
-          {params.row.status === "Maintenance" && props.user === "admin" && (
+          {params.row.status == "Maintenance" && props.user == "admin" && (
             <Button
               variant="outlined"
               onClick={() => handleEndMaintenance(params.row.id)}
@@ -367,7 +374,7 @@ export function EquipmentsTable(props) {
               End Maint.
             </Button>
           )}
-          {params.row.status === "In Use" && props.user === "admin" && (
+          {params.row.status == "In Use" && props.user == "admin" && (
             <Button
               variant="outlined"
               onClick={() => handleReturn(params.row.id)}
@@ -394,7 +401,7 @@ export function EquipmentsTable(props) {
             Construction Equipments
           </Typography>
         </Box>
-        {props.user === "admin" && !props.projectId && (
+        {props.user == "admin" && !props.projectId && (
           <Button
             variant="contained"
             color="primary"
@@ -525,7 +532,7 @@ export function EquipmentsTable(props) {
                 </Box>
               </Box>
 
-              {equipmentRequest.status === "Requested" && props.user === "admin" && (
+              {equipmentRequest.status == "Requested" && props.user == "admin" && (
                 <Box className="flex gap-2 pt-2 border-t border-blue-100">
                   <Button
                     onClick={handleApprove}
@@ -560,11 +567,11 @@ export function EquipmentsTable(props) {
           </Button>
 
           <Box className="flex gap-2">
-            {props.user === "admin" ? (
+            {props.user == "admin" ? (
               <>
                 {equipmentRequest.id ? (
                   <>
-                    {equipmentRequest.status !== "Requested" && (
+                    {equipmentRequest.status != "Requested" && (
                       <Button
                         onClick={() => submitEquipment()}
                         variant="contained"

@@ -14,7 +14,6 @@ if($project->readOne()){
     $project_arr = array(
         "id" => $project->id,
         "name" => $project->name,
-        "location" => $project->location,
         "client" => $project->client,
         "address" => $project->address,
         "progress" => $project->progress,

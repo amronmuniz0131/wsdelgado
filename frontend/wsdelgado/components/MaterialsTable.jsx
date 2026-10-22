@@ -20,6 +20,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  MenuItem,
 } from "@mui/material";
 import { DataGrid, getGridStringOperators } from "@mui/x-data-grid";
 import { Plus } from "lucide-react";
@@ -55,13 +56,14 @@ export function MaterialsTable(props) {
     siteLocation: "",
     status: "In Stock",
     price: "",
-    is_approved: 0
+    is_approved: 0,
+    uom: "",
   });
 
   const fetchMaterials = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/materials`);
+      const response = await fetch(`${API_BASE_URL}/materials/read`);
       const data = await response.json();
       setMaterials(data.records || []);
     } catch (error) {
@@ -74,19 +76,21 @@ export function MaterialsTable(props) {
   const [requestCount, setCount] = useState({})
 
   useEffect(() => {
-    if (props.user === "admin") {
+    if (props.user == "admin") {
+      let objectCount = 0
       let obj = {}
       materials.map((data) => {
         let count = 0;
         requests.map((req) => {
-          if (req.material_id === data.id && req.is_approve === "Pending") {
+          if (req.material_id == data.id && req.is_approve == "Pending") {
             count++;
           }
         })
         obj = { ...obj, [data.name]: count }
+        objectCount = objectCount + count
       })
+      props.setCount(objectCount)
       setCount(obj)
-      console.log(obj)
     }
   }, [materials, requests])
 
@@ -94,6 +98,8 @@ export function MaterialsTable(props) {
     fetchMaterials();
     fetchRequests();
   }, []);
+
+  const units = [{name: "Kilogram", value: "kg"}, {name: "Gram", value: "g"}, {name: "Meter", value: "m"}, {name: "Liter", value: "l"}, {name: "Milliliter", value: "ml"}, {name: "Gallon", value: "gal"}, {name: "Bag", value: "bags"}, {name: "Box", value: "boxes"}, {name: "Pieces", value: "pcs"}]
 
   const handleOpen = (material) => {
     if (material && material.id) {
@@ -106,7 +112,8 @@ export function MaterialsTable(props) {
         siteLocation: material.siteLocation || "",
         status: material.status || "",
         price: material.price || "",
-        is_approved: material.is_approved || 0
+        is_approved: material.is_approved || 0,
+        uom: material.uom || "",
       });
     } else {
       setMaterialRequest({
@@ -118,7 +125,8 @@ export function MaterialsTable(props) {
         siteLocation: "",
         status: "In Stock",
         price: "",
-        is_approved: 0
+        is_approved: 0,
+        uom: "",
       });
     }
     setOpen(true);
@@ -135,7 +143,8 @@ export function MaterialsTable(props) {
       siteLocation: "",
       status: "In Stock",
       price: "",
-      is_approved: 0
+      is_approved: 0,
+      uom: "",
     });
   };
 
@@ -154,7 +163,7 @@ export function MaterialsTable(props) {
     // Check if the material already exists based on name (case-insensitive)
     if (!payload.id) {
       const existingMaterial = materials.find(
-        (m) => m.name && payload.name && m.name.toLowerCase().trim() === payload.name.toLowerCase().trim()
+        (m) => m.name && payload.name && m.name.toLowerCase().trim() == payload.name.toLowerCase().trim()
       );
 
       if (existingMaterial) {
@@ -163,8 +172,7 @@ export function MaterialsTable(props) {
       }
     }
 
-    const isUpdate = !!payload.id;
-    const endpoint = isUpdate ? `${API_BASE_URL}/materials/${payload.id}` : `${API_BASE_URL}/materials`;
+    const endpoint = payload.id ? `${API_BASE_URL}/materials/update` : `${API_BASE_URL}/materials/create`;
 
     try {
       const params = {
@@ -200,10 +208,12 @@ export function MaterialsTable(props) {
   };
 
   const [table, openTable] = useState(false);
+  const [rejectTarget, setRejectTarget] = useState(null);
+  const [rejectNotes, setRejectNotes] = useState("");
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/requests`);
+      const response = await fetch(`${API_BASE_URL}/request/read`);
       const data = await response.json();
       setRequests(data.records || []);
     } catch (error) {
@@ -220,8 +230,8 @@ export function MaterialsTable(props) {
   const handleApproveRequest = async (req) => {
     try {
       // 1. Update request status to "Approve"
-      const updateReqResponse = await fetch(`${API_BASE_URL}/requests/${req.id}`, {
-        method: "PUT",
+      const updateReqResponse = await fetch(`${API_BASE_URL}/request/update`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...req,
@@ -231,15 +241,16 @@ export function MaterialsTable(props) {
 
       if (updateReqResponse.ok) {
         // 2. Deduct quantity from material
-        const material = materials.find(m => m.id === req.material_id);
+        const material = materials.find(m => m.id == req.material_id);
         if (material) {
           const newQuantity = Math.max(0, parseInt(material.quantity) - parseInt(req.quantity));
-          const updateMatResponse = await fetch(`${API_BASE_URL}/materials/${material.id}`, {
-            method: "PUT",
+          const updateMatResponse = await fetch(`${API_BASE_URL}/materials/update`, {
+            method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               ...material,
-              quantity: newQuantity
+              quantity: newQuantity,
+              uom: material.uom || "",
             }),
           });
 
@@ -257,14 +268,15 @@ export function MaterialsTable(props) {
     }
   };
 
-  const handleRejectRequest = async (req) => {
+  const handleRejectRequest = async (req, notes = "") => {
     try {
-      const response = await fetch(`${API_BASE_URL}/requests/${req.id}`, {
-        method: "PUT",
+      const response = await fetch(`${API_BASE_URL}/request/update`, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...req,
-          is_approve: "Reject"
+          is_approve: "Reject",
+          notes
         }),
       });
 
@@ -275,6 +287,25 @@ export function MaterialsTable(props) {
     } catch (error) {
       console.error("Error rejecting request:", error);
     }
+  };
+
+  const handleOpenReject = (req) => {
+    setRejectTarget(req);
+    setRejectNotes("");
+  };
+
+  const handleCloseReject = () => {
+    setRejectTarget(null);
+    setRejectNotes("");
+  };
+
+  const handleConfirmReject = () => {
+    if (!rejectNotes.trim()) {
+      DangerToast("Please provide a reason for rejecting this request.");
+      return;
+    }
+    handleRejectRequest(rejectTarget, rejectNotes.trim());
+    handleCloseReject();
   };
 
 
@@ -298,7 +329,7 @@ export function MaterialsTable(props) {
       type: 'number'
     },
     {
-      field: "unit",
+      field: "uom",
       headerName: "Unit",
       flex: 1,
       minWidth: 100,
@@ -331,19 +362,19 @@ export function MaterialsTable(props) {
           <Button
             variant="contained"
             onClick={() => { openTable(true); setCurrentMaterial(params.row.id) }}
-            disabled={props.user === "engineer"}
+            disabled={props.user == "engineer"}
             className="relative bg-blue-600 !text-2xs hover:bg-blue-700"
             size="small"
           >
             View More
-            {props.user === "admin" && requestCount[params.row.name] !== 0 &&
+            {props.user == "admin" && requestCount[params.row.name] != 0 &&
               <span className="absolute -top-1 -right-2 h-4 w-4 text-xs animate-bounce rounded-full bg-red-400">{requestCount[params.row.name]}</span>
             }
           </Button>
           <Button
             variant="contained"
             onClick={() => handleOpen(params.row)}
-            disabled={props.user === "engineer"}
+            disabled={props.user == "engineer"}
             className="bg-blue-600 !text-2xs hover:bg-blue-700"
             size="small"
           >
@@ -366,7 +397,7 @@ export function MaterialsTable(props) {
             Construction Materials Inventory
           </Typography>
         </Box>
-        {(props.user === "admin") && (
+        {(props.user == "admin") && (
           <Button
             variant="contained"
             color="primary"
@@ -436,6 +467,22 @@ export function MaterialsTable(props) {
               value={materialRequest.max_stock}
               onChange={handleInputChange}
             />
+            <TextField
+              margin="dense"
+              name="uom"
+              label="Unit of Measure"
+              select
+              fullWidth
+              variant="outlined"
+              value={materialRequest.uom || ""}
+              onChange={handleInputChange}
+            >
+              {units.map((unit) => (
+                <MenuItem key={unit.value} value={unit.value}>
+                  {unit.name}
+                </MenuItem>
+              ))}
+            </TextField>
             {/* <TextField
               select
               margin="dense"
@@ -476,7 +523,7 @@ export function MaterialsTable(props) {
           </Button>
 
           <Box className="flex gap-2">
-            {props.user === "admin" ? (
+            {props.user == "admin" ? (
               <>
                 {materialRequest.id ? (
                   <>
@@ -538,20 +585,21 @@ export function MaterialsTable(props) {
                   <TableCell className="font-bold text-right">Qty</TableCell>
                   <TableCell className="font-bold">Date</TableCell>
                   <TableCell className="font-bold">Status</TableCell>
+                  <TableCell className="font-bold">Notes</TableCell>
                   <TableCell className="font-bold text-center">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {requests.length === 0 ? (
+                {requests.length == 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" className="py-8">
+                    <TableCell colSpan={8} align="center" className="py-8">
                       No material requests found.
                     </TableCell>
                   </TableRow>
                 ) : (
                   requests.map((req) => (
 
-                    req.material_id === currentMaterial && (
+                    req.material_id == currentMaterial && (
                       <TableRow key={req.id} hover>
                         <TableCell>{req.project_name || req.project_id}</TableCell>
                         <TableCell>{req.engineer_name || req.engineer_id}</TableCell>
@@ -562,15 +610,18 @@ export function MaterialsTable(props) {
                           <Chip
                             label={req.is_approve}
                             size="small"
-                            color={req.is_approve === "Approve" ? "success" : req.is_approve === "Reject" ? "error" : "warning"}
+                            color={req.is_approve == "Approve" ? "success" : req.is_approve == "Reject" ? "error" : "warning"}
                           />
                         </TableCell>
+                        <TableCell className="max-w-[200px] truncate" title={req.notes}>
+                          {req.notes || "—"}
+                        </TableCell>
                         <TableCell align="center">
-                          {req.is_approve === "Pending" && props.user === "admin" && (
+                          {req.is_approve == "Pending" && props.user == "admin" && (
                             <Box className="flex gap-1 justify-center">
                               {(() => {
                                 let isInsufficient = false;
-                                const currentMat = materials.find(m => m.id === req.material_id);
+                                const currentMat = materials.find(m => m.id == req.material_id);
                                 if (currentMat) {
                                   isInsufficient = parseInt(currentMat.quantity) < parseInt(req.quantity);
                                 }
@@ -592,7 +643,7 @@ export function MaterialsTable(props) {
                                 variant="contained"
                                 color="error"
                                 className="bg-red-600 !text-3xs"
-                                onClick={() => handleRejectRequest(req)}
+                                onClick={() => handleOpenReject(req)}
                               >
                                 Reject
                               </Button>
@@ -610,6 +661,48 @@ export function MaterialsTable(props) {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => openTable(false)} color="inherit">Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Reject Reason Modal */}
+      <Dialog open={Boolean(rejectTarget)} onClose={handleCloseReject} maxWidth="sm" fullWidth>
+        <DialogTitle className="font-bold text-gray-800 border-b border-gray-100 mb-4">
+          Reject Request
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" className="text-gray-600 mt-1 mb-3">
+            Please provide a reason for rejecting this request. This will be shown to the requesting engineer.
+          </Typography>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Rejection Notes"
+            type="text"
+            fullWidth
+            multiline
+            rows={3}
+            variant="outlined"
+            value={rejectNotes}
+            onChange={(e) => setRejectNotes(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions className="p-4 border-t border-gray-100">
+          <Button
+            onClick={handleCloseReject}
+            color="inherit"
+            className="text-gray-600 hover:bg-gray-100"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmReject}
+            variant="contained"
+            color="error"
+            className="bg-red-600 hover:bg-red-700"
+            disabled={!rejectNotes.trim()}
+          >
+            Reject Request
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

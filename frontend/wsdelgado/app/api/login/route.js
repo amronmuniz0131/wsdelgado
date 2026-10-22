@@ -1,45 +1,26 @@
-import { turso } from "@/lib/turso";
 import bcrypt from "bcryptjs";
-import { NextResponse } from "next/server";
+import { get } from "@/lib/db";
+import { json, readJson, notEmpty } from "@/lib/http";
 
-export async function POST(request) {
-  try {
-    const { email, password } = await request.json();
+export const dynamic = "force-dynamic";
 
-    if (!email || !password) {
-      return NextResponse.json(
-        { message: "Login failed. Incomplete data." },
-        { status: 400 }
-      );
-    }
+export async function POST(req) {
+  const data = await readJson(req);
 
-    // Use turso to find the user
-    const result = await turso.execute({
-      sql: "SELECT id, name, email, password, role, first_login FROM users WHERE email = ? LIMIT 1",
-      args: [email],
-    });
+  if (!notEmpty(data.email) || !notEmpty(data.password)) {
+    return json({ message: "Login failed. Incomplete data." }, 400);
+  }
 
-    const user = result.rows[0];
-
-    if (!user) {
-      return NextResponse.json(
-        { message: "Login failed. Invalid email or password." },
-        { status: 401 }
-      );
-    }
-
-    // Verify password
-    const passwordMatch = await bcrypt.compare(password, user.password);
-
-    if (!passwordMatch) {
-      return NextResponse.json(
-        { message: "Login failed. Invalid email or password." },
-        { status: 401 }
-      );
-    }
-
-    // Success response matching the PHP format
-    return NextResponse.json({
+  const user = await get(
+    "SELECT id, name, email, password, role, first_login FROM users WHERE email = ? LIMIT 1",
+    [String(data.email)]
+  );
+  if (
+    user &&
+    user.password &&
+    bcrypt.compareSync(String(data.password), user.password)
+  ) {
+    return json({
       message: "Login successful.",
       id: user.id,
       name: user.name,
@@ -47,11 +28,6 @@ export async function POST(request) {
       role: user.role,
       first_login: user.first_login,
     });
-  } catch (error) {
-    console.error("Login error:", error);
-    return NextResponse.json(
-      { message: "An error occurred during login." },
-      { status: 500 }
-    );
   }
+  return json({ message: "Login failed. Invalid email or password." }, 401);
 }

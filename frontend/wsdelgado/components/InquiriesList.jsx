@@ -26,7 +26,7 @@ export function InquiriesList({ openModal, setNewAccount, user, onUnreadCountCha
   const fetchInquiries = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/inquiries`);
+      const response = await fetch(`${API_BASE_URL}/inquiries/read`);
       const data = await response.json();
       setInquiries(data.records || []);
       if (onUnreadCountChange) {
@@ -40,7 +40,7 @@ export function InquiriesList({ openModal, setNewAccount, user, onUnreadCountCha
   };
 
   useEffect(() => {
-    if (user === "admin") {
+    if (user == "admin") {
       fetchInquiries();
     }
   }, [user]);
@@ -51,8 +51,8 @@ export function InquiriesList({ openModal, setNewAccount, user, onUnreadCountCha
 
     if (inquiry.is_read == 0) {
       try {
-        await fetch(`${API_BASE_URL}/inquiries/${inquiry.id}`, {
-          method: "PATCH",
+        await fetch(`${API_BASE_URL}/inquiries/mark_read`, {
+          method: "POST",
           headers: { "Content-Type": "application/json" },
         });
         // Refetch to update the unread status
@@ -124,7 +124,7 @@ export function InquiriesList({ openModal, setNewAccount, user, onUnreadCountCha
     },
   ];
 
-  if (user !== "admin") return null;
+  if (user != "admin") return null;
 
   return (
     <Box className="w-full">

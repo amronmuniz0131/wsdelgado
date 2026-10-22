@@ -33,8 +33,8 @@ export default function LoginPage() {
         localStorage.setItem("user", result.role || "user");
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("userData", JSON.stringify(result));
-
-        if (String(result.first_login) === "0") {
+        
+        if (String(result.first_login) == "0") {
           window.location.href = "/change-password";
         } else {
           window.location.href = "/dashboard";

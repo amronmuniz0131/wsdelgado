@@ -27,7 +27,6 @@ export function ProjectsTable(props) {
   const router = useRouter();
   const [projects, setProjects] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const [open, setOpen] = useState(false);
   const [users, setUsers] = useState([]);
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,9 +41,13 @@ export function ProjectsTable(props) {
   const fetchProjects = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/projects`);
+      const response = await fetch(`${API_BASE_URL}/projects/read`);
       const data = await response.json();
-      setProjects(data.records || []);
+      setProjects(
+        (data.records || []).sort(
+          (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
+        )
+      );
     } catch (error) {
       console.error("Error fetching projects:", error);
     } finally {
@@ -56,15 +59,20 @@ export function ProjectsTable(props) {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/employees`);
+      let count = 0
+      const response = await fetch(`${API_BASE_URL}/employees/read`);
       const data = await response.json();
       let arr = []
       setEmployees(data.records || []);
       data.records.map((d) => {
-        if (d.position?.toLowerCase() == "engineer" && d.assignedProjectId == null) {
+        if (d.position?.toLowerCase() == "engineer") {
           arr.push(d)
         }
+        if (d.project_id == null || d.is_finished) {
+          count = count + 1
+        }
       })
+      props.employee_count(count)
       setEngineers(arr);
     } catch (error) {
       console.error("Error fetching employees:", error);
@@ -73,7 +81,7 @@ export function ProjectsTable(props) {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/accounts`);
+      const response = await fetch(`${API_BASE_URL}/read`);
       const data = await response.json();
       setUsers(data.records || []);
     } catch (error) {
@@ -100,7 +108,7 @@ export function ProjectsTable(props) {
   useEffect(() => {
     if (props.userData) {
       users.map((d) => {
-        if (props.userData.email === d.email) {
+        if (props.userData.email == d.email) {
           setNewProject((prev) => ({ ...prev, client: d.id }));
         }
       })
@@ -137,13 +145,6 @@ export function ProjectsTable(props) {
       valueGetter: (value, row) => row?.engineer_name || row?.engineer || ""
     },
     {
-      field: "location",
-      headerName: "Location",
-      flex: 1,
-      minWidth: 120,
-      filterOperators: filteredOperators
-    },
-    {
       field: "client",
       headerName: "Client",
       flex: 1,
@@ -166,7 +167,7 @@ export function ProjectsTable(props) {
       align: "center",
       headerAlign: "center",
       renderCell: (params) => {
-        if (params.row.completion_date && params.row.completion_date !== "0000-00-00") {
+        if (params.row.completion_date && params.row.completion_date != "0000-00-00") {
           return (
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", width: "100%" }}>
               <Box
@@ -260,15 +261,7 @@ export function ProjectsTable(props) {
 
   const handleAddProject = async () => {
     try {
-      const payload = {
-        name: newProject.name,
-        location: newProject.location || null,
-        client: newProject.client || null,
-        address: newProject.address || null,
-        foreman_id: newProject.foremanId || null,
-        engineer_id: newProject.engineerId || null,
-      };
-      const response = await fetch(`${API_BASE_URL}/projects`, {
+      const response = await fetch(`${API_BASE_URL}/projects/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -279,10 +272,10 @@ export function ProjectsTable(props) {
 
         // Update Foreman
         if (newProject.foremanId) {
-          const foreman = employees.find((e) => e.id === newProject.foremanId);
+          const foreman = employees.find((e) => e.id == newProject.foremanId);
           if (foreman) {
-            await fetch(`${API_BASE_URL}/employees/${foreman.id}`, {
-              method: "PUT",
+            await fetch(`${API_BASE_URL}/employees/update`, {
+              method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 ...foreman,
@@ -295,10 +288,10 @@ export function ProjectsTable(props) {
 
         // Update Engineer
         if (newProject.engineerId) {
-          const engineer = engineers.find((e) => e.id === newProject.engineerId);
+          const engineer = engineers.find((e) => e.id == newProject.engineerId);
           if (engineer) {
-            await fetch(`${API_BASE_URL}/employees/${engineer.id}`, {
-              method: "PUT",
+            await fetch(`${API_BASE_URL}/employees/update`, {
+              method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 ...engineer,
@@ -323,20 +316,41 @@ export function ProjectsTable(props) {
   };
 
   const filteredProjects = React.useMemo(() => {
-    if (props.user === "admin") return projects;
+    const isCompleted = (project) =>
+      project.completion_date && project.completion_date != "0000-00-00";
+
+    if (props.user == "admin") {
+      return projects.filter((project) => !isCompleted(project));
+    };
     if (!userData) return [];
 
     return projects.filter((project) => {
-      if (props.user === "engineer") {
-        const engineerName = project.engineer_name || project.engineer;
-        return engineerName === userData.name;
+      if (isCompleted(project)) return false;
+      if (props.user == "engineer") {
+        const engineerName = project.engineerName || project.engineer;
+        return engineerName == userData.name;
       }
-      if (props.user === "user") {
-        return project.clientName === userData.name;
+      if (props.user == "user") {
+        return project.clientName == userData.name;
       }
       return false;
     });
   }, [projects, props.user, userData]);
+
+  React.useEffect(() => {
+    if (props.setTotalProgress) {
+      let not_done = 0;
+      let overdue = 0;
+      filteredProjects.forEach((d) => {
+        if (d.progress < 100 && new Date() < new Date(d.end_date)) {
+          not_done++;
+        } else {
+          overdue++;
+        }
+      });
+      props.setTotalProgress((prev) => ({ ...prev, ongoing: not_done, overdue }));
+    }
+  }, [filteredProjects, props.setTotalProgress]);
 
   return (
     <Box className="w-full">
@@ -348,7 +362,7 @@ export function ProjectsTable(props) {
         >
           Ongoing Projects
         </Typography>
-        {props.user === "admin" && (
+        {props.user == "admin" && (
           <Button
             variant="contained"
             color="primary"
@@ -403,60 +417,51 @@ export function ProjectsTable(props) {
 
             <TextField
               margin="dense"
-              name="location"
-              label="Location"
-              type="text"
+              name="client"
+              label="Client"
+              select
               fullWidth
               variant="outlined"
-              value={newProject.location}
+              value={newProject.client}
               onChange={handleInputChange}
-            />
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {users
+                .filter((emp) =>
+                  emp.role?.toLowerCase().includes("user")
+                )
+                .map((emp) => (
+                  <MenuItem key={emp.id} value={emp.id}>
+                    {emp.name} ({emp.role})
+                  </MenuItem>
+                ))}
+            </TextField>
 
-            <FormControl fullWidth margin="dense">
-              <InputLabel>Client</InputLabel>
-              <SearchableSelect
-                name="client"
-                label="Client"
-                value={newProject.client}
-                onChange={handleInputChange}
-              >
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                {users
-                  .filter((emp) =>
-                    emp.role?.toLowerCase().includes("user")
-                  )
-                  .map((emp) => (
-                    <MenuItem key={emp.id} value={emp.id}>
-                      {emp.name} ({emp.role})
-                    </MenuItem>
-                  ))}
-              </SearchableSelect>
-            </FormControl>
-
-            <FormControl fullWidth margin="dense">
-              <InputLabel>Foreman</InputLabel>
-              <SearchableSelect
-                name="foremanId"
-                label="Foreman"
-                value={newProject.foremanId}
-                onChange={handleInputChange}
-              >
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                {employees
-                  .filter((emp) =>
-                    emp.position?.toLowerCase().includes("foreman") && emp.assignedProjectId === null
-                  )
-                  .map((emp) => (
-                    <MenuItem key={emp.id} value={emp.id}>
-                      {emp.name} ({emp.position})
-                    </MenuItem>
-                  ))}
-              </SearchableSelect>
-            </FormControl>
+            <TextField
+              margin="dense"
+              name="foremanId"
+              label="Foreman"
+              select
+              fullWidth
+              variant="outlined"
+              value={newProject.foremanId}
+              onChange={handleInputChange}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {employees
+                .filter((emp) =>
+                  emp.position?.toLowerCase().includes("foreman") && emp.assignedProjectId == null
+                )
+                .map((emp) => (
+                  <MenuItem key={emp.id} value={emp.id}>
+                    {emp.name} ({emp.position})
+                  </MenuItem>
+                ))}
+            </TextField>
 
             <FormControl fullWidth margin="dense">
               <InputLabel>Engineer</InputLabel>

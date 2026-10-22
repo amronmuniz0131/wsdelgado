@@ -24,10 +24,14 @@ if ($num > 0) {
             "severity" => $severity,
             "project_id" => $project_id,
             "project_name" => $project_name,
+            "before_image" => $before_image,
             "start_date" => $start_date,
             "end_date" => $end_date,
             "quantity" => $quantity,
             "finished" => $finished,
+            "actual_end" => $actual_end,
+            "proof_image" => $proof_image,
+            "notes" => $notes,
             "assigned_employees" => isset($assigned_employees) ? $assigned_employees : null
         );
         array_push($tasks_arr["records"], $task_item);

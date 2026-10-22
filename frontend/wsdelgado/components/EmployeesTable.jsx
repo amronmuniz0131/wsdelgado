@@ -49,10 +49,11 @@ export function EmployeesTable() {
   const fetchEmployees = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/employees`);
+      const response = await fetch(`${API_BASE_URL}/employees/read`);
       const data = await response.json();
       setEmployees(data.records || []);
       setCount(data.records.length)
+      console.log(data.records)
       setNewEmployee((prev) => ({ ...prev, employeeId: "EMP-" + (data.records.length + 1) }));
     } catch (error) {
       console.error("Error fetching employees:", error);
@@ -63,7 +64,7 @@ export function EmployeesTable() {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/projects`);
+      const response = await fetch(`${API_BASE_URL}/projects/read`);
       const data = await response.json();
       setProjects(data.records || []);
     } catch (error) {
@@ -92,7 +93,7 @@ export function EmployeesTable() {
 
   const fetchPositions = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/positions`);
+      const response = await fetch(`${API_BASE_URL}/positions/read`);
       const data = await response.json();
       setPositions(data.records || []);
       console.log(data.records)
@@ -155,20 +156,7 @@ export function EmployeesTable() {
 
   const handleAddEmployee = async () => {
     try {
-      const payload = {
-        employee_id: newEmployee.employeeId || `EMP-${count}`,
-        name: newEmployee.name,
-        position: newEmployee.position,
-        assigned_project_id: newEmployee.assignedProjectId,
-        date_of_employment: newEmployee.dateOfEmployment,
-        status: newEmployee.status,
-        email: newEmployee.email,
-        phone: newEmployee.phone,
-        address: newEmployee.address,
-        notes: newEmployee.notes,
-      };
-
-      const response = await fetch(`${API_BASE_URL}/employees`, {
+      const response = await fetch(`${API_BASE_URL}/employees/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -188,38 +176,24 @@ export function EmployeesTable() {
 
   const handleUpdateEmployee = async () => {
     try {
-      const payload = {
-        id: editingEmployee.id,
-        employee_id: editingEmployee.employeeId,
-        name: editingEmployee.name,
-        position: editingEmployee.position,
-        assigned_project_id: editingEmployee.assignedProjectId,
-        date_of_employment: editingEmployee.dateOfEmployment,
-        status: editingEmployee.status,
-        email: editingEmployee.email,
-        phone: editingEmployee.phone,
-        address: editingEmployee.address,
-        notes: editingEmployee.notes,
-      };
-
-      const response = await fetch(`${API_BASE_URL}/employees/${editingEmployee.id}`, {
-        method: "PUT",
+      const response = await fetch(`${API_BASE_URL}/employees/update`, {
+        method: "POST", // Using POST for convenience as per PHP implementation
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       if (response.ok) {
         // Sync project assignment for Engineers and Foremen
         const pos = editingEmployee.position?.toLowerCase();
-        if ((pos === "engineer" || pos === "foreman") && editingEmployee.assignedProjectId !== prevProject) {
+        if ((pos == "engineer" || pos == "foreman") && editingEmployee.assignedProjectId != prevProject) {
           // 1. Clear from previous project
           if (prevProject) {
             try {
               const clearPayload = { id: prevProject };
-              if (pos === "engineer") clearPayload.engineer_id = null;
-              if (pos === "foreman") clearPayload.foreman_id = null;
+              if (pos == "engineer") clearPayload.engineer_id = null;
+              if (pos == "foreman") clearPayload.foreman_id = null;
 
-              await fetch(`${API_BASE_URL}/projects/${prevProject}`, {
-                method: "PUT",
+              await fetch(`${API_BASE_URL}/projects/update`, {
+                method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(clearPayload),
               });
@@ -231,15 +205,15 @@ export function EmployeesTable() {
           // 2. Assign to new project
           if (editingEmployee.assignedProjectId) {
             try {
-              const targetProject = projects.find(p => String(p.id) === String(editingEmployee.assignedProjectId));
+              const targetProject = projects.find(p => String(p.id) == String(editingEmployee.assignedProjectId));
               // If the project already has an engineer, unassign the old one
               const oldEngineer = employees.find((d) => {
-                return d.assignedProjectId === targetProject.id && d.position === "engineer"
+                return d.assignedProjectId == targetProject.id && d.position == "engineer"
               });
               console.log(oldEngineer)
               if (oldEngineer) {
-                await fetch(`${API_BASE_URL}/employees/${oldEngineer.id}`, {
-                  method: "PUT",
+                await fetch(`${API_BASE_URL}/employees/update`, {
+                  method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
                     ...oldEngineer,
@@ -250,11 +224,11 @@ export function EmployeesTable() {
               }
 
               const projectUpdatePayload = { id: editingEmployee.assignedProjectId };
-              if (pos === "engineer") projectUpdatePayload.engineer_id = editingEmployee.id;
-              if (pos === "foreman") projectUpdatePayload.foreman_id = editingEmployee.id;
+              if (pos == "engineer") projectUpdatePayload.engineer_id = editingEmployee.id;
+              if (pos == "foreman") projectUpdatePayload.foreman_id = editingEmployee.id;
 
-              await fetch(`${API_BASE_URL}/projects/${editingEmployee.assignedProjectId}`, {
-                method: "PUT",
+              await fetch(`${API_BASE_URL}/projects/update`, {
+                method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(projectUpdatePayload),
               });
@@ -316,8 +290,8 @@ export function EmployeesTable() {
       renderCell: (params) => {
         return (
           <Typography className="h-full flex items-center justify-center">
-            {params.row.position?.toLowerCase() === 'engineer' || params.row.position?.toLowerCase() === 'foreman'
-              ? params.row.project_name
+            {params.row.position.toLowerCase() == 'engineer' || params.row.position.toLowerCase() == 'foreman'
+              ? params.row.assignedProject
               : params.row.tasks && params.row.is_finished
                 ? ''
                 : params.row.project_name
@@ -343,18 +317,18 @@ export function EmployeesTable() {
       renderCell: (params) => (
         <Box className="flex items-center justify-center h-full">
           <Chip
-            label={getStatusLabel(params.row.position?.toLowerCase() === 'engineer' || params.row.position?.toLowerCase() === 'foreman'
-              ? params.row.assignedProjectId === null
+            label={getStatusLabel(params.row.position.toLowerCase() == 'engineer' || params.row.position.toLowerCase() == 'foreman'
+              ? params.row.assignedProjectId == null
                 ? "available"
                 : 'assigned'
               : (params.row.tasks && params.row.is_finished)
                 ? "available"
                 : "assigned")}
-            color={getStatusColor(params.row.position?.toLowerCase() === 'engineer' || params.row.position?.toLowerCase() === 'foreman'
-              ? params.row.assignedProjectId === null
+            color={getStatusColor(params.row.position.toLowerCase() == 'engineer' || params.row.position.toLowerCase() == 'foreman'
+              ? params.row.assignedProjectId == null
                 ? "available"
                 : 'assigned'
-              : (params.row.tasks && params.row.is_finished)
+              : (params.row.tasks && params.row.is_finished || params.row.is_finished == null)
                 ? "available"
                 : "assigned"
             )}
@@ -364,7 +338,7 @@ export function EmployeesTable() {
         </Box>
       ),
     },
-    ...(user === "admin" ? [{
+    ...(user == "admin" ? [{
       field: "actions",
       headerName: "ACTION",
       width: 120,
@@ -529,10 +503,10 @@ export function EmployeesTable() {
                   <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Current Position</Typography>
                   <Typography className="text-gray-800 font-bold">{selectedEmployee.position}</Typography>
                 </Box>
-                {user?.toLowerCase() === "admin" && (
+                {user.toLowerCase() == "admin" && (
                   <Box>
                     <Typography variant="caption" className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Assigned Project</Typography>
-                    <Typography className="text-gray-800 font-bold text-blue-600 italic underline decoration-blue-200 decoration-4 underline-offset-4" disabled={selectedEmployee.position?.toLowerCase() !== "engineer"}>{selectedEmployee.assignedProject}</Typography>
+                    <Typography className="text-gray-800 font-bold text-blue-600 italic underline decoration-blue-200 decoration-4 underline-offset-4" disabled={selectedEmployee.position.toLowerCase() != "engineer"}>{selectedEmployee.assignedProject}</Typography>
                   </Box>
                 )}
                 <Box>
@@ -619,12 +593,33 @@ export function EmployeesTable() {
               value={newEmployee.name}
               onChange={handleInputChange}
             />
-            <FormControl fullWidth margin="dense">
-              <InputLabel>Position</InputLabel>
-              <SearchableSelect
-                name="position"
-                label="Position"
-                value={newEmployee.position}
+            <TextField
+              margin="dense"
+              name="position"
+              label="Position"
+              fullWidth
+              select
+              variant="outlined"
+              value={newEmployee.position}
+              onChange={handleInputChange}
+            >
+              {positions.map((position) => (
+                position.position.toLowerCase() != "admin" && position.position.toLowerCase() != "engineer" && (
+                  <MenuItem key={position.id} value={position.position}>
+                    {position.position}
+                  </MenuItem>
+                )
+              ))}
+            </TextField>
+            {newEmployee.position == 'engineer' || newEmployee.position == 'foreman' && (
+              <TextField
+                margin="dense"
+                name="assignedProject"
+                label="Assigned Project"
+                fullWidth
+                select
+                variant="outlined"
+                value={newEmployee.assignedProject}
                 onChange={handleInputChange}
               >
                 {positions.map((position) => (
@@ -736,12 +731,33 @@ export function EmployeesTable() {
                 value={editingEmployee.name}
                 onChange={handleEditInputChange}
               />
-              <FormControl fullWidth margin="dense">
-                <InputLabel>Position</InputLabel>
-                <SearchableSelect
-                  name="position"
-                  label="Position"
-                  value={editingEmployee.position}
+              <TextField
+                margin="dense"
+                name="position"
+                label="Position"
+                fullWidth
+                select
+                variant="outlined"
+                value={editingEmployee.position}
+                onChange={handleEditInputChange}
+              >
+                {positions.map((position) => (
+                  position.position.toLowerCase() != "admin" && position.position.toLowerCase() != "engineer" && (
+                    <MenuItem key={position.id} value={position.position}>
+                      {position.position}
+                    </MenuItem>
+                  )
+                ))}
+              </TextField>
+              {(editingEmployee.position.toLowerCase() == "engineer" || editingEmployee.position.toLowerCase() == "foreman") && (
+                <TextField
+                  margin="dense"
+                  name="assignedProjectId"
+                  label="Assigned Project"
+                  select
+                  fullWidth
+                  variant="outlined"
+                  value={editingEmployee.assignedProjectId || ""}
                   onChange={handleEditInputChange}
                 >
                   {positions.map((position) => (

@@ -20,7 +20,6 @@ if($num > 0){
         $project_item = array(
             "id" => $id,
             "name" => $name,
-            "location" => $location,
             "client" => $client,
             "address" => $address,
             "progress" => $progress,
@@ -29,6 +28,9 @@ if($num > 0){
             "foremanName" => $foreman_name,
             "engineerName" => $engineer_name,
             "clientName" => $client_name,
+            "updated_at" => $updated_at,
+            "start_date" => $start_date,
+            "end_date" => $end_date,
             "completion_date" => $completion_date
         );
         array_push($projects_arr["records"], $project_item);

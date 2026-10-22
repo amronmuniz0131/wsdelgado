@@ -17,7 +17,6 @@ if(!empty($data->id)) {
     if($project->readOne()) {
         // Update fields if provided
         if(property_exists($data, 'name')) $project->name = $data->name;
-        if(property_exists($data, 'location')) $project->location = $data->location;
         if(property_exists($data, 'client')) $project->client = $data->client;
         if(property_exists($data, 'address')) $project->address = $data->address;
         if(property_exists($data, 'progress')) $project->progress = $data->progress;

@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { Star } from "lucide-react";
 import { Placeholder } from "@/components/Placeholder";
+import group from "./about/images/group.jpg"
+import map from './about/images/map.png'
 import { useEffect } from "react";
 
 export default function Home() {
@@ -105,7 +107,7 @@ export default function Home() {
           {/* Location Row */}
           <div className="grid md:grid-cols-2 gap-12 items-center mb-24">
             <div className="aspect-square w-full relative">
-              <img src="https://lh3.googleusercontent.com/gps-cs-s/APNQkAExLW5fmmTtC1u8BwY-NoI5WXDvUl1v_F6mETO9Iw7RPOIiCIh5yEXd73TY9_SMY7h32k6oC0oWhOlXObcOWqWTycLt2n2N6EvhkfT7bQttjC50SoGJAfxB1_Et21V3_zPKjpS2zw=s680-w680-h510-rw" alt="Map" className="w-full h-full object-contain" />
+              <Image src={map} alt="Map" className="w-full h-full object-contain" />
             </div>
             <div className="md:pl-10">
               <h2 className="text-3xl font-bold mb-6">Our Location</h2>
@@ -135,7 +137,7 @@ export default function Home() {
             </div>
             <div className="order-1 md:order-2 aspect-square w-full relative">
               <Image
-                src="https://pollackpeacebuilding.com/wp-content/uploads/2024/11/construction-.jpg"
+                src={group}
                 alt="WSDelgado Builders team at work"
                 width={600}
                 height={600}

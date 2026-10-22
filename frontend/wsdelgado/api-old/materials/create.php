@@ -13,7 +13,7 @@ $data = json_decode(file_get_contents("php://input"));
 if(!empty($data->name)){
     $material->name = $data->name;
     $material->quantity = $data->quantity ?? 0;
-    $material->unit = $data->unit ?? "";
+    $material->unit = $data->uom ?? $data->unit ?? "";
     $material->max_stock = $data->max_stock ?? 0;
     $material->last_restocked = $data->last_restocked ?? date('Y-m-d H:i:s');
     $material->requesting_engineer_id = $data->requesting_engineer_id ?? null;

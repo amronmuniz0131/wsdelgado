@@ -52,9 +52,9 @@ export default function Header() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8" aria-label="Main Navigation">
           <Link
-            href={isAuthenticated ? (userData?.first_login === 0 ? "#" : "/dashboard") : "/"}
+            href={isAuthenticated ? (userData?.first_login == 0 ? "#" : "/dashboard") : "/"}
             className={`text-sm font-medium transition-colors ${
-              isAuthenticated && userData?.first_login === 0
+              isAuthenticated && userData?.first_login == 0
                 ? "text-gray-400 cursor-not-allowed pointer-events-none"
                 : "text-gray-600 hover:text-gray-900"
             }`}
@@ -71,17 +71,25 @@ export default function Header() {
           )}
           {!isAuthenticated && (
             <Link
+              href="/gallery"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+            >
+              Gallery
+            </Link>
+          )}
+          {!isAuthenticated && (
+            <Link
               href={`/contact`}
               className="text-sm font-medium text-gray-600 hover:text-gray-900"
             >
               Contact
             </Link>
           )}
-          {isAuthenticated && userRole === "admin" && (
+          {isAuthenticated && userRole == "admin" && (
             <Link
               href="/reports"
               className={`text-sm font-medium transition-colors ${
-                userData?.first_login === 0
+                userData?.first_login == 0
                   ? "text-gray-400 cursor-not-allowed pointer-events-none"
                   : "text-gray-600 hover:text-gray-900"
               }`}
@@ -93,7 +101,7 @@ export default function Header() {
             <Link
               href="/profile"
               className={`text-sm font-medium transition-colors ${
-                userData?.first_login === 0
+                userData?.first_login == 0
                   ? "text-gray-400 cursor-not-allowed pointer-events-none"
                   : "text-gray-600 hover:text-gray-900"
               }`}
@@ -101,11 +109,11 @@ export default function Header() {
               Profile
             </Link>
           )}
-          {isAuthenticated && (userRole === "admin" || userRole === "engineer") && (
+          {isAuthenticated && (userRole == "admin" || userRole == "engineer") && (
             <Link
               href="/employees"
               className={`text-sm font-medium transition-colors ${
-                userData?.first_login === 0
+                userData?.first_login == 0
                   ? "text-gray-400 cursor-not-allowed pointer-events-none"
                   : "text-gray-600 hover:text-gray-900"
               }`}
@@ -113,11 +121,23 @@ export default function Header() {
               Employees
             </Link>
           )}
-          {isAuthenticated && userRole === "admin" && (
+          {isAuthenticated && userRole == "admin" && (
+            <Link
+              href="/dashboard/gallery"
+              className={`text-sm font-medium transition-colors ${
+                userData?.first_login == 0
+                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Gallery
+            </Link>
+          )}
+          {isAuthenticated && userRole == "admin" && (
             <Link
               href="/accounts"
               className={`text-sm font-medium transition-colors ${
-                userData?.first_login === 0
+                userData?.first_login == 0
                   ? "text-gray-400 cursor-not-allowed pointer-events-none"
                   : "text-gray-600 hover:text-gray-900"
               }`}
@@ -188,11 +208,11 @@ export default function Header() {
               Contact
             </Link>
           )}
-          {isAuthenticated && userRole === "admin" && (
+          {isAuthenticated && userRole == "admin" && (
             <Link
               href="/reports"
               className={`block py-2 transition-colors ${
-                userData?.first_login === 0
+                userData?.first_login == 0
                   ? "text-gray-400 cursor-not-allowed pointer-events-none"
                   : "text-gray-600"
               }`}
@@ -201,11 +221,11 @@ export default function Header() {
               Reports
             </Link>
           )}
-          {isAuthenticated && userRole === "admin" && (
+          {isAuthenticated && userRole == "admin" && (
             <Link
               href="/employees"
               className={`block py-2 transition-colors ${
-                userData?.first_login === 0
+                userData?.first_login == 0
                   ? "text-gray-400 cursor-not-allowed pointer-events-none"
                   : "text-gray-600"
               }`}
@@ -214,11 +234,24 @@ export default function Header() {
               Employees
             </Link>
           )}
-          {isAuthenticated && userRole === "admin" && (
+          {isAuthenticated && userRole == "admin" && (
+            <Link
+              href="/dashboard/gallery"
+              className={`block py-2 transition-colors ${
+                userData?.first_login == 0
+                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
+                  : "text-gray-600"
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Gallery
+            </Link>
+          )}
+          {isAuthenticated && userRole == "admin" && (
             <Link
               href="/accounts"
               className={`block py-2 transition-colors ${
-                userData?.first_login === 0
+                userData?.first_login == 0
                   ? "text-gray-400 cursor-not-allowed pointer-events-none"
                   : "text-gray-600"
               }`}

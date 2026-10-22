@@ -27,7 +27,7 @@ export default function ChangePasswordPage() {
     setUserData(parsedData);
 
     // If already completed first login, redirect to dashboard or home
-    if (String(parsedData.first_login) !== "0") {
+    if (String(parsedData.first_login) != "0") {
       router.push("/dashboard");
     }
   }, [router]);
@@ -40,7 +40,7 @@ export default function ChangePasswordPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (passwords.newPassword !== passwords.confirmPassword) {
+    if (passwords.newPassword != passwords.confirmPassword) {
       DangerToast("Passwords do not match");
       return;
     }

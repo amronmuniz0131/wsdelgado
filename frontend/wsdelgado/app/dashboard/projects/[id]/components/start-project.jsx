@@ -55,7 +55,7 @@ export default function StartProject({ project, setProject }) {
     const user = localStorage.getItem('user')
     return (
         <div>
-            {user === "engineer" && (
+            {user == "engineer" && (
                 <Button variant="contained" onClick={() => setOpen(true)}>Start Project</Button>
             )}
             <Dialog
@@ -72,6 +72,8 @@ export default function StartProject({ project, setProject }) {
                     <TextField
                         label="End Date"
                         type="date"
+                        InputLabelProps={{ shrink: true }}
+                        sx={{ mt: 2 }}
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
                         fullWidth
