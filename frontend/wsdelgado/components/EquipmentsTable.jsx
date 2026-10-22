@@ -61,7 +61,7 @@ export function EquipmentsTable(props) {
     setIsLoading(true);
     try {
       let count = 0
-      const response = await fetch(`${API_BASE_URL}/equipments/read.php`);
+      const response = await fetch(`${API_BASE_URL}/equipments/read`);
       const data = await response.json();
       let records = data.records || [];
       if (props.projectId) {
@@ -154,7 +154,7 @@ export function EquipmentsTable(props) {
       payload.status = "Available";
     }
 
-    const endpoint = payload.id ? `${API_BASE_URL}/equipments/update.php` : `${API_BASE_URL}/equipments/create.php`;
+    const endpoint = payload.id ? `${API_BASE_URL}/equipments/update` : `${API_BASE_URL}/equipments/create`;
 
     try {
       const response = await fetch(endpoint, {
@@ -178,7 +178,7 @@ export function EquipmentsTable(props) {
 
   const handleMaintenance = async (id) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/equipments/update.php`, {
+      const response = await fetch(`${API_BASE_URL}/equipments/update`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -202,7 +202,7 @@ export function EquipmentsTable(props) {
 
   const handleEndMaintenance = async (id) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/equipments/update.php`, {
+      const response = await fetch(`${API_BASE_URL}/equipments/update`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -226,7 +226,7 @@ export function EquipmentsTable(props) {
 
   const handleReturn = async (id) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/equipments/update.php`, {
+      const response = await fetch(`${API_BASE_URL}/equipments/update`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

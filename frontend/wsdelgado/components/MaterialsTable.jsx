@@ -63,7 +63,7 @@ export function MaterialsTable(props) {
   const fetchMaterials = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/materials/read.php`);
+      const response = await fetch(`${API_BASE_URL}/materials/read`);
       const data = await response.json();
       setMaterials(data.records || []);
     } catch (error) {
@@ -172,7 +172,7 @@ export function MaterialsTable(props) {
       }
     }
 
-    const endpoint = payload.id ? `${API_BASE_URL}/materials/update.php` : `${API_BASE_URL}/materials/create.php`;
+    const endpoint = payload.id ? `${API_BASE_URL}/materials/update` : `${API_BASE_URL}/materials/create`;
 
     try {
       const response = await fetch(endpoint, {
@@ -208,7 +208,7 @@ export function MaterialsTable(props) {
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/request/read.php`);
+      const response = await fetch(`${API_BASE_URL}/request/read`);
       const data = await response.json();
       setRequests(data.records || []);
     } catch (error) {
@@ -225,7 +225,7 @@ export function MaterialsTable(props) {
   const handleApproveRequest = async (req) => {
     try {
       // 1. Update request status to "Approve"
-      const updateReqResponse = await fetch(`${API_BASE_URL}/request/update.php`, {
+      const updateReqResponse = await fetch(`${API_BASE_URL}/request/update`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -239,7 +239,7 @@ export function MaterialsTable(props) {
         const material = materials.find(m => m.id == req.material_id);
         if (material) {
           const newQuantity = Math.max(0, parseInt(material.quantity) - parseInt(req.quantity));
-          const updateMatResponse = await fetch(`${API_BASE_URL}/materials/update.php`, {
+          const updateMatResponse = await fetch(`${API_BASE_URL}/materials/update`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -265,7 +265,7 @@ export function MaterialsTable(props) {
 
   const handleRejectRequest = async (req, notes = "") => {
     try {
-      const response = await fetch(`${API_BASE_URL}/request/update.php`, {
+      const response = await fetch(`${API_BASE_URL}/request/update`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

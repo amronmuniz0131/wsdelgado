@@ -46,7 +46,7 @@ export function EmployeesTable() {
   const fetchEmployees = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/employees/read.php`);
+      const response = await fetch(`${API_BASE_URL}/employees/read`);
       const data = await response.json();
       setEmployees(data.records || []);
       setCount(data.records.length)
@@ -61,7 +61,7 @@ export function EmployeesTable() {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/projects/read.php`);
+      const response = await fetch(`${API_BASE_URL}/projects/read`);
       const data = await response.json();
       setProjects(data.records || []);
       console.log(data.records)
@@ -91,7 +91,7 @@ export function EmployeesTable() {
 
   const fetchPositions = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/positions/read.php`);
+      const response = await fetch(`${API_BASE_URL}/positions/read`);
       const data = await response.json();
       setPositions(data.records || []);
       console.log(data.records)
@@ -154,7 +154,7 @@ export function EmployeesTable() {
 
   const handleAddEmployee = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/employees/create.php`, {
+      const response = await fetch(`${API_BASE_URL}/employees/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newEmployee),
@@ -174,7 +174,7 @@ export function EmployeesTable() {
 
   const handleUpdateEmployee = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/employees/update.php`, {
+      const response = await fetch(`${API_BASE_URL}/employees/update`, {
         method: "POST", // Using POST for convenience as per PHP implementation
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editingEmployee),
@@ -190,7 +190,7 @@ export function EmployeesTable() {
               if (pos == "engineer") clearPayload.engineer_id = null;
               if (pos == "foreman") clearPayload.foreman_id = null;
 
-              await fetch(`${API_BASE_URL}/projects/update.php`, {
+              await fetch(`${API_BASE_URL}/projects/update`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(clearPayload),
@@ -210,7 +210,7 @@ export function EmployeesTable() {
               });
               console.log(oldEngineer)
               if (oldEngineer) {
-                await fetch(`${API_BASE_URL}/employees/update.php`, {
+                await fetch(`${API_BASE_URL}/employees/update`, {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
@@ -225,7 +225,7 @@ export function EmployeesTable() {
               if (pos == "engineer") projectUpdatePayload.engineer_id = editingEmployee.id;
               if (pos == "foreman") projectUpdatePayload.foreman_id = editingEmployee.id;
 
-              await fetch(`${API_BASE_URL}/projects/update.php`, {
+              await fetch(`${API_BASE_URL}/projects/update`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(projectUpdatePayload),

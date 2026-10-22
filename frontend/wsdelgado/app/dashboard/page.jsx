@@ -77,7 +77,7 @@ function DashboardContent() {
 
     const fetchAssignments = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/assign/read.php`);
+        const response = await fetch(`${API_BASE_URL}/assign/read`);
         if (response.ok) {
           const data = await response.json();
           setAssignments(data.records || []);
@@ -89,7 +89,7 @@ function DashboardContent() {
 
     const fetchProjects = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/projects/read.php`);
+        const response = await fetch(`${API_BASE_URL}/projects/read`);
         if (response.ok) {
           const data = await response.json();
           setGanttData(data.records || []);
@@ -134,7 +134,7 @@ function DashboardContent() {
 
   const handleAddAccount = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/create.php`, {
+      const response = await fetch(`${API_BASE_URL}/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newAccount),

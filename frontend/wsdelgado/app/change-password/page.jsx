@@ -53,7 +53,7 @@ export default function ChangePasswordPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/update.php`, {
+      const response = await fetch(`${API_BASE_URL}/update`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

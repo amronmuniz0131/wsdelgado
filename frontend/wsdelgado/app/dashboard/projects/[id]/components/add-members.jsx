@@ -27,7 +27,7 @@ export default function AddMembers({ isOpen, handleClose, projectId, onUpdate })
 
   const fetchAvailableEmployees = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/employees/read.php`);
+      const response = await fetch(`${API_BASE_URL}/employees/read`);
       if (response.ok) {
         const data = await response.json();
         // Filter employees:
@@ -50,7 +50,7 @@ export default function AddMembers({ isOpen, handleClose, projectId, onUpdate })
     if (!selectedEmployeeId) return;
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/employees/update.php`, {
+      const response = await fetch(`${API_BASE_URL}/employees/update`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

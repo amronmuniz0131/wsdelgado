@@ -13,7 +13,7 @@ export default function GalleryPage() {
   useEffect(() => {
     const fetchGallery = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/gallery/read.php`);
+        const response = await fetch(`${API_BASE_URL}/gallery/read`);
         const data = await response.json();
         setAlbums(data.records || []);
       } catch (error) {

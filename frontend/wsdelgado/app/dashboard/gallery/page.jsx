@@ -43,7 +43,7 @@ function GalleryBackoffice() {
   const fetchGallery = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/gallery/read.php`);
+      const response = await fetch(`${API_BASE_URL}/gallery/read`);
       const data = await response.json();
       setAlbums(data.records || []);
     } catch (error) {
@@ -129,7 +129,7 @@ function GalleryBackoffice() {
   const handleCreateAlbum = async () => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/gallery/create.php`, {
+      const response = await fetch(`${API_BASE_URL}/gallery/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...newAlbum, images: newImages }),
@@ -156,7 +156,7 @@ function GalleryBackoffice() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/gallery/add_images.php`, {
+      const response = await fetch(`${API_BASE_URL}/gallery/add_images`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ album_id: addImagesTarget.id, images: extraImages }),
@@ -183,7 +183,7 @@ function GalleryBackoffice() {
     if (!deleteAlbumTarget) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/gallery/delete.php`, {
+      const response = await fetch(`${API_BASE_URL}/gallery/delete`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: deleteAlbumTarget.id }),
@@ -208,7 +208,7 @@ function GalleryBackoffice() {
     if (!deleteImageTarget) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/gallery/delete_image.php`, {
+      const response = await fetch(`${API_BASE_URL}/gallery/delete_image`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: deleteImageTarget.id }),

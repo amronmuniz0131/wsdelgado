@@ -49,7 +49,7 @@ export function AccountsTable() {
   const fetchAccounts = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/read.php`);
+      const response = await fetch(`${API_BASE_URL}/read`);
       const data = await response.json();
       setAccounts(data.records || []);
     } catch (error) {
@@ -99,7 +99,7 @@ export function AccountsTable() {
 
   const handleAddAccount = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/create.php`, {
+      const response = await fetch(`${API_BASE_URL}/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newAccount),
@@ -123,7 +123,7 @@ export function AccountsTable() {
       const payload = { ...editingAccount, is_admin_update: true };
       if (!payload.password) delete payload.password;
 
-      const response = await fetch(`${API_BASE_URL}/update.php`, {
+      const response = await fetch(`${API_BASE_URL}/update`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -145,7 +145,7 @@ export function AccountsTable() {
     if (!window.confirm("Are you sure you want to delete this account? This action cannot be undone.")) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/delete.php`, {
+      const response = await fetch(`${API_BASE_URL}/delete`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),

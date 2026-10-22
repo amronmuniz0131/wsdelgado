@@ -38,7 +38,7 @@ export function ProjectsTable(props) {
   const fetchProjects = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/projects/read.php`);
+      const response = await fetch(`${API_BASE_URL}/projects/read`);
       const data = await response.json();
       setProjects(
         (data.records || []).sort(
@@ -57,7 +57,7 @@ export function ProjectsTable(props) {
   const fetchEmployees = async () => {
     try {
       let count = 0
-      const response = await fetch(`${API_BASE_URL}/employees/read.php`);
+      const response = await fetch(`${API_BASE_URL}/employees/read`);
       const data = await response.json();
       let arr = []
       setEmployees(data.records || []);
@@ -78,7 +78,7 @@ export function ProjectsTable(props) {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/read.php`);
+      const response = await fetch(`${API_BASE_URL}/read`);
       const data = await response.json();
       setUsers(data.records || []);
     } catch (error) {
