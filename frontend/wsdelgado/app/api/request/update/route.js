@@ -28,7 +28,7 @@ export async function POST(req) {
       sets.push(`${key} = ?`);
       if (key === "request_date") {
         args.push(toDate(data[key]));
-      } else if (key === "notes") {
+      } else if (key === "notes" || key === "is_approve") {
         args.push(data[key]);
       } else {
         args.push(num(data[key]));

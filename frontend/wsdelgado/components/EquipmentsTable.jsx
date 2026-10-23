@@ -162,7 +162,7 @@ export function EquipmentsTable(props) {
 
     try {
       const response = await fetch(endpoint, {
-        method: isUpdate ? "PUT" : "POST",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
@@ -170,7 +170,7 @@ export function EquipmentsTable(props) {
       if (response.ok) {
         fetchEquipments();
         handleClose();
-        SuccessToast(isUpdate ? "Equipment updated successfully" : "Equipment added successfully");
+        SuccessToast(payload.id ? "Equipment updated successfully" : "Equipment added successfully");
       } else {
         const error = await response.json();
         DangerToast(error.message || "Operation failed.");
@@ -186,6 +186,7 @@ export function EquipmentsTable(props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          id: id,
           status: "Maintenance",
           is_approved: 1
         }),
@@ -209,6 +210,7 @@ export function EquipmentsTable(props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          id: id,
           status: "Available",
           is_approved: 1
         }),
@@ -232,6 +234,7 @@ export function EquipmentsTable(props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          id: id,
           status: "Available",
           project_id: null,
           requested_by_id: null,

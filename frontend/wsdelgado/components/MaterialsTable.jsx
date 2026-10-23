@@ -82,7 +82,7 @@ export function MaterialsTable(props) {
       materials.map((data) => {
         let count = 0;
         requests.map((req) => {
-          if (req.material_id == data.id && req.is_approve == "Pending") {
+          if (req.material_id == data.id && req.is_approve == null) {
             count++;
           }
         })
@@ -363,7 +363,7 @@ export function MaterialsTable(props) {
             variant="contained"
             onClick={() => { openTable(true); setCurrentMaterial(params.row.id) }}
             disabled={props.user == "engineer"}
-            className="relative bg-blue-600 !text-2xs hover:bg-blue-700"
+            className="relative bg-blue-600 !text-[12px] hover:bg-blue-700"
             size="small"
           >
             View More
@@ -375,7 +375,7 @@ export function MaterialsTable(props) {
             variant="contained"
             onClick={() => handleOpen(params.row)}
             disabled={props.user == "engineer"}
-            className="bg-blue-600 !text-2xs hover:bg-blue-700"
+            className="bg-blue-600 !text-[12px] hover:bg-blue-700"
             size="small"
           >
             Edit
@@ -608,7 +608,7 @@ export function MaterialsTable(props) {
                         <TableCell>{new Date(req.request_date).toLocaleDateString()}</TableCell>
                         <TableCell>
                           <Chip
-                            label={req.is_approve}
+                            label={req.is_approve == null ? "Pending" : req.is_approve}
                             size="small"
                             color={req.is_approve == "Approve" ? "success" : req.is_approve == "Reject" ? "error" : "warning"}
                           />
@@ -617,7 +617,7 @@ export function MaterialsTable(props) {
                           {req.notes || "—"}
                         </TableCell>
                         <TableCell align="center">
-                          {req.is_approve == "Pending" && props.user == "admin" && (
+                          {req.is_approve == null && props.user == "admin" && (
                             <Box className="flex gap-1 justify-center">
                               {(() => {
                                 let isInsufficient = false;

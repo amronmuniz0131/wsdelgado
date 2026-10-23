@@ -140,7 +140,8 @@ function DashboardContent() {
         body: JSON.stringify(newAccount),
       });
       if (response.ok) {
-        handleCloseAdd();
+        // handleCloseAdd();
+        setOpenModal(true)
       } else {
         const error = await response.json();
         if (error.error == 401) {
@@ -155,7 +156,6 @@ function DashboardContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col p-6 space-y-8">
-      {"done:" + totalProgress.done}
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-3xl font-bold text-gray-900 capitalize">{user} Dashboard</h1>
         {(user == "admin") && (
@@ -260,9 +260,10 @@ function DashboardContent() {
             series={[
               {
                 data: [
-                  { id: 0, value: (totalProgress.done / (totalProgress.done + totalProgress.ongoing + totalProgress.overdue)) * 100, label: 'Done', color: "#B9F8CF" },
-                  { id: 1, value: (totalProgress.ongoing / (totalProgress.done + totalProgress.ongoing + totalProgress.overdue)) * 100, label: 'Ongoing', color: "#FFF085" },
-                  { id: 2, value: (totalProgress.overdue / (totalProgress.done + totalProgress.ongoing + totalProgress.overdue)) * 100, label: 'Overdue', color: "#FFC9C9" },
+                  { id: 0, value: (totalProgress.done / (totalProgress.done + totalProgress.ongoing + totalProgress.overdue + totalProgress.pending)) * 100, label: 'Done', color: "#B9F8CF" },
+                  { id: 1, value: (totalProgress.ongoing / (totalProgress.done + totalProgress.ongoing + totalProgress.overdue + totalProgress.pending)) * 100, label: 'Ongoing', color: "#FFF085" },
+                  { id: 2, value: (totalProgress.overdue / (totalProgress.done + totalProgress.ongoing + totalProgress.overdue + totalProgress.pending)) * 100, label: 'Overdue', color: "#FFC9C9" },
+                  { id: 3, value: (totalProgress.pending / (totalProgress.done + totalProgress.ongoing + totalProgress.overdue + totalProgress.pending)) * 100, label: 'Pending', color: "#e79314ff" },
                 ],
               },
             ]}
@@ -288,7 +289,7 @@ function DashboardContent() {
             />
           </div>
         )}
-        {(user == 'admin' || user == 'engineer') && (
+        {(user == 'admin') && (
           <div className="text-center pb-10 font-bold text-black  w-2/5 rounded-lg shadow-sm border border-gray-100">
             <GanttChart data={ganttData}></GanttChart>
           </div>

@@ -115,6 +115,12 @@ export function ProjectsTable(props) {
     }
   }, [props.userData])
 
+  useEffect(() => {
+    if (props.openModal) {
+      fetchUsers();
+    }
+  }, [props.openModal]);
+
 
   const filteredOperators = getGridStringOperators().filter((operator) =>
     ["contains", "startsWith", "equals"].includes(operator.value)
@@ -341,14 +347,17 @@ export function ProjectsTable(props) {
     if (props.setTotalProgress) {
       let not_done = 0;
       let overdue = 0;
+      let pending = 0;
       filteredProjects.forEach((d) => {
-        if (d.progress < 100 && new Date() < new Date(d.end_date)) {
+        if (new Date() < new Date(d.start_date) || d.start_date == null) {
+          pending++;
+        } else if (d.progress < 100 && new Date() < new Date(d.end_date)) {
           not_done++;
         } else {
           overdue++;
         }
       });
-      props.setTotalProgress((prev) => ({ ...prev, ongoing: not_done, overdue }));
+      props.setTotalProgress((prev) => ({ ...prev, ongoing: not_done, overdue, pending }));
     }
   }, [filteredProjects, props.setTotalProgress]);
 

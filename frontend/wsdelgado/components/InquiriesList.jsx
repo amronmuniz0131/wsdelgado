@@ -54,6 +54,7 @@ export function InquiriesList({ openModal, setNewAccount, user, onUnreadCountCha
         await fetch(`${API_BASE_URL}/inquiries/mark_read`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: inquiry.id }),
         });
         // Refetch to update the unread status
         fetchInquiries();

@@ -131,7 +131,7 @@ export default function ProjectDetailsPage() {
       headerAlign: 'right',
       renderCell: (params) => (
         <Chip
-          label={params.row.is_approve}
+          label={params.row.is_approve == null ? "Pending" : params.row.is_approve}
           size="small"
           className={`h-5 text-[9px] font-black uppercase ${params.row.is_approve == "Approve" ? "!bg-green-100 !text-green-700" :
             params.row.is_approve == "Reject" ? "!bg-red-100 !text-red-700" :
@@ -238,7 +238,7 @@ export default function ProjectDetailsPage() {
       align: 'right',
       headerAlign: 'right',
       renderCell: (params) => {
-        const isPending = params.row.status == 0 || params.row.start_date == "0000-00-00 00:00:00";
+        const isPending = params.row.status == "Pending" || params.row.start_date == "";
         const isCompleted = params.row.finished >= params.row.quantity;
         const isOverdue = !isPending && !isCompleted && params.row.end_date && params.row.end_date != "0000-00-00" && new Date() > new Date(params.row.end_date);
         
@@ -287,18 +287,18 @@ export default function ProjectDetailsPage() {
               <Button
                 variant="outlined"
                 size="small"
-                disabled={params.row.actual_end != "0000-00-00 00:00:00"}
+                disabled={params.row.actual_end != null}
 
                 onClick={() => { setAssignTaskModalOpen(true); setSelectedTask(params.row) }}
                 className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-[10px] py-1 h-7"
               >
                 Assign
               </Button>
-              {params.row.start_date == "0000-00-00 00:00:00" ? (
+              {params.row.start_date == "" ? (
                 <Button
                   variant="outlined"
                   size="small"
-                  disabled={params.row.actual_end != "0000-00-00 00:00:00"}
+                  disabled={params.row.actual_end != null}
 
                   onClick={() => { setIsStartTaskModalOpen(true); setSelectedTask(params.row); const endDate = params.row.end_date?.slice(0, 10); setStartTaskData({ start_date: "", end_date: endDate && endDate != "0000-00-00" ? endDate : "" }) }}
                   className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-[10px] py-1 h-7"
@@ -309,7 +309,7 @@ export default function ProjectDetailsPage() {
                 <Button
                   variant="outlined"
                   size="small"
-                  disabled={params.row.actual_end !="0000-00-00 00:00:00"}
+                  disabled={params.row.actual_end != null}
 
                   onClick={() => { setStatusModalOpen(true); setSelectedTask(params.row) }}
                   className="rounded-lg border-gray-200 text-gray-600 font-bold px-3 hover:bg-white text-[10px] py-1 h-7"
@@ -391,7 +391,7 @@ export default function ProjectDetailsPage() {
           .filter(task => String(task.project_id) == String(id))
           .sort((a, b) => {
             const statusRank = (t) => {
-              const isPending = t.status == 0 || t.start_date == "0000-00-00 00:00:00";
+              const isPending = t.status == "Pending" || t.start_date == "0000-00-00 00:00:00";
               const isCompleted = t.finished >= t.quantity;
               const isOverdue = !isPending && !isCompleted && t.end_date && t.end_date != "0000-00-00" && new Date() > new Date(t.end_date);
               if (isOverdue) return 0;
