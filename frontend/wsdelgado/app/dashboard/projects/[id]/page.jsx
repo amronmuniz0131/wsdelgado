@@ -416,6 +416,7 @@ export default function ProjectDetailsPage() {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
+            id,
             progress: Math.round((points / total) * 10000) / 100
           })
         });
@@ -495,6 +496,7 @@ export default function ProjectDetailsPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          id,
           completion_date: new Date().toISOString().split('T')[0]
         }),
       });
@@ -507,6 +509,7 @@ export default function ProjectDetailsPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            id: project.foreman_id,
             assignedProjectId: null
           }),
         });
@@ -518,6 +521,7 @@ export default function ProjectDetailsPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            id: project.engineer_id,
             assignedProjectId: null
           }),
         });
@@ -917,7 +921,7 @@ export default function ProjectDetailsPage() {
                 onClick={() => setFinishProjectModal(true)}
               // disabled={isSubmitting || (project && project.end_date != null && project.end_date != "0000-00-00")}
               >
-                {project && project.end_date != null && project.end_date != "0000-00-00" ? "Project Completed" : "Complete Project"}
+                {project && project.end_date != null && project.end_date != null ? "Project Completed" : "Complete Project"}
               </Button>
             }
           </Box>
@@ -1011,7 +1015,7 @@ export default function ProjectDetailsPage() {
               <Box className="bg-gray-50/50 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                 <Typography variant="subtitle1" className="font-bold text-gray-800 flex items-center gap-2">
                   <User size={18} className="text-blue-600" />
-                  Execution Team
+                  Active Execution Team
                 </Typography>
                 <div className="flex items-center gap-2">
                   <Chip label={`${team.length} Active`} size="small" variant="outlined" className="text-[10px] font-bold" />

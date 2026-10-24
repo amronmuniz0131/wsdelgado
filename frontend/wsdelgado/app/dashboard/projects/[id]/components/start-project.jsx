@@ -70,7 +70,7 @@ export default function StartProject({ project, setProject }) {
                 </DialogTitle>
                 <DialogContent className="pt-6 space-y-4">
                     <TextField
-                        label="End Date"
+                        label="Estimated End Date"
                         type="date"
                         InputLabelProps={{ shrink: true }}
                         sx={{ mt: 2 }}

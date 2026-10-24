@@ -5,6 +5,9 @@ import { Star } from "lucide-react";
 import { Placeholder } from "@/components/Placeholder";
 import group from "./about/images/group.jpg"
 import map from './about/images/map.png'
+import demolition from "@/components/images/demolition.webp"
+import glassworks from "@/components/images/glassworks.webp"
+import renovation from "@/components/images/renovation.webp"
 import { useEffect } from "react";
 
 export default function Home() {
@@ -62,19 +65,19 @@ export default function Home() {
               {
                 id: 1,
                 name: "Professional Demolition",
-                image: "https://www.capitalrecycling.com.au/wp-content/uploads/2023/02/86-Victoria-Avenue-Dalkeith-35-scaled.jpg",
+                image: demolition,
                 description: "Safe and efficient demolition services for various project scales."
               },
               {
                 id: 2,
                 name: "Custom Glassworks",
-                image: "https://www.schiavello.com/__data/assets/image/0015/29202/glassworks-australia-banner.jpg",
+                image: glassworks,
                 description: "Exquisite glass design and installation for modern structures."
               },
               {
                 id: 3,
                 name: "Complete Renovation",
-                image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGwVRCe9gfTke8xHCvty8sbRLYxoG4yrUwgg&s",
+                image: renovation,
                 description: "Transforming spaces with high-quality interior and exterior renovations."
               },
             ].map((item) => (
