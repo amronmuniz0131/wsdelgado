@@ -18,7 +18,10 @@ export async function POST(req) {
     [String(data.token)]
   );
 
-  if (!row || row.used == 1 || new Date(row.expires_at) < new Date()) {
+  // expires_at is stored as a UTC "YYYY-MM-DD HH:mm:ss" string; compare in
+  // UTC string form to avoid local-timezone parsing shifts.
+  const nowUtc = new Date().toISOString().slice(0, 19).replace("T", " ");
+  if (!row || row.used == 1 || String(row.expires_at) < nowUtc) {
     return json({ message: "This reset link is invalid or has expired." }, 400);
   }
 

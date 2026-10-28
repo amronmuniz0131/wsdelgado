@@ -5,7 +5,7 @@ import { isSmtpConfigured, sendMail } from "@/lib/mailer";
 
 export const dynamic = "force-dynamic";
 
-const TOKEN_TTL_MINUTES = 30;
+const TOKEN_TTL_MINUTES = 24 * 60; // 1 day
 
 export async function POST(req) {
   const data = await readJson(req);
