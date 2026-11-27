@@ -191,7 +191,7 @@ function DashboardContent() {
           </div>
           {/* Overdues (equipments or projects) */}
           <div className='border-gray-300 border rounded-md flex flex-col w-42 text-black items-center justify-center'>
-            <div className="bg-red-200 w-full text-center py-2 rounded-t-md h-18 flex items-center justify-center">
+            <div className="bg-[#ec3737ff] w-full text-center py-2 rounded-t-md h-18 flex items-center justify-center">
               Project Overdues
             </div>
             <div className="py-4 text-xl ">
@@ -262,7 +262,7 @@ function DashboardContent() {
                 data: [
                   { id: 0, value: (totalProgress.done / (totalProgress.done + totalProgress.ongoing + totalProgress.overdue + totalProgress.pending)) * 100, label: 'Done', color: "#B9F8CF" },
                   { id: 1, value: (totalProgress.ongoing / (totalProgress.done + totalProgress.ongoing + totalProgress.overdue + totalProgress.pending)) * 100, label: 'Ongoing', color: "#FFF085" },
-                  { id: 2, value: (totalProgress.overdue / (totalProgress.done + totalProgress.ongoing + totalProgress.overdue + totalProgress.pending)) * 100, label: 'Overdue', color: "#FFC9C9" },
+                  { id: 2, value: (totalProgress.overdue / (totalProgress.done + totalProgress.ongoing + totalProgress.overdue + totalProgress.pending)) * 100, label: 'Overdue', color: "#ec3737ff" },
                   { id: 3, value: (totalProgress.pending / (totalProgress.done + totalProgress.ongoing + totalProgress.overdue + totalProgress.pending)) * 100, label: 'Pending', color: "#e79314ff" },
                 ],
               },
@@ -272,7 +272,7 @@ function DashboardContent() {
           />
         </div>
         {(user == 'admin' || user == 'engineer') && (
-          <div className="text-center pb-10 font-bold text-black py-2 w-2/5 rounded-lg shadow-sm border border-gray-100">
+          <div className="text-center pb-10 font-bold text-black py-2 w-4/5 rounded-lg shadow-sm border border-gray-100">
             Task List
             <DataGrid
               rows={[...assignments].sort((a, b) => (a.employee_name || "").localeCompare(b.employee_name || ""))}
@@ -289,12 +289,12 @@ function DashboardContent() {
             />
           </div>
         )}
-        {(user == 'admin') && (
-          <div className="text-center pb-10 font-bold text-black  w-2/5 rounded-lg shadow-sm border border-gray-100">
-            <GanttChart data={ganttData}></GanttChart>
-          </div>
-        )}
       </div>
+      {(user == 'admin') && (
+        <div className="text-center pb-10 font-bold text-black  w-full rounded-lg shadow-sm border border-gray-100">
+          <GanttChart data={ganttData}></GanttChart>
+        </div>
+      )}
       <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
         <ProjectsTable user={user} employee_count={setEmployeeCount} setTotalProgress={setTotalProgress} openModal={openModal} setOpenModal={setOpenModal} userData={newAccount} />
       </section>

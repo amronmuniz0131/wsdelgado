@@ -57,7 +57,7 @@ export default function ContactPage() {
           {/* Left Column: Form */}
           <div>
             <h1 className="text-4xl font-extrabold text-gray-900 mb-12">
-              Contact
+              Contact Us
             </h1>
 
             <form onSubmit={handleSubmit} className="space-y-8">

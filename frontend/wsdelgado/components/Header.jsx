@@ -135,6 +135,18 @@ export default function Header() {
           )}
           {isAuthenticated && userRole == "admin" && (
             <Link
+              href="/dashboard/services"
+              className={`text-sm font-medium transition-colors ${
+                userData?.first_login == 0
+                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Services
+            </Link>
+          )}
+          {isAuthenticated && userRole == "admin" && (
+            <Link
               href="/accounts"
               className={`text-sm font-medium transition-colors ${
                 userData?.first_login == 0
@@ -245,6 +257,19 @@ export default function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               Gallery
+            </Link>
+          )}
+          {isAuthenticated && userRole == "admin" && (
+            <Link
+              href="/dashboard/services"
+              className={`block py-2 transition-colors ${
+                userData?.first_login == 0
+                  ? "text-gray-400 cursor-not-allowed pointer-events-none"
+                  : "text-gray-600"
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Services
             </Link>
           )}
           {isAuthenticated && userRole == "admin" && (

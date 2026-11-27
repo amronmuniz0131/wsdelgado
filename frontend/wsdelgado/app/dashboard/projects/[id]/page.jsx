@@ -35,6 +35,24 @@ import UpdateTaskStatus from "./components/update-task-status.jsx";
 import AddMembers from "./components/add-members.jsx";
 
 
+// Splits a date/datetime value into MM/DD/YYYY and HH:MM parts.
+const formatDateParts = (value) => {
+  if (!value) return null;
+  const raw = String(value).trim();
+  if (!raw || raw.startsWith("0000-00-00")) return null;
+
+  const iso = raw.includes("T") ? raw : raw.replace(" ", "T");
+  const date = new Date(iso.includes("T") ? iso : `${iso}T00:00:00`);
+  if (isNaN(date.getTime())) return null;
+
+  const pad = (n) => String(n).padStart(2, "0");
+  return {
+    date: `${pad(date.getMonth() + 1)}/${pad(date.getDate())}/${date.getFullYear()}`,
+    time: `${pad(date.getHours())}:${pad(date.getMinutes())}`,
+  };
+};
+
+
 export default function ProjectDetailsPage() {
   const [selectedTask, setSelectedTask] = useState(null)
   const { id } = useParams();
@@ -210,12 +228,26 @@ export default function ProjectDetailsPage() {
       field: "dates",
       headerName: "Dates",
       width: 180,
-      renderCell: (params) => (
-        <Box className="flex flex-col justify-center h-full">
-          <Typography className="text-[11px] font-medium text-gray-600">Start: {params.row.start_date}</Typography>
-          {params.row.end_date != "0000-00-00" && <Typography className="text-[11px] font-medium text-gray-600">End: {params.row.end_date}</Typography>}
-        </Box>
-      )
+      renderCell: (params) => {
+        const start = formatDateParts(params.row.start_date);
+        const end = formatDateParts(params.row.end_date);
+        return (
+          <Box className="flex flex-col justify-center h-full gap-1">
+            {start && (
+              <Box className="flex flex-col leading-tight">
+                <Typography className="text-[11px] font-medium text-gray-600">Start: {start.date}</Typography>
+                <Typography className="text-[10px] text-gray-400">{start.time}</Typography>
+              </Box>
+            )}
+            {end && (
+              <Box className="flex flex-col leading-tight">
+                <Typography className="text-[11px] font-medium text-gray-600">End: {end.date}</Typography>
+                <Typography className="text-[10px] text-gray-400">{end.time}</Typography>
+              </Box>
+            )}
+          </Box>
+        );
+      }
     },
     {
       field: "severity",
@@ -1065,6 +1097,7 @@ export default function ProjectDetailsPage() {
                 <DataGrid
                   rows={tasks}
                   columns={taskColumns}
+                  getRowHeight={() => 'auto'}
                   pageSizeOptions={[5, 10, 20]}
                   initialState={{
                     pagination: { paginationModel: { pageSize: 5 } },
@@ -1078,7 +1111,9 @@ export default function ProjectDetailsPage() {
                 />
               </Box>
             </Card>
-            <GanttChart data={tasks} />
+            <div className="w-full">
+              <GanttChart data={tasks} />
+            </div>
 
             {/* Material Requests Table */}
             <Card className="shadow-sm border border-gray-100 rounded-2xl overflow-hidden mt-6">
