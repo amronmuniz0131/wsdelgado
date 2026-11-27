@@ -146,6 +146,15 @@ const schema = {
     ["image", "TEXT NOT NULL"],
     ["created_at", TS],
   ],
+  services: [
+    ["id", "INTEGER PRIMARY KEY AUTOINCREMENT"],
+    ["name", "TEXT NOT NULL"],
+    ["description", "TEXT"],
+    ["image", "TEXT"],
+    ["sort_order", "INTEGER DEFAULT 0"],
+    ["created_at", TS],
+    ["updated_at", TS],
+  ],
 };
 
 const indexes = [

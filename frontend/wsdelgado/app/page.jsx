@@ -5,17 +5,30 @@ import { Star } from "lucide-react";
 import { Placeholder } from "@/components/Placeholder";
 import group from "./about/images/group.jpg"
 import map from './about/images/map.png'
-import demolition from "@/components/images/demolition.webp"
-import glassworks from "@/components/images/glassworks.webp"
-import renovation from "@/components/images/renovation.webp"
-import { useEffect } from "react";
+import { API_BASE_URL } from "@/lib/api";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [services, setServices] = useState([]);
+
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (isAuthenticated) {
       window.location.href = "/dashboard";
     }
+  }, []);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/services/read`);
+        const data = await response.json();
+        setServices(data.records || []);
+      } catch (error) {
+        console.error("Error fetching services:", error);
+      }
+    };
+    fetchServices();
   }, []);
 
   return (
@@ -60,49 +73,33 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-            {[
-              {
-                id: 1,
-                name: "Professional Demolition",
-                image: demolition,
-                description: "Safe and efficient demolition services for various project scales."
-              },
-              {
-                id: 2,
-                name: "Custom Glassworks",
-                image: glassworks,
-                description: "Exquisite glass design and installation for modern structures."
-              },
-              {
-                id: 3,
-                name: "Complete Renovation",
-                image: renovation,
-                description: "Transforming spaces with high-quality interior and exterior renovations."
-              },
-            ].map((item) => (
-              <div
-                key={item.id}
-                className="flex flex-col group cursor-pointer hover:scale-105 transition-transform duration-500"
-              >
-                <div className="aspect-square mb-6 overflow-hidden relative">
-                  <Image
-                    src={item.image}
-                    alt={`${item.name} construction service`}
-                    width={500}
-                    height={500}
-                    className="w-full h-full object-cover rounded-xl transition-transform duration-500 group-hover:scale-105"
-                  />
+          {services.length === 0 ? (
+            <p className="text-center text-gray-500">Our services are being updated. Please check back soon.</p>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+              {services.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex flex-col group cursor-pointer hover:scale-105 transition-transform duration-500"
+                >
+                  <div className="aspect-square mb-6 overflow-hidden relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.image}
+                      alt={`${item.name} construction service`}
+                      className="w-full h-full object-cover rounded-xl transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3 capitalize">
+                    {item.name}
+                  </h3>
+                  <p className="text-gray-500 leading-relaxed text-sm">
+                    {item.description}
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold mb-3 capitalize">
-                  {item.name}
-                </h3>
-                <p className="text-gray-500 leading-relaxed text-sm">
-                  {item.description} Our team ensures the highest quality in {item.name.toLowerCase()} for every client.
-                </p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Location & About Section */}

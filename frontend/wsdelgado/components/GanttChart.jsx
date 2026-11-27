@@ -1,9 +1,48 @@
 "use client";
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { Gantt, ViewMode } from 'gantt-task-react';
 import "gantt-task-react/dist/index.css";
 
+const DEFAULT_COLUMN_WIDTH = 100;
+
+// Mirrors gantt-task-react's internal date math so our column count matches the rendered columns.
+const addToDate = (date, quantity, scale) =>
+  new Date(
+    date.getFullYear() + (scale === "year" ? quantity : 0),
+    date.getMonth() + (scale === "month" ? quantity : 0),
+    date.getDate() + (scale === "day" ? quantity : 0),
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds(),
+    date.getMilliseconds()
+  );
+const startOfDate = (date, scale) =>
+  scale === "year"
+    ? new Date(date.getFullYear(), 0, 1)
+    : new Date(date.getFullYear(), date.getMonth(), 1);
+
+// Number of month columns gantt-task-react renders for the given tasks (ViewMode.Month, preStepsCount = 1).
+const getMonthColumnCount = (tasks) => {
+  if (!tasks.length) return 0;
+
+  let min = tasks[0].start;
+  let max = tasks[0].start;
+  for (const task of tasks) {
+    if (task.start < min) min = task.start;
+    if (task.end > max) max = task.end;
+  }
+
+  const start = startOfDate(addToDate(min, -1, "month"), "month");
+  const end = startOfDate(addToDate(max, 1, "year"), "year");
+
+  const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+  return months + 1;
+};
+
 export default function GanttChart({ data }) {
+  const containerRef = useRef(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+
   const tasks = useMemo(() => {
     if (!data || data.length == 0) return [];
 
@@ -32,6 +71,27 @@ export default function GanttChart({ data }) {
     });
   }, [data]);
 
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const update = () => setContainerWidth(el.clientWidth);
+    update();
+
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Stretch the month columns so the chart exactly covers the full container width.
+  // The chart's rendered width is dates.length * columnWidth, so divide exactly (no rounding)
+  // to avoid leaving a blank strip on the right.
+  const columnWidth = useMemo(() => {
+    const columnCount = getMonthColumnCount(tasks);
+    if (!columnCount || !containerWidth) return DEFAULT_COLUMN_WIDTH;
+    return Math.max(1, containerWidth / columnCount);
+  }, [tasks, containerWidth]);
+
   if (tasks.length == 0) {
     return (
       <div className="flex items-center justify-center p-8 bg-gray-50 border border-gray-100 rounded-md text-gray-500">
@@ -41,11 +101,11 @@ export default function GanttChart({ data }) {
   }
 
   return (
-    <div className="w-full max-w-full h-96 overflow-x-auto bg-white rounded-lg">
+    <div ref={containerRef} className="w-full max-w-full h-96 overflow-x-auto bg-white rounded-lg">
       <Gantt
         tasks={tasks}
         viewMode={ViewMode.Month}
-        columnWidth={80}
+        columnWidth={columnWidth}
         barProgressColor={"#3b82f6"}
         listCellWidth=""
       />
