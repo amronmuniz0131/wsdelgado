@@ -71,6 +71,10 @@ export default function GanttChart({ data }) {
     });
   }, [data]);
 
+  // The container div only renders once tasks are loaded, so the observer must
+  // (re-)attach when that happens, not just on mount.
+  const hasTasks = tasks.length > 0;
+
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -81,11 +85,12 @@ export default function GanttChart({ data }) {
     const observer = new ResizeObserver(update);
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [hasTasks]);
 
   // Stretch the month columns so the chart exactly covers the full container width.
   // The chart's rendered width is dates.length * columnWidth, so divide exactly (no rounding)
-  // to avoid leaving a blank strip on the right.
+  // to avoid leaving a blank strip on the right. (The library's vertical-scroll strip is
+  // 1rem wide with a -1rem margin, so it consumes no layout space.)
   const columnWidth = useMemo(() => {
     const columnCount = getMonthColumnCount(tasks);
     if (!columnCount || !containerWidth) return DEFAULT_COLUMN_WIDTH;
