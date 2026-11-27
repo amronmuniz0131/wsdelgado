@@ -82,7 +82,7 @@ export default function Header() {
               href={`/contact`}
               className="text-sm font-medium text-gray-600 hover:text-gray-900"
             >
-              Contact
+              Contact Us
             </Link>
           )}
           {isAuthenticated && userRole == "admin" && (

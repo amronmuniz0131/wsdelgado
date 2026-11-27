@@ -76,7 +76,7 @@ export default function ContactPage() {
                     setFormData({ ...formData, name: e.target.value })
                   }
                   className="block w-full border-gray-300 border-b focus:border-gray-900 focus:ring-0 pl-2 text-black sm:text-sm py-2 px-0 bg-transparent placeholder-gray-400"
-                  placeholder="Name"
+                  placeholder="Full Name"
                 />
               </div>
 
@@ -95,7 +95,7 @@ export default function ContactPage() {
                     setFormData({ ...formData, email: e.target.value })
                   }
                   className="block w-full border-gray-300 border-b focus:border-gray-900 focus:ring-0 pl-2 text-black sm:text-sm py-2 px-0 bg-transparent placeholder-gray-400"
-                  placeholder="Email"
+                  placeholder="example@gmail.com"
                 />
               </div>
 
@@ -114,7 +114,7 @@ export default function ContactPage() {
                     setFormData({ ...formData, subject: e.target.value })
                   }
                   className="block w-full border-gray-300 border-b focus:border-gray-900 focus:ring-0 pl-2 text-black sm:text-sm py-2 px-0 bg-transparent placeholder-gray-400"
-                  placeholder="Subject"
+                  placeholder="Tell us about your ideas"
                 />
               </div>
 
@@ -132,7 +132,7 @@ export default function ContactPage() {
                     setFormData({ ...formData, message: e.target.value })
                   }
                   className="block w-full border-gray-300 border-b focus:border-gray-900 focus:ring-0 pl-2 text-black sm:text-sm py-2 px-0 bg-transparent placeholder-gray-400 resize-none"
-                  placeholder="Message"
+                  placeholder="Details about your project"
                 />
               </div>
 
